@@ -1,0 +1,22 @@
+# Exclude non-essential files
+src/
+__tests__
+examples/*.tsx
+*.config.*
+tsconfig.*
+vite.config.*
+public/
+.env.local
+*.env*
+
+# Storybook-specific
+*.stories.tsx
+.storybook/
+
+# Debug files
+*.log
+*.tmp
+
+# Editor artifacts
+.vscode/
+.idea/

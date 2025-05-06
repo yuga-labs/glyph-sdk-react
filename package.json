@@ -1,0 +1,93 @@
+{
+	"name": "@use-glyph/sdk-react",
+	"version": "0.0.0",
+	"description": "",
+	"workspaces": {
+		"packages": [
+			"lib",
+			"examples/cross-app",
+			"examples/privy",
+			"examples/rainbowkit",
+			"examples/connectkit",
+			"examples/dynamic",
+			"examples/native-integration",
+			"examples/index"
+		]
+	},
+	"scripts": {
+		"dev": "pnpm --filter @use-glyph/sdk-react watch",
+		"build": "pnpm --filter @use-glyph/sdk-react build",
+		"lint": "pnpm --filter @use-glyph/sdk-react lint",
+		"dev:cross-app": "pnpm --filter cross-app dev",
+		"build:cross-app": "pnpm --filter cross-app build",
+		"run:cross-app": "pnpm --filter cross-app preview",
+		"dev:privy": "pnpm --filter privy dev",
+		"build:privy": "pnpm --filter privy build",
+		"run:privy": "pnpm --filter privy preview",
+		"dev:rainbowkit": "pnpm --filter rainbowkit dev",
+		"build:rainbowkit": "pnpm --filter rainbowkit build",
+		"run:rainbowkit": "pnpm --filter rainbowkit preview",
+		"dev:connectkit": "pnpm --filter connectkit dev",
+		"build:connectkit": "pnpm --filter connectkit build",
+		"run:connectkit": "pnpm --filter connectkit preview",
+		"dev:native-integration": "pnpm --filter native-integration dev",
+		"build:native-integration": "pnpm --filter native-integration build",
+		"run:native-integration": "pnpm --filter native-integration preview",
+		"dev:dynamic": "pnpm --filter dynamic dev",
+		"build:dynamic": "pnpm --filter dynamic build",
+		"run:dynamic": "pnpm --filter dynamic preview",
+		"build:demos": "concurrently \"pnpm run build:cross-app\" \"pnpm run build:privy\" \"pnpm run build:rainbowkit\" \"pnpm run build:connectkit\" \"pnpm run build:native-integration\" \"pnpm run build:dynamic\"",
+		"build:all": "pnpm run build && pnpm run build:demos",
+		"start:privy": "pnpm --filter privy preview",
+		"start:cross-app": "pnpm --filter cross-app preview",
+		"start:rainbowkit": "pnpm --filter rainbowkit preview",
+		"start:connectkit": "pnpm --filter connectkit preview",
+		"start:native-integration": "pnpm --filter native-integration preview",
+		"start:dynamic": "pnpm --filter dynamic preview",
+		"start:all": "concurrently \"pnpm run start:privy\" \"pnpm run start:cross-app\" \"pnpm run start:rainbowkit\" \"pnpm run start:connectkit\" \"pnpm run start:native-integration\" \"pnpm run start:dynamic\"",
+		"start:prod": "node examples/server.js"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.19.0",
+		"@types/node": "^22.13.1",
+		"@types/react": "^18.3.18",
+		"@types/react-dom": "^18.3.5",
+		"@vitejs/plugin-react": "^4.3.4",
+		"autoprefixer": "^10.4.20",
+		"concurrently": "9.1.2",
+		"eslint": "^9.19.0",
+		"eslint-plugin-react-hooks": "^5.1.0",
+		"eslint-plugin-react-refresh": "^0.4.18",
+		"express": "^4.18.3",
+		"globals": "^15.14.0",
+		"path": "^0.12.7",
+		"postcss": "^8.5.1",
+		"prettier": "^3.4.2",
+		"rimraf": "^6.0.1",
+		"tailwind-scrollbar": "3.1.0",
+		"tailwindcss": "^3.4.17",
+		"typescript": "~5.7.3",
+		"typescript-eslint": "^8.23.0",
+		"vite": "6.1.0",
+		"vite-plugin-dts": "^4.5.0"
+	},
+	"dependencies": {
+		"@radix-ui/react-slot": "^1.1.1",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"lucide-react": "^0.474.0",
+		"tailwind-merge": "^2.6.0",
+		"tailwindcss-animate": "^1.0.7"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"packageManager": "pnpm@9.9.0",
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"resolutions": {
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1"
+	}
+}

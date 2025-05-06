@@ -1,0 +1,110 @@
+name: Version Bump and Tag
+
+on:
+  workflow_dispatch:
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_PACKAGE_READ }}
+
+jobs:
+  version-bump-and-tag:
+    name: Bump Version, Tag, and Trigger NPM Publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch all history for proper versioning
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Update the version in lib/package.json using direct file manipulation instead of pnpm version
+      - name: Update version in lib package
+        run: |
+          cd lib
+          # Get current version
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Current version: $CURRENT_VERSION"
+          
+          # Parse version components
+          MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1)
+          MINOR=$(echo $CURRENT_VERSION | cut -d. -f2)
+          PATCH=$(echo $CURRENT_VERSION | cut -d. -f3)
+          
+          # Increment patch version
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+          echo "New version: $NEW_VERSION"
+          
+          # Update package.json with new version
+          node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('package.json')); pkg.version = '$NEW_VERSION'; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 4) + '\n');"
+          
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          cd ..
+
+      # Update the root package.json to match the lib version
+      - name: Update root package version
+        run: |
+          # Update the version in the root package.json to match lib
+          node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('package.json')); pkg.version = process.env.NEW_VERSION; fs.writeFileSync('package.json', JSON.stringify(pkg, null, '\t') + '\n');"
+          echo "Root package.json updated to version $NEW_VERSION"
+
+      # Build to verify everything works
+      - name: Build project
+        run: pnpm run build
+
+      # Commit the version changes
+      - name: Commit version changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add lib/package.json package.json
+          git commit -m "chore: bump version to $NEW_VERSION"
+          git push origin main
+
+      # Create a tag for the new version
+      - name: Create git tag
+        run: |
+          git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
+          git push origin "v$NEW_VERSION"
+          echo "Tag v$NEW_VERSION created and pushed"
+
+      # Manually trigger the production workflows
+      - name: Trigger production workflows
+        run: |
+          echo "Waiting for GitHub to process the tag push..."
+          sleep 10
+          
+          # Check if the tag exists on the remote
+          if git ls-remote --tags origin | grep -q "v$NEW_VERSION"; then
+            echo "Tag v$NEW_VERSION confirmed on remote"
+          else
+            echo "Warning: Tag v$NEW_VERSION not found on remote"
+          fi
+          
+          echo "Production workflows should be triggered automatically by the tag push."
+          echo "If they don't run automatically, you may need to trigger them manually."
+
+  notify:
+    name: Notify Chat
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [version-bump-and-tag]
+    steps:
+      - name: Notification to Slack
+        uses: yuga-labs/slack-github-action@main
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
