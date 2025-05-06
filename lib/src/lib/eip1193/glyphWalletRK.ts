@@ -6,7 +6,7 @@ import { GLYPH_PRIVY_APP_ID, glyphConnectorDetails, STAGING_GLYPH_PRIVY_APP_ID }
  *
  * @example
  * import { connectorsForWallets } from "@rainbow-me/rainbowkit";
- * import { glyphWalletRK } from "@yuga-labs/glyph-sdk-react"
+ * import { glyphWalletRK } from "@use-glyph/sdk-react"
  *
  * const connectors = connectorsForWallets(
  *  [

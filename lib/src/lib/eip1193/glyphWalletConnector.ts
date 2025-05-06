@@ -23,7 +23,7 @@ interface GlyphWalletConnectorOptions {
  * @example
  * import { createConfig, http } from "wagmi";
  * import { apeChain } from "wagmi/chains";
- * import { glyphWalletConnector } from "@yuga-labs/glyph-sdk-react"
+ * import { glyphWalletConnector } from "@use-glyph/sdk-react"
  *
  * export const wagmiConfig = createConfig({
  *   chains: [apeChain],
