@@ -9,7 +9,6 @@ import Consumer from "./consumer";
 const supportedChains: [Chain, ...Chain[]] = [apeChain, base];
 
 function App() {
-	console.log("glyph", GLYPH_APP_LOGIN_METHOD);
 	return (
 		<GlyphPrivyProvider
 			appId={"cm4vofyfw04npzg40krvtmgip"}
