@@ -15,7 +15,7 @@ function App() {
 			clientId={"client-WY5eXhhUuWyyySiHcTcAKA7nD3X3e5SEwiD9dhhZjeRxz"}
 			config={{
 				loginMethodsAndOrder: {
-					primary: [GLYPH_APP_LOGIN_METHOD, "google"], // Glyph and google
+					primary: [GLYPH_APP_LOGIN_METHOD],
 				},
 				embeddedWallets: {
 					createOnLogin: "off", // 'users-without-wallets' | 'all-users' | 'off'

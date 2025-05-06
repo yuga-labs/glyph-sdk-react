@@ -1,4 +1,3 @@
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import {
 	GlyphView,
 	GlyphWidget,
@@ -6,6 +5,7 @@ import {
 	useGlyph,
 	useGlyphView,
 } from "@use-glyph/sdk-react";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import React, { useEffect, useState } from "react";
 import { apeChain, base } from "viem/chains";
 import { useAccount, useChainId, useSwitchChain } from "wagmi";

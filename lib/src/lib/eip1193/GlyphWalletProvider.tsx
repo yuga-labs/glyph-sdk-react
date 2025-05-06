@@ -31,7 +31,7 @@ interface GlyphWalletProviderProps {
  * It provides the GlyphWalletContext to its children.
  * @example
  * ```tsx
- * import { GlyphWalletProvider } from '@yuga-labs/glyph-sdk-react';
+ * import { GlyphWalletProvider } from '@use-glyph/sdk-react';
  *
  * const App = () => {
  *   const queryClient = new QueryClient()
