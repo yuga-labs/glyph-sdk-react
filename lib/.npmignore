@@ -8,6 +8,7 @@ vite.config.*
 public/
 .env.local
 *.env*
+*.npmrc
 
 # Storybook-specific
 *.stories.tsx
