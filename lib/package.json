@@ -1,13 +1,13 @@
 {
     "name": "@use-glyph/sdk-react",
     "private": false,
-    "version": "0.0.1",
+    "version": "0.0.2",
     "type": "module",
     "license": "GLYPH-1.0",
     "repository": {
-		"type": "git",
-		"url": "https://github.com/yuga-labs/glyph-sdk-react"
-	},
+        "type": "git",
+        "url": "https://github.com/yuga-labs/glyph-sdk-react"
+    },
     "sideEffects": false,
     "main": "dist/sdk-react.umd.js",
     "module": "dist/sdk-react.es.js",
