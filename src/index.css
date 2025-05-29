@@ -1,0 +1,286 @@
+@import "./assets/fonts.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.glyph-widget * {
+    /* Hide Increment/Decrement Button in Input Field */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* Firefox */
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+
+    /* For toast */
+    [data-sonner-toaster],
+    [data-sonner-toast][data-styled="true"] {
+        --width: 20rem !important;
+    }
+}
+
+/* Overriding scrollbar style for rounded corners */
+.gw-brand-scroll::-webkit-scrollbar-thumb:vertical {
+    background-clip: padding-box !important;
+    border-top: 1rem solid transparent !important;
+    border-bottom: 1rem solid transparent !important;
+}
+.gw-brand-scroll::-webkit-scrollbar-thumb:horizontal {
+    background-clip: padding-box !important;
+    border-left: 1rem solid transparent !important;
+    border-right: 1rem solid transparent !important;
+}
+
+@layer base {
+    :root {
+        --font-gramatika: "Gramatika";
+
+        /* Brand */
+        --gw-brand-earth: 116 20% 31%;
+
+        --gw-brand-grass: 125 34% 42%;
+        --gw-brand-grass-light: 124 39% 49%;
+        --gw-brand-grass-dark: 125 35% 31%;
+
+        --gw-brand-forest: 168 81% 18%;
+
+        --gw-brand-deep-moss: 180 84% 7%;
+        --gw-brand-deep-moss-light: 180 3% 27%;
+        --gw-brand-deep-moss-dark: 180 7% 14%;
+
+        --gw-brand-bone: 110 19% 94%;
+        --gw-brand-clay: 0 0% 93%;
+
+        --gw-brand-black: 0 0% 7%;
+        --gw-brand-white: 0 0% 100%;
+
+        --gw-brand-muted: 0 0% 87%;
+
+        --gw-brand-gray-500: 270 5% 65%;
+        --gw-brand-gray-600: 300 2% 50%;
+        --gw-brand-gray-700: 180 3% 27%;
+        --gw-brand-gray-800: 180 6% 16%;
+        --gw-brand-gray-900: 180 7% 14%;
+        --gw-brand-gray-black: var(--gw-brand-deep-moss);
+
+        --gw-brand-success: 125 36% 68%;
+        --gw-brand-warning: 39 100% 63%;
+
+        --gw-brand-failure: 5 70% 58%;
+
+        /* UI */
+        --gw-background: var(--gw-brand-white);
+        --gw-foreground: var(--gw-brand-black);
+        --gw-card: var(--gw-brand-white);
+        --gw-card-foreground: var(--gw-brand-black);
+        --gw-popover: var(--gw-brand-white);
+        --gw-popover-foreground: var(--gw-brand-black);
+        --gw-primary: var(--gw-brand-earth);
+        --gw-primary-foreground: var(--gw-brand-white);
+        --gw-secondary: var(--gw-brand-grass);
+        --gw-secondary-foreground: var(--gw-brand-white);
+        --gw-muted: var(--gw-brand-muted);
+        --gw-muted-foreground: 220 8.9% 46.1%;
+        --gw-accent: var(--gw-brand-muted);
+        --gw-accent-foreground: var(--gw-brand-earth);
+        --gw-destructive: var(--gw-brand-failure);
+        --gw-destructive-foreground: var(--gw-brand-white);
+        --gw-border: var(--gw-brand-gray-500);
+        --gw-input: var(--gw-brand-gray-500);
+        --gw-ring: var(--gw-brand-black);
+        --gw-chart-1: 12 76% 61%;
+        --gw-chart-2: 173 58% 39%;
+        --gw-chart-3: 197 37% 24%;
+        --gw-chart-4: 43 74% 66%;
+        --gw-chart-5: 27 87% 67%;
+        --gw-radius: 0.5rem;
+    }
+    .dark {
+        /* UI */
+        --gw-background: 224 71.4% 4.1%;
+        --gw-foreground: 210 20% 98%;
+        --gw-card: 224 71.4% 4.1%;
+        --gw-card-foreground: 210 20% 98%;
+        --gw-popover: 224 71.4% 4.1%;
+        --gw-popover-foreground: 210 20% 98%;
+        --gw-primary: 210 20% 98%;
+        --gw-primary-foreground: 220.9 39.3% 11%;
+        --gw-secondary: 215 27.9% 16.9%;
+        --gw-secondary-foreground: 210 20% 98%;
+        --gw-muted: 215 27.9% 16.9%;
+        --gw-muted-foreground: 217.9 10.6% 64.9%;
+        --gw-accent: 215 27.9% 16.9%;
+        --gw-accent-foreground: 210 20% 98%;
+        --gw-destructive: 0 62.8% 30.6%;
+        --gw-destructive-foreground: 210 20% 98%;
+        --gw-border: 215 27.9% 16.9%;
+        --gw-input: 215 27.9% 16.9%;
+        --gw-ring: 216 12.2% 83.9%;
+        --gw-chart-1: 220 70% 50%;
+        --gw-chart-2: 160 60% 45%;
+        --gw-chart-3: 30 80% 55%;
+        --gw-chart-4: 280 65% 60%;
+        --gw-chart-5: 340 75% 55%;
+    }
+
+    .glyph-widget * {
+        @apply gw-border-border selection:gw-bg-primary selection:gw-text-primary-foreground gw-brand-scroll gw-font-display;
+    }
+
+    .glyph-widget html,
+    .glyph-widget body {
+        @apply gw-bg-background gw-text-foreground gw-typography-body1 gw-tracking-wide !gw-h-dvh;
+    }
+
+    .glyph-widget a {
+        @apply gw-transition-all gw-duration-300;
+    }
+
+    .glyph-widget h1 {
+        @apply gw-typography-h1;
+    }
+
+    .glyph-widget h2 {
+        @apply gw-typography-h2;
+    }
+
+    .glyph-widget h3 {
+        @apply gw-typography-h3;
+    }
+
+    .glyph-widget h4 {
+        @apply gw-typography-h4;
+    }
+
+    .glyph-widget h5 {
+        @apply gw-typography-h5;
+    }
+
+    .glyph-widget h6 {
+        @apply gw-typography-h6;
+    }
+}
+
+@layer utilities {
+    .gw-brand-scroll {
+        @apply gw-scrollbar gw-scrollbar-w-1.5 gw-scrollbar-h-1.5 gw-scrollbar-thumb-primary hover:gw-scrollbar-thumb-primary/75;
+    }
+
+    .gw-typography-h1 {
+        @apply gw-text-5xl md:gw-text-6xl lg:gw-text-4.375rem/[1] gw-font-normal gw-font-secondary;
+    }
+
+    .gw-typography-h2 {
+        @apply gw-text-4xl/[1] md:gw-text-5xl lg:gw-text-6xl gw-font-normal gw-font-secondary;
+    }
+
+    .gw-typography-h3 {
+        @apply gw-text-2rem/[1] lg:gw-text-2.5rem/[1] gw-font-normal gw-font-secondary;
+    }
+
+    .gw-typography-h4 {
+        @apply gw-text-3xl/[1] lg:gw-text-2rem/[1] gw-font-medium gw-font-secondary;
+    }
+
+    .gw-typography-h5 {
+        @apply gw-text-3xl/[1] gw-font-normal gw-font-secondary;
+    }
+
+    .gw-typography-h6 {
+        @apply gw-text-xl/[1] gw-font-normal gw-font-display;
+    }
+
+    .gw-typography-subtitle1 {
+        @apply gw-font-display gw-font-medium gw-tracking-wide gw-text-lg/[1];
+    }
+
+    .gw-typography-subtitle2 {
+        @apply gw-font-display gw-font-bold gw-text-base/[1];
+    }
+
+    .gw-typography-body1 {
+        @apply gw-font-display gw-font-normal gw-text-base;
+    }
+
+    .gw-typography-body2 {
+        @apply gw-font-display gw-font-normal gw-text-sm;
+    }
+
+    .gw-typography-caption {
+        @apply gw-font-display gw-font-medium gw-text-xs gw-tracking-wide;
+    }
+
+    .gw-typography-overline {
+        @apply gw-font-display gw-uppercase gw-font-normal gw-text-xs gw-tracking-wide;
+    }
+
+    .gw-typography-h1-nr {
+        @apply gw-text-4.375rem/[1] gw-font-normal gw-font-secondary;
+    }
+
+    .gw-typography-h2-nr {
+        @apply gw-text-6xl gw-font-normal gw-font-secondary;
+    }
+
+    .gw-typography-h3-nr {
+        @apply gw-text-2.5rem/[1] gw-font-normal gw-font-secondary;
+    }
+
+    .gw-typography-h4-nr {
+        @apply gw-text-2rem/[1] gw-font-medium gw-font-secondary;
+    }
+
+    .gw-typography-h5-nr {
+        @apply gw-text-3xl/[1] gw-font-normal gw-font-secondary;
+    }
+
+    .gw-typography-h6-nr {
+        @apply gw-text-xl/[1] gw-font-normal gw-font-display;
+    }
+
+    /* The widget container */
+    .gw-widget-container {
+        @apply gw-font-medium gw-flex gw-flex-col gw-items-end gw-w-full gw-relative gw-z-40;
+    }
+
+    /* The Wallet Container */
+    .gw-wallet-container {
+        @apply gw-flex gw-flex-col gw-flex-nowrap gw-self-end gw-items-center gw-min-w-85 gw-h-140 gw-p-0;
+    }
+
+    /* The Wallet View */
+    .gw-wallet-view {
+        @apply gw-flex gw-flex-col gw-w-full gw-h-full gw-z-0;
+    }
+
+    /* The Wallet View Header */
+    .gw-wallet-header {
+        @apply gw-flex gw-justify-between gw-items-center gw-w-full gw-p-4 gw-flex-shrink-0;
+    }
+
+    /* The Wallet View Content */
+    .gw-wallet-content {
+        @apply gw-flex-nowrap gw-flex-1 gw-w-full gw-overflow-auto gw-brand-scroll;
+    }
+
+    /* The Wallet View Footer (For Nav) */
+    .gw-wallet-footer-nav {
+        @apply gw-flex gw-justify-evenly gw-px-4 gw-py-8 md:gw-justify-between gw-w-full md:gw-py-8 md:gw-px-10 gw-flex-shrink-0;
+    }
+
+    /* The Wallet View Footer (Simple) */
+    .gw-wallet-footer {
+        @apply gw-flex gw-justify-evenly gw-w-full gw-p-4 gw-flex-shrink-0;
+    }
+}
+
+@layer components {
+    .gw-PopoverContent {
+        /* Set by Popover Radix */
+        max-height: var(--radix-popover-content-available-height);
+    }
+}
