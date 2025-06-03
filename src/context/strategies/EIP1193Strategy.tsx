@@ -131,6 +131,10 @@ const EIP1193Strategy: FC<BaseGlyphProviderOptionsWithSignature> = ({
         setApiFetch(() => glyphApiFetch);
     }, [token, address, glyphUrl, sessNonce]);
 
+    const disconnect = useCallback(async () => {
+        await disconnectAsync();
+    }, [disconnectAsync]);
+
     const authenticate = useCallback(async () => {
         logger.log("authenticate");
         if (!address) {
@@ -149,6 +153,7 @@ const EIP1193Strategy: FC<BaseGlyphProviderOptionsWithSignature> = ({
             setLoading(true);
 
             const userSignature = await signMessageAsync({ account: address, message: message });
+            console.log(sessNonce, message, userSignature);
 
             const token = (await verifySignature(address, userSignature, sessNonce))?.token;
 
@@ -169,18 +174,13 @@ const EIP1193Strategy: FC<BaseGlyphProviderOptionsWithSignature> = ({
         }
     }, [address, isConnected, message, sessNonce, signMessageAsync, verifySignature]);
 
-    const logoutSideEffect = useCallback(
-        async (disconnect = false) => {
-            logger.log(`logout: disconnect=${disconnect}`);
-            setSessNonce(null);
-            setToken(null);
-            setLoading(false);
-            setApiFetch(null);
-            if (disconnect) await disconnectAsync();
-            onLogout?.();
-        },
-        [disconnectAsync]
-    );
+    const logoutSideEffect = useCallback(async () => {
+        setSessNonce(null);
+        setToken(null);
+        setLoading(false);
+        setApiFetch(null);
+        onLogout?.();
+    }, []);
 
     const signMessage = useCallback(
         async ({ message }: { message: string }) => {
@@ -231,7 +231,7 @@ const EIP1193Strategy: FC<BaseGlyphProviderOptionsWithSignature> = ({
                 glyphUrl: glyphUrl as string, // Pass as string to avoid type error (we are passing fallback value in useGlyph hook at a common place)
                 hideWidget: !isConnected || !address,
                 login: authenticate,
-                logout: logoutSideEffect,
+                logout: disconnect, // on disconnect, logoutSideEffect is called and clears states
                 signMessage,
                 sendTransaction,
                 apiFetch: apiFetch!
