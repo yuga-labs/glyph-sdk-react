@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { debounce } from "throttle-debounce";
 import truncateEthAddress from "truncate-eth-address";
 import { Chain, erc20Abi, formatUnits, Hex, parseEther, zeroAddress } from "viem";
-import { apeChain, curtis } from "viem/chains";
+import { apeChain, curtis, mainnet } from "viem/chains";
 import { useChainId, useWriteContract } from "wagmi";
 import { CaretDownIcon } from "../../assets/svg/CaretDownIcon";
 import NoTokenIcon from "../../assets/svg/NoTokenIcon";
@@ -55,7 +55,8 @@ const MAX_BALANCE_ERROR = "Not enough balance";
 
 const chainIdsMap: Record<number, Chain> = {
     [apeChain.id]: apeChain,
-    [curtis.id]: curtis
+    [curtis.id]: curtis,
+    [mainnet.id]: mainnet
 };
 
 export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientType }: WalletSendFundProps) {
@@ -289,7 +290,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
 
     const validAmountEntered = debouncedSendAmount > 0 && debouncedSendAmount <= Number(token?.value || "0");
 
-    const TokenIcon = token?.symbol ? TOKEN_LOGOS[token.symbol as keyof typeof TOKEN_LOGOS] : NoTokenIcon;
+    const TokenIcon = token?.symbol ? (TOKEN_LOGOS[token.symbol as keyof typeof TOKEN_LOGOS] || NoTokenIcon) : NoTokenIcon;
 
     return (
         <>
@@ -343,7 +344,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                                 <TokenIcon className={cn("gw-w-6 gw-h-6 gw-mr-2", isTestnet && TESTNET_CLASS)} />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {balances?.tokens?.map((t, index) => {
+                                                {balances?.tokens?.map?.((t, index) => {
                                                     if (t?.hide) return null;
                                                     const TokenIcon = TOKEN_LOGOS[t.symbol] || NoTokenIcon;
 

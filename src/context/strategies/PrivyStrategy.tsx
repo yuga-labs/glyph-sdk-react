@@ -11,6 +11,7 @@ import { GLYPH_PRIVY_APP_ID, STAGING_GLYPH_PRIVY_APP_ID, WIDGET_API_BASE_URL } f
 import { createLogger, isEthereumAddress } from "../../lib/utils";
 import { BaseGlyphProviderOptions } from "../../types";
 import { createApiFetch, GlyphApiFetch, GlyphContext } from "../GlyphContext";
+import { useChainId } from "wagmi";
 
 const logger = createLogger("PrivyStrategy");
 
@@ -19,6 +20,7 @@ const PrivyStrategy: FC<BaseGlyphProviderOptions> = ({ children, glyphUrl, onLog
     const [apiFetch, setApiFetch] = useState<GlyphApiFetch | null>(null);
     const [walletAddress, setWalletAddress] = useState<string | null>(null);
     const [usesCrossapp, setUsesCrossapp] = useState<boolean>(false);
+    const chainId = useChainId();
 
     const {
         ready: privyReady,
@@ -135,12 +137,12 @@ const PrivyStrategy: FC<BaseGlyphProviderOptions> = ({ children, glyphUrl, onLog
     const authenticate = useCallback(async () => {
         await privyLogin();
         onLogin?.();
-    }, [privyLogin]);
+    }, [onLogin, privyLogin]);
 
     const logout = useCallback(async () => {
         privyLogout();
         onLogout?.();
-    }, [privyLogout]);
+    }, [onLogout, privyLogout]);
 
     const signMessage = useCallback(
         async ({ message }: { message: string }) => {
@@ -156,13 +158,13 @@ const PrivyStrategy: FC<BaseGlyphProviderOptions> = ({ children, glyphUrl, onLog
     const sendTransaction = useCallback(
         async ({ transaction }: { transaction: Omit<UnsignedTransactionRequest, "chainId"> }) => {
             if (!walletAddress) throw new Error("No wallet address found");
-            const tx = { ...transaction, chainId: apeChain.id };
+            const tx = { ...transaction, chainId };
 
             return usesCrossapp
                 ? crossAppSendTransaction(tx, { address: walletAddress })
                 : privySendTransaction(tx, { address: walletAddress });
         },
-        [walletAddress, usesCrossapp, crossAppSendTransaction, privySendTransaction]
+        [chainId, usesCrossapp, walletAddress, crossAppSendTransaction, privySendTransaction]
     );
 
     return (

@@ -7,7 +7,7 @@ import {
 	useGlyphView,
 } from "@use-glyph/sdk-react";
 import React, { useState } from "react";
-import { apeChain, curtis } from "viem/chains";
+import { apeChain, curtis, mainnet } from "viem/chains";
 import { useChainId, useSignMessage, useSwitchChain } from "wagmi";
 import GlyphIcon from "./assets/GlyphIcon";
 import GlyphWordmark from "./assets/GlyphWordmark";
@@ -96,6 +96,22 @@ const Consumer: React.FC = () => {
 													</span>
 												)}
 											</button>
+											{/* switch to ethereum mainnet */}
+											{
+												<button
+													className="h-12 px-4 border rounded-full sm:min-w-44"
+													onClick={async () => await handleSwitchChain(mainnet.id)}
+													disabled={loading || chainId === mainnet.id}
+												>
+													{loading ? (
+														"Switching..."
+													) : (
+														<span className="flex items-center justify-center gap-2 sm:gap-1">
+															{`Switch to Ethereum`}
+														</span>
+													)}
+												</button>
+											}
 											<button
 												onClick={logout}
 												className="h-12 px-4 text-black bg-white rounded-full sm:min-w-44"

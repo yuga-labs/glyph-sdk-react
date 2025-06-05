@@ -4,7 +4,7 @@ import ApechainIcon from "../../assets/svg/ApechainIcon";
 import { defaultChain } from "../../lib/providers";
 import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
-import { IS_TESTNET_CHAIN, TESTNET_CLASS } from "../../lib/constants";
+import { CHAIN_ICONS, IS_TESTNET_CHAIN, TESTNET_CLASS } from "../../lib/constants";
 
 type UnsupportedChainOverlayProps = {
     className?: string;
@@ -15,6 +15,7 @@ export function UnsupportedChainOverlay({ className }: UnsupportedChainOverlayPr
     const chainId = useChainId();
 
     const isTestnet = IS_TESTNET_CHAIN.get(chainId) || false;
+    const ChainIcon = CHAIN_ICONS[chainId] || ApechainIcon;
 
     return (
         <div
@@ -24,7 +25,7 @@ export function UnsupportedChainOverlay({ className }: UnsupportedChainOverlayPr
             )}
         >
             <div className="gw-flex gw-flex-col gw-items-center gw-justify-center gw-gap-4 gw-p-10 gw-rounded-xl gw-bg-background gw-shadow-buttonLg">
-                <ApechainIcon className={cn("gw-size-20", isTestnet && TESTNET_CLASS)} />
+                <ChainIcon className={cn("gw-size-20", isTestnet && TESTNET_CLASS)} />
                 <h6 className="gw-text-center">
                     Switch to {defaultChain.id === apeChain.id ? "ApeChain" : defaultChain.name}
                     <br /> network to continue

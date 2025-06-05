@@ -7,7 +7,7 @@ import { useGlyph } from "../../hooks/useGlyph";
 import CopyButton from "./CopyButton";
 import UserAvatar from "./UserAvatar";
 import { useChainId } from "wagmi";
-import { IS_TESTNET_CHAIN, TESTNET_CLASS } from "../../lib/constants";
+import { CHAIN_ICONS, IS_TESTNET_CHAIN, TESTNET_CLASS } from "../../lib/constants";
 import { cn } from "../../lib/utils";
 
 interface WalletViewHeaderProps {
@@ -24,6 +24,7 @@ const WalletViewHeader: React.FC<WalletViewHeaderProps> = ({ fullScreenHeader, o
     const chainId = useChainId();
 
     const isTestnet = IS_TESTNET_CHAIN.get(chainId) || false;
+    const ChainIcon = CHAIN_ICONS[chainId] || ApechainIcon;
 
     return fullScreenHeader && fullScreenHeader?.title ? (
         <>
@@ -73,7 +74,7 @@ const WalletViewHeader: React.FC<WalletViewHeaderProps> = ({ fullScreenHeader, o
                     </div>
                 </div>
 
-                <ApechainIcon className={cn("gw-size-9", isTestnet && TESTNET_CLASS)} />
+                <ChainIcon className={cn("gw-size-9", isTestnet && TESTNET_CLASS)} />
             </div>
         </>
     );

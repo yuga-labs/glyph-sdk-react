@@ -1,7 +1,7 @@
 import { Chain, createPublicClient, fallback, http, PublicClient, webSocket } from "viem";
-import { apeChain, curtis } from "viem/chains";
+import { apeChain, curtis, mainnet } from "viem/chains";
 
-export const supportedChains: [Chain, ...Chain[]] = [curtis, apeChain];
+export const supportedChains: [Chain, ...Chain[]] = [mainnet, curtis, apeChain];
 export const supportedChainIds = supportedChains.map((chain) => chain.id);
 export const defaultChain: Chain = supportedChains.find((chain) => chain.id === apeChain.id)!;
 
