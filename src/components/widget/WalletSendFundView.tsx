@@ -3,9 +3,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { debounce } from "throttle-debounce";
 import truncateEthAddress from "truncate-eth-address";
-import { Chain, erc20Abi, formatUnits, Hex, parseEther, zeroAddress } from "viem";
+import { Chain, erc20Abi, formatUnits, Hex, parseEther, zeroAddress, encodeFunctionData } from "viem";
 import { apeChain, curtis, mainnet } from "viem/chains";
-import { useChainId, useWriteContract } from "wagmi";
+import { useChainId } from "wagmi";
 import { CaretDownIcon } from "../../assets/svg/CaretDownIcon";
 import NoTokenIcon from "../../assets/svg/NoTokenIcon";
 import { useBalances } from "../../hooks/useBalances";
@@ -14,7 +14,7 @@ import { useGlyphApi } from "../../hooks/useGlyphApi";
 import { INTERNAL_GRADIENT_TYPE, SendView, IS_TESTNET_CHAIN, TESTNET_CLASS, TOKEN_LOGOS } from "../../lib/constants";
 import { formatCurrency } from "../../lib/intl";
 import { formatInputNumber } from "../../lib/numericInputs";
-import { publicClient } from "../../lib/providers";
+import { defaultChain, getPublicClient } from "../../lib/providers";
 import { cn, createLogger, displayNumberPrecision, ethereumAvatar, tokenToBigIntWei } from "../../lib/utils";
 import UserAvatar from "../shared/UserAvatar";
 import WalletViewHeader from "../shared/WalletViewHeader";
@@ -69,6 +69,8 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
 
     const { refreshBalances, balances } = useBalances();
 
+    const publicClient = useMemo(() => getPublicClient(chainId || defaultChain.id), [chainId]);
+
     const [view, setView] = useState<SendView>(SendView.ENTER_ADDRESS);
 
     const [tokenAddress, setTokenAddress] = useState<Hex>(zeroAddress);
@@ -97,8 +99,6 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
     const [txBlockExplorerUrl, setTxBlockExplorerUrl] = useState<string>();
     const [txBlockExplorerName, setTxBlockExplorerName] = useState<string>();
     const [txStatus, setTxStatus] = useState<"SUCCESS" | "FAILED" | "PENDING">("PENDING");
-
-    const { writeContractAsync } = useWriteContract();
 
     const logger = createLogger("SendFundView");
 
@@ -218,6 +218,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
         isSignaturePending,
         maxValueError,
         nativeToken,
+        publicClient,
         recipientAddress,
         tokenAddress,
         token,
@@ -626,18 +627,26 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                                 maxFeePerGas: quote?.maxFeePerGas,
                                                 maxPriorityFeePerGas: quote?.maxPriorityFeePerGas
                                             });
-                                            receipt = await writeContractAsync({
-                                                abi: erc20Abi,
-                                                functionName: "transfer",
-                                                account: user?.evmWallet as Hex,
-                                                address: tokenAddress as Hex,
-                                                args: [recipientAddress as Hex, quote?.receivable_amount],
-                                                chain: chainIdsMap[chainId] || apeChain,
-                                                // gas: quote?.gasLimit,
-                                                maxFeePerGas: txData?.request?.maxFeePerGas,
-                                                maxPriorityFeePerGas: txData?.request?.maxPriorityFeePerGas
-                                            });
-                                            hash_ = receipt;
+                                            try {
+                                                const data = encodeFunctionData({
+                                                    abi: erc20Abi,
+                                                    functionName: "transfer",
+                                                    args: [recipientAddress as Hex, quote?.receivable_amount],
+                                                });
+
+                                                receipt = await sendTransaction({
+                                                    transaction: {
+                                                        to: tokenAddress,
+                                                        data,
+                                                        maxFeePerGas: txData?.request?.maxFeePerGas,
+                                                        maxPriorityFeePerGas: txData?.request?.maxPriorityFeePerGas
+                                                    }
+                                                });
+                                                hash_ = typeof receipt === "object" ? receipt.hash : receipt;
+                                            } catch (error) {
+                                                logger.error("error sending txn", error);
+                                                throw error;
+                                            }
                                         }
                                         logger.debug("using tx", hash_);
                                         if (!glyphApiFetch) return toast.error("Glyph API not ready");

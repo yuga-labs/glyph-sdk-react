@@ -1,7 +1,6 @@
 import { PrivyProvider, type LoginMethodOrderOption, type PrivyProviderProps } from "@privy-io/react-auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { http, type Chain, type Transport } from "viem";
-
+import { fallback, http, webSocket, type Chain, type Transport } from "viem";
 import { createConfig, WagmiProvider } from "@privy-io/wagmi";
 import React, { useMemo } from "react";
 import { GlyphProvider } from "../../context/GlyphProvider.js";
@@ -54,14 +53,18 @@ export const GlyphPrivyProvider = React.memo(
                         transports ??
                         chains.reduce(
                             (acc, chain) => {
-                                acc[chain.id] = http();
+                                // this transport selection must match the one in providers.ts
+                                const ws = chain.rpcUrls?.default?.webSocket?.[0];
+                                const ht = chain.rpcUrls?.default?.http?.[0];
+                                const transports = [ws && webSocket(ws), ht && http(ht)].filter((x) => !!x);
+                                acc[chain.id] = transports.length ? fallback(transports) : http();
                                 return acc;
                             },
                             {} as Record<number, Transport>
                         ),
                     multiInjectedProviderDiscovery: false
                 }),
-            [chains, transports]
+            [chains, transports, ssr]
         );
 
         // if no login methods and order are provided, set the default login method to the privy app login method

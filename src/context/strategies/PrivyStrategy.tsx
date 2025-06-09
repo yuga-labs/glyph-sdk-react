@@ -6,7 +6,6 @@ import {
     WalletWithMetadata
 } from "@privy-io/react-auth";
 import { FC, memo, useCallback, useEffect, useState } from "react";
-import { apeChain } from "viem/chains";
 import { GLYPH_PRIVY_APP_ID, STAGING_GLYPH_PRIVY_APP_ID, WIDGET_API_BASE_URL } from "../../lib/constants";
 import { createLogger, isEthereumAddress } from "../../lib/utils";
 import { BaseGlyphProviderOptions } from "../../types";
