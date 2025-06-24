@@ -117,6 +117,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
             if (view !== SendView.ENTER_AMOUNT || isSignaturePending || maxValueError) return;
 
             if (
+                token &&
                 debouncedSendAmount &&
                 recipientAddress &&
                 tokenAddress &&
@@ -130,8 +131,8 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                 let gasUnits;
                 try {
                     const valueToSend =
-                        (transferMax || debouncedSendAmount === Number(token?.value || 0)) && token?.valueInWei
-                            ? BigInt(token?.valueInWei)
+                        (transferMax || debouncedSendAmount === Number(token.value || 0)) && token.valueInWei
+                            ? BigInt(token.valueInWei || 0)
                             : parseEther(`${debouncedSendAmount}`);
                     if (tokenAddress === zeroAddress) {
                         gasUnits = await publicClient.estimateGas({
@@ -162,9 +163,9 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                 // If user is sending native token and has selected max amount, we need to subtract the gas cost from the total balance
                 if (
                     tokenAddress === zeroAddress &&
-                    (transferMax || debouncedSendAmount === Number(token?.value || 0))
+                    (transferMax || debouncedSendAmount === Number(token.value || 0))
                 ) {
-                    valueToReturn = BigInt(token?.valueInWei || 0) - gasCost;
+                    valueToReturn = BigInt(token.valueInWei || 0) - gasCost;
                 } else {
                     // If user is sending ERC20 token, we need to use the amount entered by the user (true for max amount as well)
                     if (gasCost > BigInt(nativeToken?.valueInWei || 0)) {
@@ -172,14 +173,14 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                         setQuoteLoading(false);
                         return;
                     }
-                    valueToReturn = tokenToBigIntWei(debouncedSendAmount, token?.decimals || 18);
+                    valueToReturn = transferMax ? BigInt(token.valueInWei || 0) : tokenToBigIntWei(debouncedSendAmount, token.decimals || 18);
                 }
 
                 const maxPriorityFeePerGas = maxFeePerGas / 2n;
 
                 const receivableAmountInToken = displayNumberPrecision(
-                    +formatUnits(valueToReturn, token?.decimals || 18),
-                    token?.displayDecimals
+                    +formatUnits(valueToReturn, token.decimals || 18),
+                    token.displayDecimals
                 );
 
                 setQuote({
@@ -190,7 +191,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                     receivable_amount: valueToReturn,
                     receivable_amount_in_token: receivableAmountInToken,
                     receivable_amount_in_currency: displayNumberPrecision(
-                        receivableAmountInToken * +(token?.rateInCurrency || 0)
+                        receivableAmountInToken * +(token.rateInCurrency || 0)
                     ),
                     estimated_fees_amount: formatUnits(gasCost, nativeToken?.decimals || 18),
                     estimated_fees_amount_in_currency: displayNumberPrecision(
@@ -660,6 +661,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                             setView(SendView.WAIT);
                                         } else setError("Failed to send transaction");
                                     } catch (error) {
+                                        logger.error("error sending txn", error);
                                         setError("Request rejected or failed");
                                         toast.error("Request rejected or failed");
                                     } finally {

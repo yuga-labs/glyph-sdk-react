@@ -5,6 +5,7 @@ import WAPEIcon from "../assets/svg/APE_WAPE";
 import APEIcon from "../assets/svg/APEIcon";
 import ETH from "../assets/svg/ETH";
 import ApechainIcon from "../assets/svg/ApechainIcon";
+import USDCIcon from "../assets/svg/USDCIcon";
 
 export const DASHBOARD_BASE_URL = process.env.DASHBOARD_BASE_URL;
 export const GLYPH_PRIVY_APP_ID = process.env.PROVIDER_PRIVY_APP_ID;
@@ -61,7 +62,8 @@ export const TOKEN_LOGOS: Record<string, React.FC<React.SVGProps<SVGSVGElement>>
     ApeUSD: APE_USD,
     WAPE: WAPEIcon,
     wAPE: WAPEIcon,
-    ETH: ETH
+    ETH: ETH,
+    USDC: USDCIcon
 };
 
 export const TESTNET_CLASS = "gw-grayscale";

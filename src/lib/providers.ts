@@ -1,10 +1,10 @@
 import { Chain, createPublicClient, fallback, http, PublicClient, webSocket } from "viem";
-import { apeChain, curtis, mainnet } from "viem/chains";
+import { apeChain, base, curtis, mainnet } from "viem/chains";
 import { createLogger } from "./utils";
 
 const logger = createLogger("providers");
 
-export const supportedChains: [Chain, ...Chain[]] = [apeChain, mainnet, curtis];
+export const supportedChains: [Chain, ...Chain[]] = [apeChain, mainnet, curtis, base];
 export const supportedChainIds = supportedChains.map((chain) => chain.id);
 export const defaultChain: Chain = supportedChains.find((chain) => chain.id === apeChain.id)!;
 

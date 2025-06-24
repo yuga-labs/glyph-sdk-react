@@ -5,7 +5,7 @@ import {
 	useGlyphView,
 } from "@use-glyph/sdk-react";
 import React, { useState } from "react";
-import { apeChain, curtis, mainnet } from "viem/chains";
+import { apeChain, base, curtis, mainnet } from "viem/chains";
 import { useChainId, useSignMessage, useSwitchChain } from "wagmi";
 import GlyphIcon from "./assets/GlyphIcon";
 import GlyphWordmark from "./assets/GlyphWordmark";
@@ -24,9 +24,8 @@ const Consumer: React.FC = () => {
 
 	const handleSwitchChain = async (chainId: number) => {
 		setLoading(true);
-		await switchChainAsync({
-			chainId: chainId,
-		});
+		console.log("switchChainAsync", chainId);
+		await switchChainAsync({chainId});
 		setLoading(false);
 	};
 
@@ -141,11 +140,28 @@ const Consumer: React.FC = () => {
 														"Switching..."
 													) : (
 														<span className="flex items-center justify-center gap-2 sm:gap-1">
-															{`Switch to Ethereum`}
+															{chainId === mainnet.id ? `Already on Ethereum` : `Switch to Ethereum`}
 														</span>
 													)}
 												</button>
 											}
+											{/* switch to base mainnet */}
+											{
+												<button
+													className="h-12 px-4 border rounded-full sm:min-w-44"
+													onClick={async () => await handleSwitchChain(base.id)}
+													disabled={loading || chainId === base.id}
+												>
+													{loading ? (
+														"Switching..."
+													) : (
+														<span className="flex items-center justify-center gap-2 sm:gap-1">
+															{chainId === base.id ? `Already on Base` : `Switch to Base`}
+														</span>
+													)}
+												</button>
+											}
+											{/* logout */}
 											<button
 												onClick={logout}
 												className="h-12 px-4 text-black bg-white rounded-full sm:min-w-44"

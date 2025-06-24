@@ -3,13 +3,13 @@ import { createConfig, WagmiProvider } from "@privy-io/wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GlyphProvider, StrategyType } from "@use-glyph/sdk-react";
 import { Chain, http, Transport } from "viem";
-import { apeChain, curtis, mainnet } from "viem/chains";
+import { apeChain, base, curtis, mainnet } from "viem/chains";
 import "./App.css";
 import Consumer from "./consumer";
 
 const queryClient = new QueryClient();
 
-const supportedChains: [Chain, ...Chain[]] = [apeChain, curtis, mainnet];
+const supportedChains: [Chain, ...Chain[]] = [apeChain, curtis, mainnet, base];
 const defaultChain = apeChain;
 
 const wagmiConfig = createConfig({
