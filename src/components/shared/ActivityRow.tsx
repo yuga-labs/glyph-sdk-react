@@ -5,6 +5,7 @@ import { cn } from "../../lib/utils";
 export interface ActivityRowProps {
     data: {
         type: string;
+        type_text: string;
         status: string;
         value: string;
         amount: string;
@@ -29,7 +30,7 @@ export function ActivityRow({ data }: ActivityRowProps) {
             </div>
             <div className="gw-flex gw-justify-between gw-items-center gw-flex-1">
                 <div className="gw-flex gw-flex-col gw-text-start">
-                    <div className="gw-font-medium gw-capitalize">{data.type}</div>
+                    <div className="gw-font-medium gw-capitalize">{data.type_text || data.type}</div>
                     <div
                         className={cn(
                             "gw-typography-caption",

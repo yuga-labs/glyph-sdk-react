@@ -123,6 +123,7 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
                                                             data={{
                                                                 status: t.status,
                                                                 type: t.type,
+                                                                type_text: t.type_text,
                                                                 value: t.value,
                                                                 amount: t.amount,
                                                                 amount_currency: t.amount_currency
