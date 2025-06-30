@@ -10,6 +10,7 @@ export interface ActivityRowProps {
         value: string;
         amount: string;
         amount_currency: string;
+        name_on_list: string | null;
     };
 }
 
@@ -44,9 +45,10 @@ export function ActivityRow({ data }: ActivityRowProps) {
                         {data.status}
                     </div>
                 </div>
-                <div className="gw-flex gw-flex-col gw-text-end">
+                {/* around 10 chars width, plus `...`*/}
+                <div className="gw-w-[33%] gw-flex gw-flex-col gw-text-end">
                     <div className="gw-font-medium">{data.value}</div>
-                    <div className="gw-typography-caption gw-text-brand-gray-500">{`${formatCurrency(data.amount, data.amount_currency)}`}</div>
+                    <div className="gw-typography-caption gw-text-brand-gray-500 gw-line-clamp-1 gw-truncate">{`${data.name_on_list !== null ? data.name_on_list.toUpperCase() : formatCurrency(data.amount, data.amount_currency)}`}</div>
                 </div>
             </div>
         </div>

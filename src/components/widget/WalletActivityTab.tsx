@@ -126,11 +126,19 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
                                                                 type_text: t.type_text,
                                                                 value: t.value,
                                                                 amount: t.amount,
-                                                                amount_currency: t.amount_currency
+                                                                amount_currency: t.amount_currency,
+                                                                name_on_list: t.name_on_list
                                                             }}
                                                         />
                                                     </AccordionTrigger>
                                                     <AccordionContent>
+                                                        {
+                                                            t.detail_rows?.length ? (
+                                                                <div className="gw-w-[50%] gw-flex gw-flex-col gw-space-y-1 gw-px-3 gw-text-brand-gray-500">
+                                                                    {t.detail_rows?.map?.((row) => (<div className="gw-line-clamp-1 gw-truncate">{row.toUpperCase()}</div>))}
+                                                                </div>
+                                                            ) : null
+                                                        }
                                                         {t.blockExplorerTxns?.length ? (
                                                             <div className="gw-flex gw-flex-col gw-items-start gw-space-y-1 gw-mb-2">
                                                                 {t.blockExplorerTxns?.map?.((tx) => (

@@ -19,7 +19,9 @@ export type ActivityItem = {
     value: string;
     amount: string;
     amount_currency: string;
+    name_on_list: string | null;
     allowIdCopy: boolean;
+    detail_rows: string[];
     blockExplorerTxns?: ActivityBlockExplorerItem[];
 };
 
