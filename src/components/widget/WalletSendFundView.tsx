@@ -659,6 +659,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                             setTxHash(hash_);
                                             setError(null);
                                             setView(SendView.WAIT);
+                                            await refreshBalances(true);
                                         } else setError("Failed to send transaction");
                                     } catch (error) {
                                         logger.error("error sending txn", error);

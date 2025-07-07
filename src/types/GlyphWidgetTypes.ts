@@ -63,8 +63,24 @@ export type GlyphWidgetTokenBalancesItem = {
     priceChangePct: number;
 };
 
-export type GlyphWidgetNFTBalancesItem = GlyphWidgetTokenBalancesItem & {
-    image: string;
+export type GlyphWidgetNFTBalancesItem = {
+    address: Hex;
+    name: string;
+    symbol: string;
+    image: string | null;
+    items: {
+        tokenId: string;
+        name: string;
+        balance: string;
+        image?: {
+            cachedUrl: string;
+            thumbnailUrl: string;
+            pngUrl: string;
+            contentType: string;
+            size: number;
+            originalUrl: string;
+        };
+    }[];
 };
 
 export type GlyphWidgetBalances = {

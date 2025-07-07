@@ -7,6 +7,7 @@ import { WalletActivityTab } from "./WalletActivityTab";
 import { WalletHomeTab } from "./WalletHomeTab";
 import { WalletLinkedAccountsTab } from "./WalletLinkedAccountsTab";
 import { WalletTokensTab } from "./WalletTokensTab";
+import { WalletNFTsTab } from "./WalletNFTsTab";
 
 export type WalletMainProps = {
     onProfileClick: () => void;
@@ -49,13 +50,13 @@ export function WalletMainView({
                         <WalletHomeTab onAddFunds={onAddFunds} onReceive={onReceive} onSend={onSendFunds} />
                     )}
                     {/* Activity Tab */}
-                    {activeMainViewScreen === WalletMainViewTab.ACTIVITY && (
-                        <WalletActivityTab expandFirst={expandFirstActivityRow} />
-                    )}
+                    {activeMainViewScreen === WalletMainViewTab.ACTIVITY && (<WalletActivityTab expandFirst={expandFirstActivityRow} />)}
                     {/* Linked Accounts Tab */}
                     {activeMainViewScreen === WalletMainViewTab.LINKED_ACCOUNTS && <WalletLinkedAccountsTab />}
                     {/* Tokens Tab */}
                     {activeMainViewScreen === WalletMainViewTab.TOKENS && <WalletTokensTab />}
+                    {/* NFTs Tab */}
+                    {activeMainViewScreen === WalletMainViewTab.NFTS && <WalletNFTsTab />}
                 </>
             }
             footer={<WalletViewFooterNav tab={activeMainViewScreen} setTab={setActiveMainViewScreen} />}

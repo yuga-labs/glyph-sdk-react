@@ -7,6 +7,7 @@ import WalletsTabOutlinedIcon from "../../assets/svg/WalletsTabOutlinedIcon";
 import { useGlyph } from "../../hooks/useGlyph";
 import { WalletMainViewTab } from "../../lib/constants";
 import { cn } from "../../lib/utils";
+import NFTsIcon from "../../assets/svg/NFTsIcon";
 
 interface WalletViewFooterNavProps {
     tab: WalletMainViewTab;
@@ -40,6 +41,11 @@ const WalletViewFooterNav: React.FC<WalletViewFooterNavProps> = ({ tab, setTab }
                     )}
                 />
                 <span className="gw-sr-only">Tokens</span>
+            </button>
+
+            <button className="tab" onClick={() => setTab(WalletMainViewTab.NFTS)}>
+                <NFTsIcon selected={tab === WalletMainViewTab.NFTS} />
+                <span className="gw-sr-only">NFTs</span>
             </button>
 
             {/* Only show Wallets tab button for Glyph users */}

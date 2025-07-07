@@ -33,6 +33,7 @@ export enum WalletMainViewTab {
     HOME = "home",
     ACTIVITY = "activity",
     TOKENS = "tokens",
+    NFTS = "nfts",
     LINKED_ACCOUNTS = "linked-accounts"
 }
 
