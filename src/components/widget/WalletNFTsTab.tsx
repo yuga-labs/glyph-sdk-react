@@ -1,21 +1,38 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@radix-ui/react-accordion";
+import { useState } from "react";
 import NoTokenIcon from "../../assets/svg/NoTokenIcon";
 import { useBalances } from "../../hooks/useBalances";
 import ExpandItemIcon from "../../assets/svg/ExpandItemIcon";
-import { useState } from "react";
+import { Button } from "../ui/button";
+import { useGlyph } from "../../hooks/useGlyph";
 
 export function WalletNFTsTab() {
+    const { glyphUrl } = useGlyph();
     const { balances } = useBalances();
     const [expandedItemId, setExpandedItemId] = useState<string | undefined>(undefined);
     const nfts = balances?.nfts || [];
 
+    const nftsURL = new URL("/nfts", glyphUrl).toString();
+
     return (
         <div className="gw-p-4">
-            <div className="gw-flex gw-items-center gw-justify-between">
+            <div className="gw-flex gw-flex-row gw-justify-between gw-items-center gw-w-full">
                 <h6>My NFTs</h6>
+                <Button variant={"default"} size={"xsm"} className="gw-brand-forest !gw-justify-start"
+                onClick={() => {window.open(nftsURL, "_blank");}}>
+                    <span className="gw-flex gw-items-center gw-gap-1 gw-w-full">
+                        <span className="gw-flex-1 gw-text-center">Dashboard</span>
+                    </span>
+                </Button>
             </div>
 
             <div className="gw-grid gw-grid-cols-1 gw-mt-2">
+                {nfts.length > 0 &&
+                    <div className="gw-flex gw-justify-center gw-w-full gw-mb-2 gw-text-brand-gray-500 gw-typography-body2">
+                        Need to transfer? Go to Glyph Dashboard
+                    </div>
+                }
+
                 {nfts.length > 0 && 
                     <Accordion 
                         type="single" 
@@ -66,7 +83,7 @@ export function WalletNFTsTab() {
                     </Accordion>
                 }
                 {nfts.length === 0 && (
-                    <div className="gw-flex gw-items-center gw-w-full gw-mt-2 gw-text-brand-gray-500 gw-typography-body2">
+                    <div className="gw-flex gw-justify-center gw-w-full gw-mt-2 gw-text-brand-gray-500 gw-typography-body2">
                         No NFTs found
                     </div>
                 )}

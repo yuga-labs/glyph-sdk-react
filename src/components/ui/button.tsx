@@ -21,6 +21,7 @@ const buttonVariantsClasses = cva(
             },
             size: {
                 default: "gw-h-12 gw-px-4 gw-py-3 gw-typography-body1",
+                xsm: "gw-h-7 gw-px-2 gw-text-xs",
                 sm: "gw-h-10 gw-px-3 gw-typography-body1",
                 lg: "gw-h-14 gw-px-8 gw-typography-body1",
                 icon: "gw-h-12 gw-w-10 gw-typography-body1",
