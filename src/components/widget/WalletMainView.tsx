@@ -49,14 +49,14 @@ export function WalletMainView({
                     {activeMainViewScreen === WalletMainViewTab.HOME && (
                         <WalletHomeTab onAddFunds={onAddFunds} onReceive={onReceive} onSend={onSendFunds} />
                     )}
-                    {/* Activity Tab */}
-                    {activeMainViewScreen === WalletMainViewTab.ACTIVITY && (<WalletActivityTab expandFirst={expandFirstActivityRow} />)}
-                    {/* Linked Accounts Tab */}
-                    {activeMainViewScreen === WalletMainViewTab.LINKED_ACCOUNTS && <WalletLinkedAccountsTab />}
                     {/* Tokens Tab */}
                     {activeMainViewScreen === WalletMainViewTab.TOKENS && <WalletTokensTab />}
                     {/* NFTs Tab */}
                     {activeMainViewScreen === WalletMainViewTab.NFTS && <WalletNFTsTab />}
+                    {/* Linked Accounts Tab */}
+                    {activeMainViewScreen === WalletMainViewTab.LINKED_ACCOUNTS && <WalletLinkedAccountsTab />}
+                    {/* Activity Tab */}
+                    {activeMainViewScreen === WalletMainViewTab.ACTIVITY && (<WalletActivityTab expandFirst={expandFirstActivityRow} />)}
                 </>
             }
             footer={<WalletViewFooterNav tab={activeMainViewScreen} setTab={setActiveMainViewScreen} />}

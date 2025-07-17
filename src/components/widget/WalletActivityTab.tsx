@@ -65,7 +65,7 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
     }, [handleScroll]);
 
     return (
-        <div className="gw-p-4">
+        <div className="gw-pl-4 gw-pt-4 gw-flex gw-flex-col gw-h-full">
             <div className="gw-flex gw-items-center gw-justify-between">
                 <a
                     href={user?.blockExplorerUrl || `https://apescan.io/address/${user?.evmWallet}`}
@@ -85,7 +85,7 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
                 />
             </div>
 
-            <div className="gw-grid gw-grid-cols-1 gw-mt-2">
+            <div className="gw-grid gw-grid-cols-1 gw-mt-2 gw-flex-1 gw-overflow-auto gw-pr-4 gw-min-h-0">
                 {isLoading && totalTransactions === 0 ? (
                     // initial loading state
                     new Array(3).fill(null).map((_, index) => {
@@ -196,7 +196,7 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
                         )}
                     </>
                 ) : (
-                    <div className="gw-flex gw-items-center gw-w-full gw-mt-2 gw-text-brand-gray-500 gw-typography-body2">
+                    <div className="gw-flex gw-justify-center gw-items-center gw-flex-1 gw-text-brand-gray-500 gw-typography-body2">
                         No transactions
                     </div>
                 )}

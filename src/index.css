@@ -264,12 +264,12 @@
 
     /* The Wallet View Content */
     .gw-wallet-content {
-        @apply gw-flex-nowrap gw-flex-1 gw-w-full gw-overflow-auto gw-brand-scroll;
+        @apply gw-flex-nowrap gw-flex-1 gw-w-full gw-overflow-auto;
     }
 
     /* The Wallet View Footer (For Nav) */
     .gw-wallet-footer-nav {
-        @apply gw-flex gw-justify-evenly gw-px-4 gw-py-8 md:gw-justify-between gw-w-full md:gw-py-8 md:gw-px-10 gw-flex-shrink-0;
+        @apply gw-flex gw-justify-evenly gw-px-4 gw-pb-4 gw-pt-2 md:gw-justify-between gw-w-full md:gw-px-8 md:gw-pb-8 md:gw-py-4 gw-flex-shrink-0;
     }
 
     /* The Wallet View Footer (Simple) */

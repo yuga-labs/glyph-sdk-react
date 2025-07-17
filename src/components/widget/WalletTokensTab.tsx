@@ -13,16 +13,16 @@ export function WalletTokensTab() {
     const totalValue = tokens.reduce((acc, token) => acc + +(token.amount || 0), 0);
 
     return (
-        <div className="gw-p-4">
+        <div className="gw-pl-4 gw-pt-4 gw-flex gw-flex-col gw-h-full">
             {/* Balance */}
-            <div className="gw-flex gw-justify-between gw-items-center gw-w-full">
+            <div className="gw-flex gw-justify-between gw-items-center gw-w-full gw-pr-4">
                 <h6>Tokens</h6>
                 <div className="gw-typography-body2">
                     <span className="amount">{formatCurrency(totalValue, tokens[0]?.currency)}</span>
                 </div>
             </div>
 
-            <div className="gw-grid gw-grid-cols-1 gw-mt-6">
+            <div className="gw-grid gw-grid-cols-1 gw-mt-2 gw-max-h-100 gw-min-h-0 gw-overflow-auto gw-pr-4 gw-min-h-0">
                 {tokens.map((t, index) => {
                     if (t?.hide) return null;
                     const TokenIcon = TOKEN_LOGOS[t.symbol] || NoTokenIcon;
@@ -53,7 +53,7 @@ export function WalletTokensTab() {
                                     </span>
                                 </div>
                             </div>
-                            {index < tokens.length - 1 && <hr className="gw-my-3 gw-border-muted" />}
+                            {index < tokens.length - 1 && <hr className="gw-my-2 gw-border-muted" />}
                         </div>
                     );
                 })}

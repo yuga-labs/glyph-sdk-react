@@ -17,11 +17,13 @@ const buttonVariantsClasses = cva(
                     "gw-bg-brand-deep-moss hover:gw-bg-brand-deep-moss-light active:gw-bg-brand-deep-moss-dark gw-text-background",
                 ghost: "gw-text-primary hover:gw-bg-accent hover:gw-text-accent-foreground",
                 link: "gw-text-secondary hover:gw-text-secondary-light active:gw-text-secondary-dark gw-underline-offset-4 hover:gw-underline",
+                "link-inline": "gw-text-secondary hover:gw-text-secondary-light active:gw-text-secondary-dark gw-underline-offset-4 gw-underline",
                 cube: "gw-bg-brand-white gw-text-brand-gray-black [&_svg]:gw-text-secondary [&_svg]:hover:gw-text-secondary-light [&_svg]:active:gw-text-secondary-dark"
             },
             size: {
                 default: "gw-h-12 gw-px-4 gw-py-3 gw-typography-body1",
-                xsm: "gw-h-7 gw-px-2 gw-text-xs",
+                xs: "gw-h-7 gw-px-2 gw-typography-body2",
+                "xs-inline": "gw-h-7 gw-px-1 gw-typography-body2",
                 sm: "gw-h-10 gw-px-3 gw-typography-body1",
                 lg: "gw-h-14 gw-px-8 gw-typography-body1",
                 icon: "gw-h-12 gw-w-10 gw-typography-body1",
