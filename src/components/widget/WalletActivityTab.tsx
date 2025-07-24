@@ -66,7 +66,7 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
 
     return (
         <div className="gw-pl-4 gw-pt-4 gw-flex gw-flex-col gw-h-full">
-            <div className="gw-flex gw-items-center gw-justify-between">
+            <div className="gw-flex gw-items-center gw-justify-between gw-pr-4">
                 <a
                     href={user?.blockExplorerUrl || `https://apescan.io/address/${user?.evmWallet}`}
                     target="_blank"

@@ -5,6 +5,22 @@ import { useBalances } from "../../hooks/useBalances";
 import ExpandItemIcon from "../../assets/svg/ExpandItemIcon";
 import { useGlyph } from "../../hooks/useGlyph";
 import { buttonVariants } from "../ui/button";
+import { GlyphWidgetNFTBalancesItem } from "../../types";
+import { NFTImgFail } from "../../assets/svg/NFTImgFail";
+
+const NFTImg = (t: GlyphWidgetNFTBalancesItem) => {
+    const [imgErr, setImgErr] = useState(false);
+
+    const CollectionImg = t.image ? 
+        <img
+            src={t.image}
+            alt={t.name}
+            className="gw-w-10 gw-h-10 gw-object-cover gw-rounded-md gw-block"
+            onError={() => setImgErr(true)}
+        /> : <NoTokenIcon width="40" height="40" className="border-radius: 5px;"/>;
+
+    return imgErr ? <NFTImgFail /> : CollectionImg;
+}
 
 export function WalletNFTsTab() {
     const { glyphUrl } = useGlyph();
@@ -32,26 +48,19 @@ export function WalletNFTsTab() {
                             onValueChange={setExpandedItemId}
                         >
                         {nfts.map((t, idx) => {
-                            const CollectionImg = t.image ? <img
-                                src={t.image}
-                                alt={t.name}
-                                className="gw-w-10 gw-h-10 gw-object-cover gw-rounded-md gw-block"
-                                onError={(e) => {e.currentTarget.src = t.items[0].image?.thumbnailUrl || "";}}
-                            /> : <NoTokenIcon width="40" height="40" className="border-radius: 5px;"/>;
-
                             return (
                                 <div key={idx.toString()}>
                                     <AccordionItem value={idx.toString()} className="gw-pr-4">
                                         <AccordionTrigger asChild>
                                             <div className="gw-flex gw-justify-between gw-items-center gw-w-full gw-py-2 gw-cursor-pointer">
                                                 <div className="gw-flex gw-items-center gw-space-x-3 gw-min-w-0 gw-flex-1">
-                                                    <div className="gw-flex-shrink-0">{CollectionImg}</div>
+                                                    <div className="gw-flex-shrink-0">{NFTImg(t)}</div>
                                                     <span className="gw-text-sm gw-line-clamp-1 gw-truncate gw-letter-spacing-0.12 gw-min-w-0 gw-max-w-[75%]">
                                                         {t.name.toLocaleUpperCase()}
                                                     </span>
                                                 </div>
                                                 <div className="gw-flex gw-flex-col gw-items-between gw-justify-end gw-text-end gw-flex-shrink-0">
-                                                    <ExpandItemIcon className={`${expandedItemId === idx.toString() ? 'gw-rotate-180' : ''}`} />
+                                                    <ExpandItemIcon className={`${expandedItemId === idx.toString() ? '' : 'gw-rotate-180'}`} />
                                                 </div>
                                             </div>
                                         </AccordionTrigger>
