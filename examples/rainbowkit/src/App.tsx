@@ -12,14 +12,14 @@ import {
 import "@rainbow-me/rainbowkit/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Chain, http, Transport } from "viem";
-import { apeChain, curtis } from "viem/chains";
+import { apeChain, base, curtis, mainnet } from "viem/chains";
 import { createConfig, WagmiProvider } from "wagmi";
 import "./App.css";
 import Consumer from "./consumer";
 
 const queryClient = new QueryClient();
 
-const supportedChains: [Chain, ...Chain[]] = [apeChain, curtis];
+const supportedChains: [Chain, ...Chain[]] = [apeChain, curtis, mainnet, base];
 
 const connectors = connectorsForWallets(
 	[

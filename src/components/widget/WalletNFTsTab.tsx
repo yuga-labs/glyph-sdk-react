@@ -56,7 +56,7 @@ export function WalletNFTsTab() {
                                                 <div className="gw-flex gw-items-center gw-space-x-3 gw-min-w-0 gw-flex-1">
                                                     <div className="gw-flex-shrink-0">{NFTImg(t)}</div>
                                                     <span className="gw-text-sm gw-line-clamp-1 gw-truncate gw-letter-spacing-0.12 gw-min-w-0 gw-max-w-[75%]">
-                                                        {t.name.toLocaleUpperCase()}
+                                                        {t.name?.toLocaleUpperCase?.() || t.symbol || ""}
                                                     </span>
                                                 </div>
                                                 <div className="gw-flex gw-flex-col gw-items-between gw-justify-end gw-text-end gw-flex-shrink-0">

@@ -4,6 +4,7 @@ import {
 	LoginButton,
 	SignUpButton,
 	useGlyph,
+	useGlyphTokenGate,
 	useGlyphView,
 } from "@use-glyph/sdk-react";
 import React, { useState } from "react";
@@ -18,10 +19,12 @@ import { SignMessageBtn } from "./SignMessageBtn";
 const Consumer: React.FC = () => {
 	const { authenticated, ready, signMessage, logout } = useGlyph();
 	const { signMessageAsync } = useSignMessage();
+	const { checkTokenGate, isTokenGateLoading } = useGlyphTokenGate();
 	const { setGlyphView } = useGlyphView();
 	const [loading, setLoading] = useState(false);
 	const chainId = useChainId();
 	const { switchChainAsync } = useSwitchChain();
+	const [contractAddress, setContractAddress] = useState<string>("");
 
 	const handleSwitchChain = async (chainId: number) => {
 		setLoading(true);
@@ -29,6 +32,12 @@ const Consumer: React.FC = () => {
 			chainId: chainId,
 		});
 		setLoading(false);
+	};
+
+	const handleTokenGate = async () => {
+		const tokenOwnership = await checkTokenGate({ contractAddress: contractAddress });
+		if (tokenOwnership.error) return alert(`Tokengate error: ${tokenOwnership.error}`);
+		alert(tokenOwnership.result ? "Token owned" : "Token not owned");
 	};
 
 	return (
@@ -198,6 +207,29 @@ const Consumer: React.FC = () => {
 												onClick={() => setGlyphView(GlyphView.ACTIVITY)}
 											>
 												Activity
+											</button>
+										</div>
+
+										{/* test token gate */}
+										<div className="flex flex-col items-center justify-center gap-4 mt-4 text-center">
+											<p className="text-sm max-w-96">
+												Test the token gate by checking if you own a specific token. You can switch to another chain using the buttons above.
+											</p>
+										</div>
+										<div className="flex flex-col items-center justify-center gap-4 mt-4 text-center">
+											<input 
+												type="text" 
+												placeholder="Contract address" 
+												value={contractAddress} 
+												onChange={(e) => setContractAddress(e.target.value)} 
+												className="w-full p-2 border rounded-md text-black"
+											/>
+											<button 
+												onClick={()=> handleTokenGate()}
+												className="w-full p-2 border rounded-md"
+												disabled={isTokenGateLoading || !contractAddress}
+											>
+												{isTokenGateLoading ? "Checking..." : "Check token ownership"}
 											</button>
 										</div>
 									</>

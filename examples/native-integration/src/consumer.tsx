@@ -4,11 +4,12 @@ import {
 	NativeGlyphConnectButton,
 	SignUpButton,
 	useGlyph,
+	useGlyphTokenGate,
 	useGlyphView,
 	useNativeGlyphConnection,
 } from "@use-glyph/sdk-react";
 import React, { useEffect, useState } from "react";
-import { apeChain, curtis } from "viem/chains";
+import { apeChain, base, curtis, mainnet } from "viem/chains";
 import { useAccount, useChainId, useSwitchChain } from "wagmi";
 import GlyphIcon from "./assets/GlyphIcon";
 import GlyphWordmark from "./assets/GlyphWordmark";
@@ -26,6 +27,8 @@ const Consumer: React.FC = () => {
 		user,
 		logout,
 	} = useGlyph();
+	const { checkTokenGate, isTokenGateLoading } = useGlyphTokenGate();
+	const [contractAddress, setContractAddress] = useState<string>("");
 
 	const handleWidgetLogin = async () => {
 		setLoginLoading(true);
@@ -52,6 +55,12 @@ const Consumer: React.FC = () => {
 			chainId: chainId,
 		});
 		setLoading(false);
+	};
+
+	const handleTokenGate = async () => {
+		const tokenOwnership = await checkTokenGate({ contractAddress });
+		if (tokenOwnership.error) return alert(`Tokengate error: ${tokenOwnership.error}`);
+		alert(tokenOwnership.result ? "Token owned" : "Token not owned");
 	};
 
 	return (
@@ -118,23 +127,55 @@ const Consumer: React.FC = () => {
 											Sign Message
 										</button>
 										<button
-											onClick={async () => {
-												await handleSwitchChain(
-													chainId === apeChain.id ? curtis.id : apeChain.id
-												);
-											}}
-											className="h-12 px-4 border rounded-full sm:min-w-44"
-											disabled={loading}
-										>
-											{loading ? (
-												"Switching..."
-											) : (
-												<span className="flex items-center justify-center gap-2 sm:gap-1">
-													{`Switch to`}{" "}
-													{chainId === apeChain.id ? "Curtis" : "ApeChain"}
-												</span>
-											)}
-										</button>
+												onClick={async () => {
+													await handleSwitchChain(
+														chainId === apeChain.id ? curtis.id : apeChain.id
+													);
+												}}
+												className="h-12 px-4 border rounded-full sm:min-w-44"
+												disabled={loading}
+											>
+												{loading ? (
+													"Switching..."
+												) : (
+													<span className="flex items-center justify-center gap-2 sm:gap-1">
+														{`Switch to`}{" "}
+														{chainId === apeChain.id ? "Curtis" : "ApeChain"}
+													</span>
+												)}
+											</button>
+											{/* switch to ethereum mainnet */}
+											{
+												<button
+													className="h-12 px-4 border rounded-full sm:min-w-44"
+													onClick={async () => await handleSwitchChain(mainnet.id)}
+													disabled={loading || chainId === mainnet.id}
+												>
+													{loading ? (
+														"Switching..."
+													) : (
+														<span className="flex items-center justify-center gap-2 sm:gap-1">
+															{chainId === mainnet.id ? `Already on Ethereum` : `Switch to Ethereum`}
+														</span>
+													)}
+												</button>
+											}
+											{/* switch to base mainnet */}
+											{
+												<button
+													className="h-12 px-4 border rounded-full sm:min-w-44"
+													onClick={async () => await handleSwitchChain(base.id)}
+													disabled={loading || chainId === base.id}
+												>
+													{loading ? (
+														"Switching..."
+													) : (
+														<span className="flex items-center justify-center gap-2 sm:gap-1">
+															{chainId === base.id ? `Already on Base` : `Switch to Base`}
+														</span>
+													)}
+												</button>
+											}
 										<button
 											onClick={logout}
 											className="h-12 px-4 text-black bg-white rounded-full sm:min-w-44"
@@ -212,6 +253,30 @@ const Consumer: React.FC = () => {
 												>
 													Activity
 												</button>
+												<span></span>
+
+												{/* test token gate */}
+												<div className="flex flex-col items-center justify-center gap-4 mt-4 text-center">
+													<p className="text-sm max-w-96">
+														Test the token gate by checking if you own a specific token. You can switch to another chain using the buttons above.
+													</p>
+												</div>
+												<div className="flex flex-col items-center justify-center gap-4 mt-4 text-center">
+													<input 
+														type="text" 
+														placeholder="Contract address" 
+														value={contractAddress} 
+														onChange={(e) => setContractAddress(e.target.value)} 
+														className="w-full p-2 border rounded-md text-black"
+													/>
+													<button 
+														onClick={()=> handleTokenGate()}
+														className="w-full p-2 border rounded-md"
+														disabled={isTokenGateLoading || !contractAddress}
+													>
+														{isTokenGateLoading ? "Checking..." : "Check token ownership"}
+													</button>
+												</div>
 											</>
 										) : (
 											<button

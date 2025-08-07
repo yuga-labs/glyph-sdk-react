@@ -7,6 +7,13 @@ import { GlyphProvider } from "./context/GlyphProvider";
 export { useBalances } from "./hooks/useBalances";
 export { useGlyph } from "./hooks/useGlyph";
 export { useGlyphFunding, type GLYPH_FUND_STATUS } from "./hooks/useGlyphFunding";
+export { 
+    useGlyphTokenGate, 
+    useGlyphOwnershipCheck, 
+    type GlyphOwnershipCheckRequest, 
+    type GlyphTokenGateResult, 
+    type GlyphOwnershipCheckResult 
+} from "./hooks/useGlyphTokenGate";
 export { useGlyphView } from "./hooks/useGlyphView";
 export { glyphConnectorDetails } from "./lib/constants";
 export { GlyphViewType as GlyphView, StrategyType, WalletClientType } from "./types";
