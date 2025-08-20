@@ -9,6 +9,7 @@ import UserAvatar from "./UserAvatar";
 import { useChainId } from "wagmi";
 import { CHAIN_ICONS, IS_TESTNET_CHAIN, TESTNET_CLASS } from "../../lib/constants";
 import { cn } from "../../lib/utils";
+//import { Select, SelectTrigger, SelectContent, SelectItem } from "../ui/select";
 
 interface WalletViewHeaderProps {
     fullScreenHeader?: {
@@ -22,6 +23,7 @@ interface WalletViewHeaderProps {
 const WalletViewHeader: React.FC<WalletViewHeaderProps> = ({ fullScreenHeader, onProfileClick }) => {
     const { user } = useGlyph();
     const chainId = useChainId();
+    //const { switchChain } = useSwitchChain();
 
     const isTestnet = IS_TESTNET_CHAIN.get(chainId) || false;
     const ChainIcon = CHAIN_ICONS[chainId] || ApechainIcon;
@@ -75,6 +77,27 @@ const WalletViewHeader: React.FC<WalletViewHeaderProps> = ({ fullScreenHeader, o
                 </div>
 
                 <ChainIcon className={cn("gw-size-9", isTestnet && TESTNET_CLASS)} />
+                {/* TODO: add chain selector
+                <Select
+                    value={chainId.toString()}
+                    onValueChange={(value) => switchChain({ chainId: Number(value) })}
+                >
+                    <SelectTrigger>
+                        <ChainIcon className={cn("gw-size-9", isTestnet && TESTNET_CLASS)} />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {Object.entries(CHAIN_ICONS).reverse().map(([chainId_, Icon], idx) => {
+                            return (
+                                <div key={chainId_}>
+                                    <SelectItem key={chainId_} value={chainId_.toString()}>
+                                        <Icon className={cn("gw-size-9", IS_TESTNET_CHAIN.get(Number(chainId_)) && TESTNET_CLASS)} />
+                                    </SelectItem>
+                                </div>
+                            );
+                        })}
+                    </SelectContent>
+                </Select>
+                */}
             </div>
         </>
     );

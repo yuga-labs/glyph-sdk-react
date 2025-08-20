@@ -67,11 +67,18 @@ export type GlyphWidgetNFTBalancesItem = {
     address: Hex;
     name: string;
     symbol: string;
-    image: string | null;
+    image: string | null; // fallback (to be deprecated in favour of contractImage)
+    contractImage: string | null;
     items: {
         tokenId: string;
-        name: string;
-        balance: string;
+        symbol: string;
+        name: string; // fallback (to be deprecated in favour of tokenName)
+        tokenName: string;
+        tokenImage: string;
+        balance: string; // numeric
+        owner: string;
+        fromLinked: boolean;
+        fromDelegated: boolean;
         image?: {
             cachedUrl: string;
             thumbnailUrl: string;

@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { debounce } from "throttle-debounce";
 import truncateEthAddress from "truncate-eth-address";
 import { Chain, erc20Abi, formatUnits, Hex, parseEther, zeroAddress, encodeFunctionData } from "viem";
-import { apeChain, curtis, mainnet } from "viem/chains";
+import { apeChain, base, curtis, mainnet, polygon } from "viem/chains";
 import { useChainId } from "wagmi";
 import { CaretDownIcon } from "../../assets/svg/CaretDownIcon";
 import NoTokenIcon from "../../assets/svg/NoTokenIcon";
@@ -56,7 +56,9 @@ const MAX_BALANCE_ERROR = "Not enough balance";
 const chainIdsMap: Record<number, Chain> = {
     [apeChain.id]: apeChain,
     [curtis.id]: curtis,
-    [mainnet.id]: mainnet
+    [mainnet.id]: mainnet,
+    [base.id]: base,
+    [polygon.id]: polygon
 };
 
 export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientType }: WalletSendFundProps) {

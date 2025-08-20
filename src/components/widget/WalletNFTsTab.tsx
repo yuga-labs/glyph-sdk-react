@@ -1,25 +1,30 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@radix-ui/react-accordion";
 import { useState } from "react";
-import NoTokenIcon from "../../assets/svg/NoTokenIcon";
 import { useBalances } from "../../hooks/useBalances";
 import ExpandItemIcon from "../../assets/svg/ExpandItemIcon";
 import { useGlyph } from "../../hooks/useGlyph";
 import { buttonVariants } from "../ui/button";
 import { GlyphWidgetNFTBalancesItem } from "../../types";
 import { NFTImgFail } from "../../assets/svg/NFTImgFail";
+//import LinkedNFTChip from "../../assets/svg/LinkedNFTChip";
+//import DelegatedNFTChip from "../../assets/svg/DelegatedNFTChip";
 
 const NFTImg = (t: GlyphWidgetNFTBalancesItem) => {
     const [imgErr, setImgErr] = useState(false);
+    const imageUrl = t.contractImage || t.image;
 
-    const CollectionImg = t.image ? 
-        <img
-            src={t.image}
-            alt={t.name}
-            className="gw-w-10 gw-h-10 gw-object-cover gw-rounded-md gw-block"
-            onError={() => setImgErr(true)}
-        /> : <NoTokenIcon width="40" height="40" className="border-radius: 5px;"/>;
-
-    return imgErr ? <NFTImgFail /> : CollectionImg;
+    return (
+        <>
+            {(!imgErr && imageUrl) ?
+                <img
+                    src={imageUrl}
+                    alt={t.name}
+                    className="gw-w-10 gw-h-10 gw-object-cover gw-rounded-md gw-block"
+                    onError={() => setImgErr(true)}
+                /> : <NFTImgFail style={{ width: "100%", height: "100%" }} />
+            }
+        </>
+    );
 }
 
 export function WalletNFTsTab() {
@@ -42,43 +47,53 @@ export function WalletNFTsTab() {
                     {/* Scrollable accordion area */}
                     <div className="gw-flex-1 gw-min-h-0 gw-overflow-auto">
                         <Accordion className="gw-w-full"
-                            type="single" 
+                            type="single"
                             collapsible
                             value={expandedItemId}
                             onValueChange={setExpandedItemId}
                         >
-                        {nfts.map((t, idx) => {
-                            return (
-                                <div key={idx.toString()}>
-                                    <AccordionItem value={idx.toString()} className="gw-pr-4">
-                                        <AccordionTrigger asChild>
-                                            <div className="gw-flex gw-justify-between gw-items-center gw-w-full gw-py-2 gw-cursor-pointer">
-                                                <div className="gw-flex gw-items-center gw-space-x-3 gw-min-w-0 gw-flex-1">
-                                                    <div className="gw-flex-shrink-0">{NFTImg(t)}</div>
-                                                    <span className="gw-text-sm gw-line-clamp-1 gw-truncate gw-letter-spacing-0.12 gw-min-w-0 gw-max-w-[75%]">
-                                                        {t.name?.toLocaleUpperCase?.() || t.symbol || ""}
-                                                    </span>
+                            {nfts.map((t, idx) => {
+                                return (
+                                    <div key={idx.toString()}>
+                                        <AccordionItem value={idx.toString()} className="gw-pr-4">
+                                            <AccordionTrigger asChild>
+                                                <div className="gw-flex gw-justify-between gw-items-center gw-w-full gw-py-2 gw-cursor-pointer">
+                                                    <div className="gw-flex gw-items-center gw-space-x-3 gw-min-w-0 gw-flex-1">
+                                                        <div className="gw-flex-shrink-0">{NFTImg(t)}</div>
+                                                        <span className="gw-text-sm gw-line-clamp-1 gw-truncate gw-letter-spacing-0.12 gw-min-w-0 gw-max-w-[75%]">
+                                                            {t.name?.toLocaleUpperCase?.() || t.symbol || ""}
+                                                        </span>
+                                                    </div>
+                                                    <div className="gw-flex gw-flex-col gw-items-between gw-justify-end gw-text-end gw-flex-shrink-0">
+                                                        <ExpandItemIcon className={`${expandedItemId === idx.toString() ? '' : 'gw-rotate-180'}`} />
+                                                    </div>
                                                 </div>
-                                                <div className="gw-flex gw-flex-col gw-items-between gw-justify-end gw-text-end gw-flex-shrink-0">
-                                                    <ExpandItemIcon className={`${expandedItemId === idx.toString() ? '' : 'gw-rotate-180'}`} />
+                                            </AccordionTrigger>
+                                            <AccordionContent>
+                                                <div className="gw-grid gw-grid-cols-4 gw-gap-4 gw-my-2">
+                                                    {t.items.map((item) => (
+                                                        <>
+                                                            {/* TODO: add linked and delegated icons 
+                                                            <div className="top-1 left-1 z-10">
+                                                                {item.fromLinked && <LinkedNFTChip />}
+                                                            </div>
+                                                            <div className="top-1 right-1 z-10">
+                                                                {item.fromDelegated && <DelegatedNFTChip />}
+                                                            </div>
+                                                            */}
+                                                            <img
+                                                                key={item.tokenId}
+                                                                title={item.tokenName || item.name || item.tokenId}
+                                                                src={item.tokenImage || item.image?.thumbnailUrl}
+                                                                alt={item.tokenId}
+                                                                className="gw-w-16 gw-h-16 gw-object-cover gw-rounded-md gw-block"
+                                                            />
+                                                        </>
+                                                    ))}
                                                 </div>
-                                            </div>
-                                        </AccordionTrigger>
-                                        <AccordionContent>
-                                            <div className="gw-grid gw-grid-cols-4 gw-gap-4 gw-my-2">
-                                                {t.items.map((item) => (
-                                                    <img
-                                                        key={item.tokenId}
-                                                        title={item.name || item.tokenId}
-                                                        src={item.image?.thumbnailUrl}
-                                                        alt={item.tokenId}
-                                                        className="gw-w-16 gw-h-16 gw-object-cover gw-rounded-md gw-block"
-                                                    />
-                                                ))}
-                                            </div>
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                </div>
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    </div>
                                 );
                             })}
                         </Accordion>
@@ -86,7 +101,7 @@ export function WalletNFTsTab() {
 
                     {/* Fixed footer */}
                     <div className="gw-flex gw-justify-center gw-items-center gw-w-full gw-text-brand-gray-500 gw-typography-body2 gw-flex-shrink-0 gw-mt-2">
-                        Need to transfer? Go to
+                        Need to transfer? Use
                         <a href={nftsURL} target="_blank" rel="noopener noreferrer" className={buttonVariants({
                             variant: "link-inline",
                             size: "xs-inline",

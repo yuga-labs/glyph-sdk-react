@@ -1,4 +1,4 @@
-import { apeChain, curtis, mainnet } from "viem/chains";
+import { apeChain, base, curtis, mainnet, polygon } from "viem/chains";
 import APE_ETH from "../assets/svg/APE_ETH";
 import APE_USD from "../assets/svg/APE_USD";
 import WAPEIcon from "../assets/svg/APE_WAPE";
@@ -6,6 +6,7 @@ import APEIcon from "../assets/svg/APEIcon";
 import ETH from "../assets/svg/ETH";
 import ApechainIcon from "../assets/svg/ApechainIcon";
 import USDCIcon from "../assets/svg/USDCIcon";
+import BaseIcon from "../assets/svg/BaseIcon";
 
 export const DASHBOARD_BASE_URL = process.env.DASHBOARD_BASE_URL;
 export const GLYPH_PRIVY_APP_ID = process.env.PROVIDER_PRIVY_APP_ID;
@@ -54,8 +55,17 @@ export enum SendView {
 export const CHAIN_ICONS: Record<number, React.FC<React.SVGProps<SVGSVGElement>>> = {
     [apeChain.id]: ApechainIcon,
     [curtis.id]: ApechainIcon,
-    [mainnet.id]: ETH
+    [mainnet.id]: ETH,
+    [base.id]: BaseIcon
 };
+
+export const CHAIN_NAMES: Map<number, string> = new Map([
+    [mainnet.id, mainnet.name],
+    [base.id, base.name],
+    [apeChain.id, "Apechain"],
+    [curtis.id, curtis.name],
+    [polygon.id, polygon.name]
+]);
 
 export const TOKEN_LOGOS: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
     APE: APEIcon,
