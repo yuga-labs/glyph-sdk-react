@@ -9,6 +9,7 @@ import { Skeleton } from "../ui/skeleton";
 import { useChainId } from "wagmi";
 import { IS_TESTNET_CHAIN, TESTNET_CLASS } from "../../lib/constants";
 import { cn } from "../../lib/utils";
+
 export type WalletHomeTabProps = {
     onAddFunds: () => void;
     onReceive: () => void;

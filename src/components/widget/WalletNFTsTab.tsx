@@ -4,24 +4,30 @@ import { useBalances } from "../../hooks/useBalances";
 import ExpandItemIcon from "../../assets/svg/ExpandItemIcon";
 import { useGlyph } from "../../hooks/useGlyph";
 import { buttonVariants } from "../ui/button";
-import { GlyphWidgetNFTBalancesItem } from "../../types";
 import { NFTImgFail } from "../../assets/svg/NFTImgFail";
-//import LinkedNFTChip from "../../assets/svg/LinkedNFTChip";
-//import DelegatedNFTChip from "../../assets/svg/DelegatedNFTChip";
+import LinkedNFTChip from "../../assets/svg/LinkedNFTChip";
+import { cn } from "../../lib/utils";
 
-const NFTImg = (t: GlyphWidgetNFTBalancesItem) => {
+type NFTImageProps = React.SVGProps<SVGSVGElement> & {
+    alt: string;
+    url?: string | null;
+    title?: string;
+    className?: string;
+}
+
+const NFTImg = ({ url, alt, title, className, ...props }: NFTImageProps): JSX.Element => {
     const [imgErr, setImgErr] = useState(false);
-    const imageUrl = t.contractImage || t.image;
 
     return (
         <>
-            {(!imgErr && imageUrl) ?
+            {(!imgErr && url) ?
                 <img
-                    src={imageUrl}
-                    alt={t.name}
-                    className="gw-w-10 gw-h-10 gw-object-cover gw-rounded-md gw-block"
+                    src={url}
+                    alt={alt}
+                    title={title}
                     onError={() => setImgErr(true)}
-                /> : <NFTImgFail style={{ width: "100%", height: "100%" }} />
+                    className={cn("gw-object-cover gw-rounded-md gw-block", className)}
+                /> : <NFTImgFail style={{ width: "100%", height: "100%" }} {...props} />
             }
         </>
     );
@@ -59,7 +65,15 @@ export function WalletNFTsTab() {
                                             <AccordionTrigger asChild>
                                                 <div className="gw-flex gw-justify-between gw-items-center gw-w-full gw-py-2 gw-cursor-pointer">
                                                     <div className="gw-flex gw-items-center gw-space-x-3 gw-min-w-0 gw-flex-1">
-                                                        <div className="gw-flex-shrink-0">{NFTImg(t)}</div>
+                                                        <div className="gw-flex-shrink-0">
+                                                            <NFTImg
+                                                                url={t.contractImage || t.image}
+                                                                alt={t.name}
+                                                                className="gw-w-10 gw-h-10" // for img
+                                                                height="40" // for svg
+                                                                width="40" // for svg
+                                                            />
+                                                        </div>
                                                         <span className="gw-text-sm gw-line-clamp-1 gw-truncate gw-letter-spacing-0.12 gw-min-w-0 gw-max-w-[75%]">
                                                             {t.name?.toLocaleUpperCase?.() || t.symbol || ""}
                                                         </span>
@@ -72,23 +86,28 @@ export function WalletNFTsTab() {
                                             <AccordionContent>
                                                 <div className="gw-grid gw-grid-cols-4 gw-gap-4 gw-my-2">
                                                     {t.items.map((item) => (
-                                                        <>
-                                                            {/* TODO: add linked and delegated icons 
-                                                            <div className="top-1 left-1 z-10">
-                                                                {item.fromLinked && <LinkedNFTChip />}
-                                                            </div>
-                                                            <div className="top-1 right-1 z-10">
-                                                                {item.fromDelegated && <DelegatedNFTChip />}
-                                                            </div>
-                                                            */}
-                                                            <img
-                                                                key={item.tokenId}
-                                                                title={item.tokenName || item.name || item.tokenId}
-                                                                src={item.tokenImage || item.image?.thumbnailUrl}
+                                                        <div key={item.tokenId} className="gw-relative">
+                                                            {item.fromLinked && (
+                                                                <div className="gw-absolute gw-top-1 gw-right-1 gw-z-10">
+                                                                    <LinkedNFTChip />
+                                                                </div>
+                                                            )}
+                                                            {item.fromDelegated && (
+                                                                <div className="gw-absolute gw-bottom-0 gw-left-0 gw-right-0 gw-z-10">
+                                                                    <div className="gw-bg-black gw-bg-opacity-50 gw-text-white gw-text-center gw-text-[10px] gw-py-0.5 gw-px-1">
+                                                                        Delegate
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            <NFTImg
+                                                                url={item.tokenImage || item.image?.thumbnailUrl}
                                                                 alt={item.tokenId}
-                                                                className="gw-w-16 gw-h-16 gw-object-cover gw-rounded-md gw-block"
+                                                                className="gw-w-16 gw-h-16" // for img
+                                                                height="64" // for svg
+                                                                width="64" // for svg
+                                                                title={item.tokenName || item.name || item.tokenId}
                                                             />
-                                                        </>
+                                                        </div>
                                                     ))}
                                                 </div>
                                             </AccordionContent>

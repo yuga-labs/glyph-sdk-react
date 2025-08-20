@@ -1,9 +1,9 @@
 function LinkedNFTChip(props: React.SVGProps<SVGSVGElement>): JSX.Element {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 25 25" fill="none" {...props}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 13 13" fill="none" {...props}>
             <g>
-                <circle cx="12.5" cy="12.5" r="12.5" fill="black" fillOpacity="0.5" />
-                <path transform="translate(5 5)" d="M8.21895 5.78105C7.17755 4.73965 5.48911 4.73965 4.44772 5.78105L1.78105 8.44772C0.73965 9.48911 0.73965 11.1776 1.78105 12.219C2.82245 13.2603 4.51089 13.2603 5.55228 12.219L6.28666 11.4846M5.78105 8.21895C6.82245 9.26035 8.51089 9.26035 9.55228 8.21895L12.219 5.55228C13.2603 4.51089 13.2603 2.82245 12.219 1.78105C11.1776 0.73965 9.48911 0.73965 8.44772 1.78105L7.71464 2.51412" stroke="white" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="6.5" cy="6.5" r="6.5" fill="black" fillOpacity="0.5" />
+                <path transform="translate(2 2)" d="M5.21106 3.78895C4.60357 3.18146 3.61865 3.18146 3.01117 3.78895L1.45561 5.3445C0.848129 5.95198 0.848129 6.93691 1.45561 7.54439C2.06309 8.15187 3.04802 8.15187 3.6555 7.54439L4.08389 7.116M3.78895 5.21106C4.39643 5.81854 5.38135 5.81854 5.98883 5.21106L7.54439 3.6555C8.15187 3.04802 8.15187 2.06309 7.54439 1.45561C6.93691 0.848129 5.95198 0.848129 5.3445 1.45561L4.91687 1.88324" stroke="white" strokeWidth="0.7" strokeLinecap="round" strokeLinejoin="round"/>
             </g>
         </svg>
     )
