@@ -7,7 +7,7 @@ import { formatCurrency } from "../../lib/intl";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import { useChainId } from "wagmi";
-import { IS_TESTNET_CHAIN, TESTNET_CLASS } from "../../lib/constants";
+import { IS_TESTNET_CHAIN, TESTNET_CSS_CLASS } from "../../lib/constants";
 import { cn } from "../../lib/utils";
 
 export type WalletHomeTabProps = {
@@ -46,7 +46,7 @@ export function WalletHomeTab({ onAddFunds, onReceive, onSend }: WalletHomeTabPr
                     )}
                 </span>
                 <div className="gw-inline-flex gw-items-center gw-space-x-2 gw-mt-2">
-                    <ApecoinIcon className={cn("gw-size-6", isTestnet && TESTNET_CLASS)} />
+                    <ApecoinIcon className={cn("gw-size-6", isTestnet && TESTNET_CSS_CLASS)} />
                     <span className="gw-typography-subtitle1 gw-text-brand-gray-600">
                         {nativeBalance?.symbol || ""}
                     </span>

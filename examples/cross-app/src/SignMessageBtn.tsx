@@ -33,8 +33,8 @@ export function SignMessageBtn({
 			onClick={async () => {
 				try {
 					const signature = await signFn({ message });
+					console.log("signature", signature);
 					if (signature && typeof signature === "string") {
-						console.log("signature", signature);
 						const recoveredAddress = await recoverAddress(
 							message,
 							signature as Hex

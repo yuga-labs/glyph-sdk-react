@@ -1,15 +1,15 @@
-import { X } from "lucide-react";
-import React from "react";
+import { X, ChevronDown } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
 import truncateEthAddress from "truncate-eth-address";
-import ApechainIcon from "../../assets/svg/ApechainIcon";
 import BackIcon from "../../assets/svg/BackIcon";
 import { useGlyph } from "../../hooks/useGlyph";
 import CopyButton from "./CopyButton";
 import UserAvatar from "./UserAvatar";
-import { useChainId } from "wagmi";
-import { CHAIN_ICONS, IS_TESTNET_CHAIN, TESTNET_CLASS } from "../../lib/constants";
+import { useChainId, useSwitchChain, useChains } from "wagmi";
+import { CHAIN_ICONS, IS_TESTNET_CHAIN, TESTNET_CSS_CLASS } from "../../lib/constants";
 import { cn } from "../../lib/utils";
-//import { Select, SelectTrigger, SelectContent, SelectItem } from "../ui/select";
+import { Chain } from "viem";
+import Ellipse from "../../assets/svg/Ellipse";
 
 interface WalletViewHeaderProps {
     fullScreenHeader?: {
@@ -23,10 +23,30 @@ interface WalletViewHeaderProps {
 const WalletViewHeader: React.FC<WalletViewHeaderProps> = ({ fullScreenHeader, onProfileClick }) => {
     const { user } = useGlyph();
     const chainId = useChainId();
-    //const { switchChain } = useSwitchChain();
+    const { switchChain } = useSwitchChain();
+    const chains = useChains();
+    const [sortedChains, setSortedChains] = useState<Chain[]>([]);
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const isTestnet = IS_TESTNET_CHAIN.get(chainId) || false;
-    const ChainIcon = CHAIN_ICONS[chainId] || ApechainIcon;
+    const ChainIcon = CHAIN_ICONS[chainId] || Ellipse;
+
+    useEffect(() => {
+        setSortedChains(chains.slice().sort((a, b) => (a.id === chainId ? -1 : 1) - (b.id === chainId ? -1 : 1)));
+    }, [chains, chainId]);
+
+    // close chain selector (dropdown) when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     return fullScreenHeader && fullScreenHeader?.title ? (
         <>
@@ -76,28 +96,49 @@ const WalletViewHeader: React.FC<WalletViewHeaderProps> = ({ fullScreenHeader, o
                     </div>
                 </div>
 
-                <ChainIcon className={cn("gw-size-9", isTestnet && TESTNET_CLASS)} />
-                {/* TODO: add chain selector
-                <Select
-                    value={chainId.toString()}
-                    onValueChange={(value) => switchChain({ chainId: Number(value) })}
-                >
-                    <SelectTrigger>
-                        <ChainIcon className={cn("gw-size-9", isTestnet && TESTNET_CLASS)} />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {Object.entries(CHAIN_ICONS).reverse().map(([chainId_, Icon], idx) => {
-                            return (
-                                <div key={chainId_}>
-                                    <SelectItem key={chainId_} value={chainId_.toString()}>
-                                        <Icon className={cn("gw-size-9", IS_TESTNET_CHAIN.get(Number(chainId_)) && TESTNET_CLASS)} />
-                                    </SelectItem>
-                                </div>
-                            );
-                        })}
-                    </SelectContent>
-                </Select>
-                */}
+                {/* Chain Selector */}
+                {chains?.length === 1 ? (
+                    <ChainIcon className={cn("gw-size-8", isTestnet && TESTNET_CSS_CLASS)} />
+                ) : (
+                    <div className="gw-relative" ref={dropdownRef}>
+                        <button
+                            onClick={() => setIsOpen(!isOpen)}
+                            className="gw-rounded-full gw-shadow-buttonMd gw-px-1 gw-py-1 gw-h-auto gw-w-auto gw-min-w-0 !gw-ring-0 gw-flex gw-items-center gw-space-x-1"
+                        >
+                            <div className="gw-w-8 gw-h-8 gw-rounded-full">
+                                <ChainIcon className={cn("gw-size-8", isTestnet && TESTNET_CSS_CLASS)} />
+                            </div>
+                            <ChevronDown className="gw-size-4 gw-text-gray-500" />
+                        </button>
+
+                        {isOpen && (
+                            <div className="gw-absolute gw-top-full gw-right-0 gw-mt-1 gw-bg-white gw-rounded-xl gw-shadow-md gw-z-50 gw-min-w-[8rem] gw-overflow-hidden">
+                                {sortedChains
+                                    .map((ch) => {
+                                        const isCurrentChain = ch.id === chainId;
+                                        const OptionChainIcon = CHAIN_ICONS[ch.id] || Ellipse;
+                                        const isTestnetChain = IS_TESTNET_CHAIN.get(ch.id) || false;
+                                        return (
+                                            <button
+                                                key={ch.id}
+                                                onClick={() => {
+                                                    switchChain({ chainId: ch.id });
+                                                    setIsOpen(false);
+                                                }}
+                                                disabled={isCurrentChain}
+                                                className={cn("gw-w-full gw-flex gw-items-center gw-space-x-2 gw-px-1 gw-py-1 gw-text-left", isCurrentChain ? "gw-bg-green-500/15" : "hover:gw-bg-gray-50")}
+                                            >
+                                                <div className="gw-w-9 gw-h-9 gw-rounded-full gw-p-1">
+                                                    <OptionChainIcon className={cn("gw-size-6 gw-text-white", isTestnetChain && TESTNET_CSS_CLASS)} />
+                                                </div>
+                                                <span className={cn("gw-text-sm", isCurrentChain && "!gw-font-bold")}>{ch.name}</span>
+                                            </button>
+                                        );
+                                    })}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </>
     );

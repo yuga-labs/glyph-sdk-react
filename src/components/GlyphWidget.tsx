@@ -1,25 +1,21 @@
 import { FC, memo, useContext, useEffect, useState } from "react";
-import { useChainId } from "wagmi";
 import { GlyphViewContext } from "../context/GlyphViewContext";
 import { useGlyph } from "../hooks/useGlyph";
 import useMediaQuery from "../hooks/useMediaQuery";
 import "../index.css";
 import { INTERNAL_GRADIENT_TYPE } from "../lib/constants";
-import { supportedChainIds } from "../lib/providers";
 import { GlyphViewType, GlyphWidgetProps } from "../types";
 import GlyphWidgetButton from "./GlyphWidgetButton";
 import LoginButton from "./LoginButton";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHandle, DrawerTitle, DrawerTrigger } from "./ui/drawer";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Toaster } from "./ui/sonner";
-import { UnsupportedChainOverlay } from "./widget/UnsupportedChainOverlay";
 import { Wallet } from "./widget/Wallet";
 import { WidgetGradient } from "./widget/WidgetGradient";
 
 const GlyphWidget: FC<GlyphWidgetProps> = ({ buttonProps }) => {
     const theme = "light";
     const isDesktop = useMediaQuery("(min-width: 768px)");
-    const chainId = useChainId();
 
     const viewCtx = useContext(GlyphViewContext);
     if (!viewCtx) throw new Error("GlyphWidget must be used within a GlyphViewProvider");
@@ -56,7 +52,6 @@ const GlyphWidget: FC<GlyphWidgetProps> = ({ buttonProps }) => {
                                 <Toaster theme={theme} />
                                 <WidgetGradient gradientType={gradientType} />
                                 <Wallet setGradientType={setGradientType} />
-                                {!supportedChainIds.includes(chainId) && <UnsupportedChainOverlay />}
                             </PopoverContent>
                         </Popover>
                     ) : (
@@ -81,9 +76,6 @@ const GlyphWidget: FC<GlyphWidgetProps> = ({ buttonProps }) => {
                                 <div className="gw-wallet-container gw-w-full">
                                     <Wallet setGradientType={setGradientType} />
                                 </div>
-                                {!supportedChainIds.includes(chainId) && (
-                                    <UnsupportedChainOverlay className="gw-top-7" />
-                                )}
                             </DrawerContent>
                         </Drawer>
                     )}

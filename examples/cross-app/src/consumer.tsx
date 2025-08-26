@@ -26,12 +26,15 @@ const Consumer: React.FC = () => {
 	const { switchChainAsync } = useSwitchChain();
 	const [contractAddress, setContractAddress] = useState<string>("");
 
-	const handleSwitchChain = async (chainId: number) => {
+	const handleSwitchChain = async (targetChainId: number) => {
 		setLoading(true);
-		await switchChainAsync({
-			chainId: chainId,
-		});
-		setLoading(false);
+		try {
+			await switchChainAsync({ chainId: targetChainId });
+		} catch (error) {
+			console.error("Chain switch error:", error);
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	const handleTokenGate = async () => {
@@ -85,7 +88,7 @@ const Consumer: React.FC = () => {
 											<SignMessageBtn
 												signFn={signMessageAsync}
 												message="Hello, Wagmi!"
-												buttonText="Sign with Wagmi"
+												buttonText={`Sign with Wagmi (chainId: ${chainId})`}
 											/>
 											<button
 												onClick={async () => {
@@ -217,15 +220,15 @@ const Consumer: React.FC = () => {
 											</p>
 										</div>
 										<div className="flex flex-col items-center justify-center gap-4 mt-4 text-center">
-											<input 
-												type="text" 
-												placeholder="Contract address" 
-												value={contractAddress} 
-												onChange={(e) => setContractAddress(e.target.value)} 
+											<input
+												type="text"
+												placeholder="Contract address"
+												value={contractAddress}
+												onChange={(e) => setContractAddress(e.target.value)}
 												className="w-full p-2 border rounded-md text-black"
 											/>
-											<button 
-												onClick={()=> handleTokenGate()}
+											<button
+												onClick={() => handleTokenGate()}
 												className="w-full p-2 border rounded-md"
 												disabled={isTokenGateLoading || !contractAddress}
 											>

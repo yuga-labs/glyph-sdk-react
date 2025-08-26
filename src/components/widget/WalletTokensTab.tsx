@@ -1,7 +1,7 @@
 import { useChainId } from "wagmi";
 import NoTokenIcon from "../../assets/svg/NoTokenIcon";
 import { useBalances } from "../../hooks/useBalances";
-import { IS_TESTNET_CHAIN, TESTNET_CLASS, TOKEN_LOGOS } from "../../lib/constants";
+import { IS_TESTNET_CHAIN, TESTNET_CSS_CLASS, TOKEN_LOGOS } from "../../lib/constants";
 import { formatCurrency } from "../../lib/intl";
 
 export function WalletTokensTab() {
@@ -31,7 +31,7 @@ export function WalletTokensTab() {
                         <div key={t.symbol} className="gw-w-full">
                             <div className="gw-flex gw-justify-between gw-items-center gw-w-full gw-py-2">
                                 <div className="gw-flex gw-items-center gw-space-x-3">
-                                    <TokenIcon width="40" height="40" className={isTestnet ? TESTNET_CLASS : ""}/>
+                                    <TokenIcon width="40" height="40" className={isTestnet ? TESTNET_CSS_CLASS : ""}/>
                                     <div className="gw-flex gw-flex-col gw-items-between gw-justify-end">
                                         <span className="gw-font-medium">{t.name}</span>
                                         {Number.isFinite(t.priceChangePct) && (

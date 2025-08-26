@@ -1,4 +1,4 @@
-import { apeChain, base, curtis, mainnet, polygon } from "viem/chains";
+import { apeChain, base, curtis, mainnet } from "viem/chains";
 import APE_ETH from "../assets/svg/APE_ETH";
 import APE_USD from "../assets/svg/APE_USD";
 import WAPEIcon from "../assets/svg/APE_WAPE";
@@ -59,14 +59,6 @@ export const CHAIN_ICONS: Record<number, React.FC<React.SVGProps<SVGSVGElement>>
     [base.id]: BaseIcon
 };
 
-export const CHAIN_NAMES: Map<number, string> = new Map([
-    [mainnet.id, mainnet.name],
-    [base.id, base.name],
-    [apeChain.id, "Apechain"],
-    [curtis.id, curtis.name],
-    [polygon.id, polygon.name]
-]);
-
 export const TOKEN_LOGOS: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
     APE: APEIcon,
     ApeETH: APE_ETH,
@@ -77,7 +69,7 @@ export const TOKEN_LOGOS: Record<string, React.FC<React.SVGProps<SVGSVGElement>>
     USDC: USDCIcon
 };
 
-export const TESTNET_CLASS = "gw-grayscale";
+export const TESTNET_CSS_CLASS = "gw-grayscale";
 export const IS_TESTNET_CHAIN: Map<number, boolean> = new Map([[curtis.id, true]]);
 
 export const glyphConnectorDetails = {

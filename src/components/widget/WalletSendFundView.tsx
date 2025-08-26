@@ -1,26 +1,23 @@
-import { Loader2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Loader2, ChevronDown } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { toast } from "sonner";
 import { debounce } from "throttle-debounce";
 import truncateEthAddress from "truncate-eth-address";
-import { Chain, erc20Abi, formatUnits, Hex, parseEther, zeroAddress, encodeFunctionData } from "viem";
-import { apeChain, base, curtis, mainnet, polygon } from "viem/chains";
-import { useChainId } from "wagmi";
+import { erc20Abi, formatUnits, Hex, parseEther, zeroAddress, createPublicClient, http, encodeFunctionData } from "viem";
+import { useChainId, useAccount } from "wagmi";
 import { CaretDownIcon } from "../../assets/svg/CaretDownIcon";
 import NoTokenIcon from "../../assets/svg/NoTokenIcon";
 import { useBalances } from "../../hooks/useBalances";
 import { useGlyph } from "../../hooks/useGlyph";
 import { useGlyphApi } from "../../hooks/useGlyphApi";
-import { INTERNAL_GRADIENT_TYPE, SendView, IS_TESTNET_CHAIN, TESTNET_CLASS, TOKEN_LOGOS } from "../../lib/constants";
+import { INTERNAL_GRADIENT_TYPE, SendView, IS_TESTNET_CHAIN, TESTNET_CSS_CLASS, TOKEN_LOGOS } from "../../lib/constants";
 import { formatCurrency } from "../../lib/intl";
 import { formatInputNumber } from "../../lib/numericInputs";
-import { defaultChain, getPublicClient } from "../../lib/providers";
 import { cn, createLogger, displayNumberPrecision, ethereumAvatar, tokenToBigIntWei } from "../../lib/utils";
 import UserAvatar from "../shared/UserAvatar";
 import WalletViewHeader from "../shared/WalletViewHeader";
 import { WalletViewTemplate } from "../shared/WalletViewTemplate";
 import { Button } from "../ui/button";
-import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger } from "../ui/select";
 import { Skeleton } from "../ui/skeleton";
 import WalletSendFundEnterAddressView from "./WalletSendFundEnterAddressView";
 import WalletSendFundFailedView from "./WalletSendFundFailedView";
@@ -53,25 +50,18 @@ const DEFAULT_TOKEN_MAX_DECIMALS = 6; // useful for ETH
 const SEND_STATUS_REFRESH_INTERNAL_MS = 10 * 1000; // 10 seconds
 const MAX_BALANCE_ERROR = "Not enough balance";
 
-const chainIdsMap: Record<number, Chain> = {
-    [apeChain.id]: apeChain,
-    [curtis.id]: curtis,
-    [mainnet.id]: mainnet,
-    [base.id]: base,
-    [polygon.id]: polygon
-};
-
 export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientType }: WalletSendFundProps) {
     const { user, sendTransaction } = useGlyph();
     const { glyphApiFetch } = useGlyphApi();
     const chainId = useChainId();
+    const { chain } = useAccount();
 
     const [recipientAddress, setRecipientAddress] = useState<string>("");
     const [recipientAddressError, setRecipientAddressError] = useState<string | null>(null);
 
     const { refreshBalances, balances } = useBalances();
 
-    const publicClient = useMemo(() => getPublicClient(chainId || defaultChain.id), [chainId]);
+    const publicClient = useMemo(() => createPublicClient({ chain: chain, transport: http() }), [chain]);
 
     const [view, setView] = useState<SendView>(SendView.ENTER_ADDRESS);
 
@@ -98,6 +88,22 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
     const [error, setError] = useState<string | null>(null);
     const [maxValueError, setMaxValueError] = useState<boolean>(false);
     const [txHash, setTxHash] = useState<string>();
+
+    // Token dropdown state
+    const [isTokenDropdownOpen, setIsTokenDropdownOpen] = useState<boolean>(false);
+    const tokenDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Close token dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (tokenDropdownRef.current && !tokenDropdownRef.current.contains(event.target as Node)) {
+                setIsTokenDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
     const [txBlockExplorerUrl, setTxBlockExplorerUrl] = useState<string>();
     const [txBlockExplorerName, setTxBlockExplorerName] = useState<string>();
     const [txStatus, setTxStatus] = useState<"SUCCESS" | "FAILED" | "PENDING">("PENDING");
@@ -262,7 +268,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
             toast.error(e?.message);
             return;
         }
-    }, [chainId,txHash, glyphApiFetch, refreshBalances]);
+    }, [chainId, txHash, glyphApiFetch, refreshBalances]);
 
     // check tx status every `SEND_STATUS_REFRESH_INTERNAL_MS` miliseconds when tx is in progress
     useEffect(() => {
@@ -330,63 +336,66 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                             <div className="gw-w-full">
                                 <div className="gw-flex gw-justify-between gw-items-center gw-w-full">
                                     <h6>{!validAmountEntered ? "Enter Amount" : "Sending"}</h6>
-                                    <div>
-                                        <Select
-                                            value={tokenAddress}
-                                            onValueChange={(value) => {
-                                                // Reset amounts if token changes
-                                                setSendAmount("");
-                                                setTransferMax(false);
-                                                // Directly reset debounced amount to 0 (without delay)
-                                                setDebouncedSendAmount(0);
-                                                setError(null);
-                                                setQuote(null);
-                                                setTokenAddress(value as Hex);
-                                            }}
+                                    <div className="gw-relative" ref={tokenDropdownRef}>
+                                        <button
+                                            onClick={() => setIsTokenDropdownOpen(!isTokenDropdownOpen)}
+                                            className="gw-shadow-buttonMd gw-rounded-full gw-h-auto gw-p-1 gw-flex gw-items-center gw-space-x-1"
                                         >
-                                            <SelectTrigger className="gw-h-auto gw-p-1">
-                                                <TokenIcon className={cn("gw-w-6 gw-h-6 gw-mr-2", isTestnet && TESTNET_CLASS)} />
-                                            </SelectTrigger>
-                                            <SelectContent>
+                                            <TokenIcon className={cn("gw-w-6 gw-h-6 gw-mr-2", isTestnet && TESTNET_CSS_CLASS)} />
+                                            <ChevronDown className="gw-size-4 gw-text-gray-500" />
+                                        </button>
+
+                                        {isTokenDropdownOpen && (
+                                            <div className="gw-absolute gw-top-full gw-right-0 gw-mt-1 gw-bg-white gw-rounded-xl gw-shadow-md gw-z-50 gw-min-w-[16rem] gw-max-h-[320px] gw-overflow-y-auto">
                                                 {balances?.tokens?.map?.((t, index) => {
                                                     if (t?.hide) return null;
                                                     const TokenIcon = TOKEN_LOGOS[t.symbol] || NoTokenIcon;
 
                                                     return (
                                                         <div key={t.address}>
-                                                            <SelectItem value={t.address} className="gw-w-full">
-                                                                <div className="gw-flex gw-justify-between gw-items-center gw-w-full gw-p-1 gw-gap-4">
-                                                                    <div className="gw-flex gw-items-center gw-space-x-3">
-                                                                        <TokenIcon className={cn("gw-w-8 gw-h-8", isTestnet && TESTNET_CLASS)} />
-                                                                        <div className="gw-flex gw-flex-col gw-items-between gw-justify-end">
-                                                                            <span className="gw-font-medium">
-                                                                                {t.name}
-                                                                            </span>
-                                                                            {/* TODO: To be replaced with movement */}
-                                                                            <span className="gw-text-brand-gray-500">
-                                                                                {t.symbol}
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div className="gw-flex gw-flex-col gw-items-between gw-justify-end gw-text-end">
+                                                            <button
+                                                                onClick={() => {
+                                                                    // Reset amounts if token changes
+                                                                    setSendAmount("");
+                                                                    setTransferMax(false);
+                                                                    // Directly reset debounced amount to 0 (without delay)
+                                                                    setDebouncedSendAmount(0);
+                                                                    setError(null);
+                                                                    setQuote(null);
+                                                                    setTokenAddress(t.address);
+                                                                    setIsTokenDropdownOpen(false);
+                                                                }}
+                                                                className="gw-w-full gw-flex gw-justify-between gw-items-center gw-p-3 hover:gw-bg-gray-50"
+                                                            >
+                                                                <div className="gw-flex gw-items-center gw-space-x-3 gw-text-[12px]">
+                                                                    <TokenIcon className={cn("gw-w-8 gw-h-8", isTestnet && TESTNET_CSS_CLASS)} />
+                                                                    <div className="gw-flex gw-flex-col gw-items-start">
                                                                         <span className="gw-font-medium">
-                                                                            {formatCurrency(t.amount, t.currency)}
+                                                                            {t.name}
                                                                         </span>
                                                                         <span className="gw-text-brand-gray-500">
-                                                                            {t.value}
+                                                                            {t.symbol}
                                                                         </span>
                                                                     </div>
                                                                 </div>
-                                                            </SelectItem>
+
+                                                                <div className="gw-flex gw-flex-col gw-items-end gw-text-[12px]">
+                                                                    <span className="gw-font-medium">
+                                                                        {formatCurrency(t.amount, t.currency)}
+                                                                    </span>
+                                                                    <span className="gw-text-brand-gray-500">
+                                                                        {t.value}
+                                                                    </span>
+                                                                </div>
+                                                            </button>
                                                             {index < (balances?.tokens?.length || 0) - 1 && (
-                                                                <SelectSeparator />
+                                                                <div className="gw-mx-3 gw-my-1 gw-h-px gw-bg-gray-200" />
                                                             )}
                                                         </div>
                                                     );
                                                 })}
-                                            </SelectContent>
-                                        </Select>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                                 {/* Balance */}
@@ -480,7 +489,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                                         className={cn(
                                                             "gw-text-foreground gw-bg-transparent focus:gw-outline-none placeholder:gw-text-foreground gw-absolute gw-inset-0 gw-w-full gw-max-w-44",
                                                             !Number(token?.value || "0") &&
-                                                                "gw-opacity-50 gw-cursor-not-allowed"
+                                                            "gw-opacity-50 gw-cursor-not-allowed"
                                                         )}
                                                     />
                                                 </div>
@@ -625,7 +634,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                                 account: user?.evmWallet as Hex,
                                                 address: tokenAddress as Hex,
                                                 args: [recipientAddress as Hex, quote?.receivable_amount],
-                                                chain: chainIdsMap[chainId] || apeChain,
+                                                chain,
                                                 gas: quote?.gasLimit,
                                                 maxFeePerGas: quote?.maxFeePerGas,
                                                 maxPriorityFeePerGas: quote?.maxPriorityFeePerGas
@@ -655,7 +664,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                         if (!glyphApiFetch) return toast.error("Glyph API not ready");
                                         const res = await glyphApiFetch(`/api/widget/transactions/${hash_}`, {
                                             method: "POST",
-                                            body: JSON.stringify({chainId})
+                                            body: JSON.stringify({ chainId })
                                         });
                                         if (res.ok) {
                                             setTxHash(hash_);

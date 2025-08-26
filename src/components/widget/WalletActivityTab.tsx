@@ -85,7 +85,7 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
                 />
             </div>
 
-            <div className="gw-grid gw-grid-cols-1 gw-mt-2 gw-flex-1 gw-overflow-auto gw-pr-4 gw-min-h-0">
+            <div className="gw-grid gw-grid-cols-1 gw-mt-2 gw-overflow-auto gw-pr-4 gw-min-h-0">
                 {isLoading && totalTransactions === 0 ? (
                     // initial loading state
                     new Array(3).fill(null).map((_, index) => {
@@ -196,7 +196,7 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
                         )}
                     </>
                 ) : (
-                    <div className="gw-flex gw-justify-center gw-items-center gw-flex-1 gw-text-brand-gray-500 gw-typography-body2">
+                    <div className="gw-flex gw-justify-center gw-items-center gw-text-brand-gray-500 gw-typography-body2 gw-py-8">
                         No transactions
                     </div>
                 )}

@@ -11,7 +11,7 @@ import { Button } from "../ui/button";
 import { SendFundQuote } from "./WalletSendFundView";
 import { LinkWithIcon } from "../shared/LinkWithIcon";
 import { useChainId } from "wagmi";
-import { IS_TESTNET_CHAIN, TESTNET_CLASS } from "../../lib/constants";
+import { IS_TESTNET_CHAIN, TESTNET_CSS_CLASS } from "../../lib/constants";
 
 interface WalletSendFundPendingViewProps {
     onBack: () => void;
@@ -75,7 +75,7 @@ const WalletSendFundPendingView: React.FC<WalletSendFundPendingViewProps> = ({
                                 </div>
 
                                 <div className="gw-flex gw-items-center gw-justify-center gw-relative gw-z-10">
-                                    <TokenIcon className={cn("gw-size-6", isTestnet && TESTNET_CLASS)} />
+                                    <TokenIcon className={cn("gw-size-6", isTestnet && TESTNET_CSS_CLASS)} />
 
                                     <div className="gw-typography-body2 gw-ml-2">
                                         <span>{quote?.receivable_amount_in_token}</span>{" "}

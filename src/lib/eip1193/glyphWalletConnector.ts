@@ -5,6 +5,7 @@ import { type EIP1193EventMap, type EIP1193RequestFn, type EIP1474Methods } from
 import { WalletDetailsParams } from "@rainbow-me/rainbowkit";
 import { CreateConnectorFn } from "wagmi";
 import { GLYPH_PRIVY_APP_ID, glyphConnectorDetails, STAGING_GLYPH_PRIVY_APP_ID } from "../constants";
+import { apeChain } from "viem/chains";
 
 interface GlyphWalletConnectorOptions {
     /** RainbowKit connector details */
@@ -45,21 +46,14 @@ function glyphWalletConnector(options: Partial<GlyphWalletConnectorOptions> = {}
 > {
     const { rkDetails, useStagingTenant } = options;
     return (params) => {
-        const [defaultChain, ...chains] = [...params.chains];
-
         const connector = toPrivyWalletConnector({
             iconUrl: glyphConnectorDetails.iconUrl,
             id: useStagingTenant ? STAGING_GLYPH_PRIVY_APP_ID : GLYPH_PRIVY_APP_ID,
             name: glyphConnectorDetails.name
-        })({
-            ...params,
-            chains: [defaultChain, ...chains]
-        });
+        })(params);
 
         const getGlyphProvider = async (parameters?: { chainId?: number | undefined } | undefined) => {
-            const chainId = parameters?.chainId ?? defaultChain.id;
-
-            // const chain = params.chains.find((c) => c.id === chainId);
+            const chainId = parameters?.chainId ?? params.chains?.[0]?.id ?? apeChain.id;
 
             const provider = await connector.getProvider({
                 chainId
