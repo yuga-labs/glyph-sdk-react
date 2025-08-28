@@ -1,4 +1,4 @@
-export function CaretDownIcon(props: React.SVGProps<SVGSVGElement>): JSX.Element {
+export function CaretDownIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg width="15" viewBox="0 0 15 9" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
             <path

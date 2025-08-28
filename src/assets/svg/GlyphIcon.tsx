@@ -1,4 +1,4 @@
-function GlyphIcon(props: React.SVGProps<SVGSVGElement>): JSX.Element {
+function GlyphIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg width="259" height="259" viewBox="0 0 259 259" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
             <path

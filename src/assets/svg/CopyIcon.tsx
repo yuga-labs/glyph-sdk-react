@@ -2,7 +2,7 @@ interface Props extends React.SVGProps<SVGSVGElement> {
     isCopied?: boolean;
 }
 
-function CopyIcon(props: Props): JSX.Element {
+function CopyIcon(props: Props) {
     const { isCopied, ...rest } = props;
     return !isCopied ? (
         <svg viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg" {...rest}>

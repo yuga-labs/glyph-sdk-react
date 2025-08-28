@@ -1,4 +1,4 @@
-function PrivyIcon(props: React.SVGProps<SVGSVGElement>): JSX.Element {
+function PrivyIcon(props: React.SVGProps<SVGSVGElement>) {
 	return (
 		<svg
 			width="346"

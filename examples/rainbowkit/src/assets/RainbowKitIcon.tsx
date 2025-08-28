@@ -1,4 +1,4 @@
-function RainbowKitIcon(props: React.SVGProps<SVGSVGElement>): JSX.Element {
+function RainbowKitIcon(props: React.SVGProps<SVGSVGElement>) {
 	return (
 		<svg
 			width="120"

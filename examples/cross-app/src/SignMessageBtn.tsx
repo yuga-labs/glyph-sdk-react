@@ -26,7 +26,7 @@ export function SignMessageBtn({
 	signFn,
 	message,
 	buttonText = "Sign Message",
-}: SignMessageBtnProps): JSX.Element {
+}: SignMessageBtnProps) {
 	return (
 		<button
 			className="flex items-center justify-center w-full h-12 px-4 transition-colors border rounded-full"

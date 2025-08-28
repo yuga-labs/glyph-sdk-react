@@ -1,4 +1,4 @@
-export function FailureIcon(props: React.SVGProps<SVGSVGElement>): JSX.Element {
+export function FailureIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg width="105" height="105" viewBox="0 0 105 105" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
             <path

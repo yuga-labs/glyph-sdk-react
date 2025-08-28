@@ -1,4 +1,4 @@
-function LoadingCircleIcon(props: React.SVGProps<SVGSVGElement>): JSX.Element {
+function LoadingCircleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg width="255" height="254" viewBox="0 0 255 254" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
             <path

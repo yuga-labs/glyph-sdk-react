@@ -1,4 +1,4 @@
-function WagmiIcon(props: React.SVGProps<SVGSVGElement>): JSX.Element {
+function WagmiIcon(props: React.SVGProps<SVGSVGElement>) {
 	return (
 		<svg
 			width="561"

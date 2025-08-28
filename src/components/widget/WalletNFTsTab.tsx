@@ -13,25 +13,27 @@ type NFTImageProps = React.SVGProps<SVGSVGElement> & {
     url?: string | null;
     title?: string;
     className?: string;
-}
+};
 
-const NFTImg = ({ url, alt, title, className, ...props }: NFTImageProps): JSX.Element => {
+const NFTImg = ({ url, alt, title, className, ...props }: NFTImageProps) => {
     const [imgErr, setImgErr] = useState(false);
 
     return (
         <>
-            {(!imgErr && url) ?
+            {!imgErr && url ? (
                 <img
                     src={url}
                     alt={alt}
                     title={title}
                     onError={() => setImgErr(true)}
                     className={cn("gw-object-cover gw-rounded-md gw-block", className)}
-                /> : <NFTImgFail style={{ width: "100%", height: "100%" }} {...props} />
-            }
+                />
+            ) : (
+                <NFTImgFail style={{ width: "100%", height: "100%" }} {...props} />
+            )}
         </>
     );
-}
+};
 
 export function WalletNFTsTab() {
     const { glyphUrl } = useGlyph();
@@ -52,7 +54,8 @@ export function WalletNFTsTab() {
                 <div className="gw-flex gw-flex-col gw-flex-1 gw-min-h-0">
                     {/* Scrollable accordion area */}
                     <div className="gw-flex-1 gw-min-h-0 gw-overflow-auto">
-                        <Accordion className="gw-w-full"
+                        <Accordion
+                            className="gw-w-full"
                             type="single"
                             collapsible
                             value={expandedItemId}
@@ -79,7 +82,9 @@ export function WalletNFTsTab() {
                                                         </span>
                                                     </div>
                                                     <div className="gw-flex gw-flex-col gw-items-between gw-justify-end gw-text-end gw-flex-shrink-0">
-                                                        <ExpandItemIcon className={`${expandedItemId === idx.toString() ? '' : 'gw-rotate-180'}`} />
+                                                        <ExpandItemIcon
+                                                            className={`${expandedItemId === idx.toString() ? "" : "gw-rotate-180"}`}
+                                                        />
                                                     </div>
                                                 </div>
                                             </AccordionTrigger>
@@ -121,11 +126,18 @@ export function WalletNFTsTab() {
                     {/* Fixed footer */}
                     <div className="gw-flex gw-justify-center gw-items-center gw-w-full gw-text-brand-gray-500 gw-typography-body2 gw-flex-shrink-0 gw-mt-2">
                         Need to transfer? Use
-                        <a href={nftsURL} target="_blank" rel="noopener noreferrer" className={buttonVariants({
-                            variant: "link-inline",
-                            size: "xs-inline",
-                            scale: false
-                        })}>Glyph Dashboard</a>
+                        <a
+                            href={nftsURL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={buttonVariants({
+                                variant: "link-inline",
+                                size: "xs-inline",
+                                scale: false
+                            })}
+                        >
+                            Glyph Dashboard
+                        </a>
                     </div>
                 </div>
             ) : (

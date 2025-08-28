@@ -2,7 +2,7 @@ interface Props extends React.SVGProps<SVGSVGElement> {
     isActive: boolean;
 }
 
-function ActivityIcon(props: Props): JSX.Element {
+function ActivityIcon(props: Props) {
     const { isActive, ...rest } = props;
     return (
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...rest}>
