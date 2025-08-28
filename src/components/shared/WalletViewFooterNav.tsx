@@ -1,13 +1,13 @@
-import React from "react";
+import { memo } from "react";
 import ActivityIcon from "../../assets/svg/ActivityIcon";
 import HomeIcon from "../../assets/svg/HomeIcon";
+import NFTsIcon from "../../assets/svg/NFTsIcon";
 import TokensIcon from "../../assets/svg/TokensIcon";
 import WalletsTabFilledIcon from "../../assets/svg/WalletsTabFilledIcon";
 import WalletsTabOutlinedIcon from "../../assets/svg/WalletsTabOutlinedIcon";
 import { useGlyph } from "../../hooks/useGlyph";
 import { WalletMainViewTab } from "../../lib/constants";
 import { cn } from "../../lib/utils";
-import NFTsIcon from "../../assets/svg/NFTsIcon";
 
 interface WalletViewFooterNavProps {
     tab: WalletMainViewTab;
@@ -76,4 +76,4 @@ const WalletViewFooterNav: React.FC<WalletViewFooterNavProps> = ({ tab, setTab }
     );
 };
 
-export default React.memo(WalletViewFooterNav);
+export default memo(WalletViewFooterNav);

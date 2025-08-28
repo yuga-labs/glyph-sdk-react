@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import React from "react";
+import { memo } from "react";
 import { FailureIcon } from "../../assets/svg/FailureIcon";
 import { LinkWithIcon } from "../shared/LinkWithIcon";
 import { WalletViewTemplate } from "../shared/WalletViewTemplate";
@@ -68,4 +68,4 @@ const WalletSendFundFailedView: React.FC<WalletSendFundFailedViewProps> = ({
     );
 };
 
-export default React.memo(WalletSendFundFailedView);
+export default memo(WalletSendFundFailedView);

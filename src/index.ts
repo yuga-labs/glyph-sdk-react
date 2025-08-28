@@ -7,12 +7,12 @@ import { GlyphProvider } from "./context/GlyphProvider";
 export { useBalances } from "./hooks/useBalances";
 export { useGlyph } from "./hooks/useGlyph";
 export { useGlyphFunding, type GLYPH_FUND_STATUS } from "./hooks/useGlyphFunding";
-export { 
-    useGlyphTokenGate, 
-    useGlyphOwnershipCheck, 
-    type GlyphOwnershipCheckRequest, 
-    type GlyphTokenGateResult, 
-    type GlyphOwnershipCheckResult 
+export {
+    useGlyphTokenGate,
+    useGlyphOwnershipCheck,
+    type GlyphOwnershipCheckRequest,
+    type GlyphTokenGateResult,
+    type GlyphOwnershipCheckResult
 } from "./hooks/useGlyphTokenGate";
 export { useGlyphView } from "./hooks/useGlyphView";
 export { glyphConnectorDetails } from "./lib/constants";
@@ -30,7 +30,7 @@ export { glyphWalletRK, glyphWalletRKStaging } from "./lib/eip1193/glyphWalletRK
 export { GLYPH_ICON_URL, GLYPH_PRIVY_APP_ID, STAGING_GLYPH_PRIVY_APP_ID } from "./lib/constants";
 export {
     GLYPH_APP_LOGIN_METHOD,
-    GlyphPrivyProvider,
+    default as GlyphPrivyProvider,
     STAGING_GLYPH_APP_LOGIN_METHOD
 } from "./lib/privy/GlyphPrivyProvider";
 export { InjectWagmiConnector } from "./lib/privy/InjectWagmiConnector";

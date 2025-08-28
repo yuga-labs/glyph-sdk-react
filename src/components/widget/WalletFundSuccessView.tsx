@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import React from "react";
+import { memo } from "react";
 import truncateEthAddress from "truncate-eth-address";
 import ApecoinIcon from "../../assets/svg/ApecoinIcon";
 import { CaretDownIcon } from "../../assets/svg/CaretDownIcon";
@@ -67,4 +67,4 @@ const WalletFundSuccessView: React.FC<WalletFundSuccessViewProps> = ({ onEnd, on
     );
 };
 
-export default React.memo(WalletFundSuccessView);
+export default memo(WalletFundSuccessView);

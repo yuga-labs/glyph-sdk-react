@@ -1,4 +1,4 @@
-import React from "react";
+import { memo } from "react";
 import truncateEthAddress from "truncate-eth-address";
 import ApecoinIcon from "../../assets/svg/ApecoinIcon";
 import { CaretDownIcon } from "../../assets/svg/CaretDownIcon";
@@ -84,4 +84,4 @@ const WalletFundPendingView: React.FC<WalletFundPendingViewProps> = ({ onBack, i
     );
 };
 
-export default React.memo(WalletFundPendingView);
+export default memo(WalletFundPendingView);

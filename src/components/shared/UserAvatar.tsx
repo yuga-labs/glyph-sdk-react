@@ -1,4 +1,4 @@
-import React from "react";
+import { memo } from "react";
 import { useGlyph } from "../../hooks/useGlyph";
 import { cn, ethereumAvatar, TWITTER_IMAGE_URL_REGEX } from "../../lib/utils";
 import { Skeleton } from "../ui/skeleton";
@@ -41,4 +41,4 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ className, overrideUrl, overrid
     );
 };
 
-export default React.memo(UserAvatar);
+export default memo(UserAvatar);

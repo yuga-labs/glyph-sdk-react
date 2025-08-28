@@ -1,17 +1,17 @@
-import React from "react";
+import { memo } from "react";
 import truncateEthAddress from "truncate-eth-address";
+import { useChainId } from "wagmi";
 import { CaretDownIcon } from "../../assets/svg/CaretDownIcon";
 import LoadingCircleIcon from "../../assets/svg/LoadingCircleIcon.";
 import { useGlyph } from "../../hooks/useGlyph";
+import { IS_TESTNET_CHAIN, TESTNET_CSS_CLASS } from "../../lib/constants";
 import { cn, ethereumAvatar } from "../../lib/utils";
+import { LinkWithIcon } from "../shared/LinkWithIcon";
 import UserAvatar from "../shared/UserAvatar";
 import WalletViewHeader from "../shared/WalletViewHeader";
 import { WalletViewTemplate } from "../shared/WalletViewTemplate";
 import { Button } from "../ui/button";
 import { SendFundQuote } from "./WalletSendFundView";
-import { LinkWithIcon } from "../shared/LinkWithIcon";
-import { useChainId } from "wagmi";
-import { IS_TESTNET_CHAIN, TESTNET_CSS_CLASS } from "../../lib/constants";
 
 interface WalletSendFundPendingViewProps {
     onBack: () => void;
@@ -33,7 +33,7 @@ const WalletSendFundPendingView: React.FC<WalletSendFundPendingViewProps> = ({
     TokenIcon
 }) => {
     const { user } = useGlyph();
-    const chainId = useChainId()
+    const chainId = useChainId();
     const isTestnet = IS_TESTNET_CHAIN.get(chainId) || false;
 
     return (
@@ -122,4 +122,4 @@ const WalletSendFundPendingView: React.FC<WalletSendFundPendingViewProps> = ({
     );
 };
 
-export default React.memo(WalletSendFundPendingView);
+export default memo(WalletSendFundPendingView);

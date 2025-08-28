@@ -26,7 +26,10 @@ export default ({ mode }: { mode: string }) => {
 
     return defineConfig({
         plugins: [
-            react(),
+            react({
+                // Ensure compatibility with both React 18 and 19
+                jsxImportSource: "react"
+            }),
             dts({
                 tsconfigPath: "./tsconfig.app.json",
                 outDir: "dist/types",
@@ -46,6 +49,7 @@ export default ({ mode }: { mode: string }) => {
                 fileName: (format) => `index.${format}.js`,
                 formats: ["es", "umd"]
             },
+            sourcemap: true,
             rollupOptions: {
                 external: Object.keys(peerDependencies),
                 output: {
