@@ -1,6 +1,6 @@
 {
     "name": "@use-glyph/sdk-react",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "type": "module",
     "license": "GLYPH-1.0",
     "sideEffects": false,
@@ -53,6 +53,7 @@
         "path": "^0.12.7",
         "postcss": "^8.5.6",
         "prettier": "^3.6.2",
+        "@rainbow-me/rainbowkit": ">=2.2.8",
         "react": ">=18",
         "react-dom": ">=18",
         "rimraf": "^6.0.1",
@@ -64,17 +65,17 @@
         "vite-plugin-dts": "^4.5.4"
     },
     "peerDependencies": {
-        "@privy-io/cross-app-connect": "^0.2.3",
-        "@privy-io/react-auth": "^2.22.0",
-        "@privy-io/wagmi": "^1.0.6",
-        "@rainbow-me/rainbowkit": "^2.2.8",
-        "@tanstack/react-query": "^5.85.5",
+        "@privy-io/cross-app-connect": ">=0.2.1",
+        "@privy-io/react-auth": ">=2.21.0",
+        "@privy-io/wagmi": ">=1.0.6",
+        "@rainbow-me/rainbowkit": ">=2.2.8",
+        "@tanstack/react-query": ">=5.76.0",
         "@types/react": ">=18",
         "@types/react-dom": ">=18",
         "react": ">=18",
         "react-dom": ">=18",
-        "viem": "^2.36.0",
-        "wagmi": "^2.16.8"
+        "viem": ">=2.30.0",
+        "wagmi": ">=2.10.0"
     },
     "dependencies": {
         "@radix-ui/react-accordion": "^1.2.12",
@@ -93,5 +94,13 @@
         "throttle-debounce": "5.0.2",
         "truncate-eth-address": "1.0.2",
         "vaul": "1.1.2"
+    },
+    "peerDependenciesMeta": {
+        "@privy-io/cross-app-connect": {
+            "optional": true
+        },
+        "@rainbow-me/rainbowkit": {
+            "optional": true
+        }
     }
 }
