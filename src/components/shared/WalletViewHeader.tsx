@@ -1,15 +1,15 @@
-import { X, ChevronDown } from "lucide-react";
-import React, { useState, useRef, useEffect } from "react";
+import { ChevronDown, X } from "lucide-react";
+import { memo, useEffect, useRef, useState } from "react";
 import truncateEthAddress from "truncate-eth-address";
+import { Chain } from "viem";
+import { useChainId, useChains, useSwitchChain } from "wagmi";
 import BackIcon from "../../assets/svg/BackIcon";
+import Ellipse from "../../assets/svg/Ellipse";
 import { useGlyph } from "../../hooks/useGlyph";
-import CopyButton from "./CopyButton";
-import UserAvatar from "./UserAvatar";
-import { useChainId, useSwitchChain, useChains } from "wagmi";
 import { CHAIN_ICONS, IS_TESTNET_CHAIN, TESTNET_CSS_CLASS } from "../../lib/constants";
 import { cn } from "../../lib/utils";
-import { Chain } from "viem";
-import Ellipse from "../../assets/svg/Ellipse";
+import CopyButton from "./CopyButton";
+import UserAvatar from "./UserAvatar";
 
 interface WalletViewHeaderProps {
     fullScreenHeader?: {
@@ -20,7 +20,7 @@ interface WalletViewHeaderProps {
     onProfileClick?: () => void;
 }
 
-const WalletViewHeader: React.FC<WalletViewHeaderProps> = ({ fullScreenHeader, onProfileClick }) => {
+const WalletViewHeader = ({ fullScreenHeader, onProfileClick }: WalletViewHeaderProps) => {
     const { user } = useGlyph();
     const chainId = useChainId();
     const { switchChain } = useSwitchChain();
@@ -44,8 +44,8 @@ const WalletViewHeader: React.FC<WalletViewHeaderProps> = ({ fullScreenHeader, o
             }
         };
 
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
     return fullScreenHeader && fullScreenHeader?.title ? (
@@ -113,28 +113,37 @@ const WalletViewHeader: React.FC<WalletViewHeaderProps> = ({ fullScreenHeader, o
 
                         {isOpen && (
                             <div className="gw-absolute gw-top-full gw-right-0 gw-mt-1 gw-bg-white gw-rounded-xl gw-shadow-md gw-z-50 gw-min-w-[8rem] gw-overflow-hidden">
-                                {sortedChains
-                                    .map((ch) => {
-                                        const isCurrentChain = ch.id === chainId;
-                                        const OptionChainIcon = CHAIN_ICONS[ch.id] || Ellipse;
-                                        const isTestnetChain = IS_TESTNET_CHAIN.get(ch.id) || false;
-                                        return (
-                                            <button
-                                                key={ch.id}
-                                                onClick={() => {
-                                                    switchChain({ chainId: ch.id });
-                                                    setIsOpen(false);
-                                                }}
-                                                disabled={isCurrentChain}
-                                                className={cn("gw-w-full gw-flex gw-items-center gw-space-x-2 gw-px-1 gw-py-1 gw-text-left", isCurrentChain ? "gw-bg-green-500/15" : "hover:gw-bg-gray-50")}
-                                            >
-                                                <div className="gw-w-9 gw-h-9 gw-rounded-full gw-p-1">
-                                                    <OptionChainIcon className={cn("gw-size-6 gw-text-white", isTestnetChain && TESTNET_CSS_CLASS)} />
-                                                </div>
-                                                <span className={cn("gw-text-sm", isCurrentChain && "!gw-font-bold")}>{ch.name}</span>
-                                            </button>
-                                        );
-                                    })}
+                                {sortedChains.map((ch) => {
+                                    const isCurrentChain = ch.id === chainId;
+                                    const OptionChainIcon = CHAIN_ICONS[ch.id] || Ellipse;
+                                    const isTestnetChain = IS_TESTNET_CHAIN.get(ch.id) || false;
+                                    return (
+                                        <button
+                                            key={ch.id}
+                                            onClick={() => {
+                                                switchChain({ chainId: ch.id });
+                                                setIsOpen(false);
+                                            }}
+                                            disabled={isCurrentChain}
+                                            className={cn(
+                                                "gw-w-full gw-flex gw-items-center gw-space-x-2 gw-px-1 gw-py-1 gw-text-left",
+                                                isCurrentChain ? "gw-bg-green-500/15" : "hover:gw-bg-gray-50"
+                                            )}
+                                        >
+                                            <div className="gw-w-9 gw-h-9 gw-rounded-full gw-p-1">
+                                                <OptionChainIcon
+                                                    className={cn(
+                                                        "gw-size-6 gw-text-white",
+                                                        isTestnetChain && TESTNET_CSS_CLASS
+                                                    )}
+                                                />
+                                            </div>
+                                            <span className={cn("gw-text-sm", isCurrentChain && "!gw-font-bold")}>
+                                                {ch.name}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
@@ -144,4 +153,4 @@ const WalletViewHeader: React.FC<WalletViewHeaderProps> = ({ fullScreenHeader, o
     );
 };
 
-export default React.memo(WalletViewHeader);
+export default memo(WalletViewHeader);

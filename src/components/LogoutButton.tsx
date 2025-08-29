@@ -1,8 +1,7 @@
-import { FC, memo } from "react";
 import { useGlyph } from "../hooks/useGlyph";
 import { Button } from "./ui/button";
 
-const LogoutButton: FC = () => {
+export const LogoutButton = () => {
     const { logout } = useGlyph();
 
     return (
@@ -11,6 +10,3 @@ const LogoutButton: FC = () => {
         </Button>
     );
 };
-
-LogoutButton.displayName = "LogoutButton";
-export default memo(LogoutButton);

@@ -1,12 +1,12 @@
 import { PrivyProvider, type LoginMethodOrderOption, type PrivyProviderProps } from "@privy-io/react-auth";
 import { createConfig, WagmiProvider } from "@privy-io/wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { memo, useMemo } from "react";
+import { useMemo } from "react";
 import { fallback, http, webSocket, type Chain, type Transport } from "viem";
-import { GlyphProvider } from "../../context/GlyphProvider.js";
 import { BaseGlyphProviderOptions, StrategyType } from "../../types/GlyphWidgetTypes.js";
 import { GLYPH_PRIVY_APP_ID, STAGING_GLYPH_PRIVY_APP_ID } from "../constants.js";
 import { InjectWagmiConnector } from "./InjectWagmiConnector.js";
+import { GlyphProvider } from "../../context/GlyphProvider.js";
 
 export const GLYPH_APP_LOGIN_METHOD: LoginMethodOrderOption = `privy:${GLYPH_PRIVY_APP_ID}`;
 export const STAGING_GLYPH_APP_LOGIN_METHOD: LoginMethodOrderOption = `privy:${STAGING_GLYPH_PRIVY_APP_ID}`;
@@ -29,9 +29,10 @@ interface GlyphPrivyProviderProps extends Omit<PrivyProviderProps, "children">, 
     glyphUrl?: string;
     useStagingTenant?: boolean;
     ssr?: boolean;
+    children: React.ReactNode;
 }
 
-const GlyphPrivyProvider = ({
+export const GlyphPrivyProvider = ({
     chains,
     transports,
     queryClient = new QueryClient(),
@@ -99,5 +100,3 @@ const GlyphPrivyProvider = ({
         </PrivyProvider>
     );
 };
-
-export default memo(GlyphPrivyProvider);

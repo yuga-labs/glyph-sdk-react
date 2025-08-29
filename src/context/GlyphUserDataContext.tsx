@@ -9,4 +9,3 @@ interface GlyphUserDataContextType {
 }
 
 export const GlyphUserDataContext = createContext<GlyphUserDataContextType | undefined>(undefined);
-GlyphUserDataContext.displayName = "GlyphUserDataContext";

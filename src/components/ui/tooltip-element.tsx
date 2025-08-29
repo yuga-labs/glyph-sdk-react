@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { ReactElement, useState } from "react";
 import { HelpIcon } from "../../assets/svg/HelpIcon";
 import { cn } from "../../lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
@@ -28,7 +28,7 @@ function TooltipElement({
     // When open is undefined internal state is used, but if open is null, undefined is passed
     open?: boolean | null;
     onOpenChange?: ((open: boolean) => void) | undefined;
-}): React.ReactElement {
+}): ReactElement {
     const [openInternal, setOpenInternal] = useState<boolean>(false);
     return (
         <Tooltip

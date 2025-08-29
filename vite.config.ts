@@ -28,7 +28,8 @@ export default ({ mode }: { mode: string }) => {
         plugins: [
             react({
                 // Ensure compatibility with both React 18 and 19
-                jsxImportSource: "react"
+                jsxImportSource: "react",
+                jsxRuntime: "automatic"
             }),
             dts({
                 tsconfigPath: "./tsconfig.app.json",

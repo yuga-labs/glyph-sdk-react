@@ -1,10 +1,9 @@
 import { Loader2 } from "lucide-react";
-import { FC, memo } from "react";
 import GlyphIcon from "../assets/svg/GlyphIcon";
 import { useGlyph } from "../hooks/useGlyph";
 import { Button } from "./ui/button";
 
-const LoginButton: FC = () => {
+export const LoginButton = () => {
     const { login, authenticated, ready } = useGlyph();
 
     return !ready || authenticated ? (
@@ -27,6 +26,3 @@ const LoginButton: FC = () => {
         </Button>
     );
 };
-
-LoginButton.displayName = "LoginButton";
-export default memo(LoginButton);

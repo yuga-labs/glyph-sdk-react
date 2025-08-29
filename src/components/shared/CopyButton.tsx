@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { memo, useState } from "react";
 import CopyIcon from "../../assets/svg/CopyIcon";
 import { cn, copyToClipboard } from "../../lib/utils";
 
@@ -10,7 +10,7 @@ interface CopyButtonProps {
     iconClassName?: string;
 }
 
-const CopyButton: React.FC<CopyButtonProps> = ({ text, textToCopy, className, textClassName, iconClassName }) => {
+const CopyButton = ({ text, textToCopy, className, textClassName, iconClassName }: CopyButtonProps) => {
     const [copied, setCopied] = useState<boolean>(false);
 
     return (
@@ -33,4 +33,4 @@ const CopyButton: React.FC<CopyButtonProps> = ({ text, textToCopy, className, te
     );
 };
 
-export default React.memo(CopyButton);
+export default memo(CopyButton);

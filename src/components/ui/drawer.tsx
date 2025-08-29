@@ -1,4 +1,4 @@
-import * as React from "react";
+import { ComponentProps, ComponentPropsWithoutRef, ElementRef, FC, forwardRef, HTMLAttributes } from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 import { cn } from "../../lib/utils";
 
@@ -6,26 +6,25 @@ const Drawer = ({
     shouldScaleBackground = false,
     repositionInputs = false,
     ...props
-}: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
+}: ComponentProps<typeof DrawerPrimitive.Root>) => (
     <DrawerPrimitive.Root
         shouldScaleBackground={shouldScaleBackground}
         repositionInputs={repositionInputs}
         {...props}
     />
 );
-Drawer.displayName = "Drawer";
 
 const DrawerTrigger = DrawerPrimitive.Trigger;
 
-const DrawerPortal = DrawerPrimitive.Portal;
+const DrawerPortal: FC<{ children: React.ReactNode }> = DrawerPrimitive.Portal;
 
 const DrawerClose = DrawerPrimitive.Close;
 
 const DrawerHandle = DrawerPrimitive.Handle;
 
-const DrawerOverlay = React.forwardRef<
-    React.ElementRef<typeof DrawerPrimitive.Overlay>,
-    React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
+const DrawerOverlay = forwardRef<
+    ElementRef<typeof DrawerPrimitive.Overlay>,
+    ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
     <DrawerPrimitive.Overlay
         ref={ref}
@@ -33,11 +32,10 @@ const DrawerOverlay = React.forwardRef<
         {...props}
     />
 ));
-DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
 
-const DrawerContent = React.forwardRef<
-    React.ElementRef<typeof DrawerPrimitive.Content>,
-    React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> & {
+const DrawerContent = forwardRef<
+    ElementRef<typeof DrawerPrimitive.Content>,
+    ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> & {
         childrenWrapperClassName?: string;
     }
 >(({ className, children, childrenWrapperClassName, ...props }, ref) => (
@@ -62,21 +60,18 @@ const DrawerContent = React.forwardRef<
         </DrawerPrimitive.Content>
     </DrawerPortal>
 ));
-DrawerContent.displayName = "DrawerContent";
 
-const DrawerHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+const DrawerHeader = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) => (
     <div className={cn("gw-grid gw-gap-1.5 gw-p-4 gw-text-center sm:gw-text-left", className)} {...props} />
 );
-DrawerHeader.displayName = "DrawerHeader";
 
-const DrawerFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+const DrawerFooter = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) => (
     <div className={cn("gw-mt-auto gw-flex gw-flex-col gw-gap-2 gw-p-4", className)} {...props} />
 );
-DrawerFooter.displayName = "DrawerFooter";
 
-const DrawerTitle = React.forwardRef<
-    React.ElementRef<typeof DrawerPrimitive.Title>,
-    React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Title>
+const DrawerTitle = forwardRef<
+    ElementRef<typeof DrawerPrimitive.Title>,
+    ComponentPropsWithoutRef<typeof DrawerPrimitive.Title>
 >(({ className, ...props }, ref) => (
     <DrawerPrimitive.Title
         ref={ref}
@@ -84,11 +79,10 @@ const DrawerTitle = React.forwardRef<
         {...props}
     />
 ));
-DrawerTitle.displayName = DrawerPrimitive.Title.displayName;
 
-const DrawerDescription = React.forwardRef<
-    React.ElementRef<typeof DrawerPrimitive.Description>,
-    React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Description>
+const DrawerDescription = forwardRef<
+    ElementRef<typeof DrawerPrimitive.Description>,
+    ComponentPropsWithoutRef<typeof DrawerPrimitive.Description>
 >(({ className, ...props }, ref) => (
     <DrawerPrimitive.Description
         ref={ref}
@@ -96,7 +90,6 @@ const DrawerDescription = React.forwardRef<
         {...props}
     />
 ));
-DrawerDescription.displayName = DrawerPrimitive.Description.displayName;
 
 export {
     Drawer,
@@ -104,10 +97,10 @@ export {
     DrawerContent,
     DrawerDescription,
     DrawerFooter,
+    DrawerHandle,
     DrawerHeader,
     DrawerOverlay,
     DrawerPortal,
     DrawerTitle,
-    DrawerTrigger,
-    DrawerHandle
+    DrawerTrigger
 };

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { memo, useEffect } from "react";
 import truncateEthAddress from "truncate-eth-address";
 import { checksumAddress, Hex, isAddress } from "viem";
 import { CaretDownIcon } from "../../assets/svg/CaretDownIcon";
@@ -19,14 +19,14 @@ interface WalletSendFundEnterAddressViewProps {
     recipientAddressError: string | null;
 }
 
-const WalletSendFundEnterAddressView: React.FC<WalletSendFundEnterAddressViewProps> = ({
+const WalletSendFundEnterAddressView = ({
     onBack,
     setView,
     setRecipientAddress,
     setRecipientAddressError,
     recipientAddress,
     recipientAddressError
-}) => {
+}: WalletSendFundEnterAddressViewProps) => {
     const { user } = useGlyph();
 
     useEffect(() => {
@@ -127,4 +127,4 @@ const WalletSendFundEnterAddressView: React.FC<WalletSendFundEnterAddressViewPro
     );
 };
 
-export default React.memo(WalletSendFundEnterAddressView);
+export default memo(WalletSendFundEnterAddressView);

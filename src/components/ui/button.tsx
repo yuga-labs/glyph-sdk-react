@@ -1,6 +1,6 @@
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-import * as React from "react";
+import { ButtonHTMLAttributes, forwardRef } from "react";
 import { cn } from "../../lib/utils";
 
 const buttonVariantsClasses = cva(
@@ -17,7 +17,8 @@ const buttonVariantsClasses = cva(
                     "gw-bg-brand-deep-moss hover:gw-bg-brand-deep-moss-light active:gw-bg-brand-deep-moss-dark gw-text-background",
                 ghost: "gw-text-primary hover:gw-bg-accent hover:gw-text-accent-foreground",
                 link: "gw-text-secondary hover:gw-text-secondary-light active:gw-text-secondary-dark gw-underline-offset-4 hover:gw-underline",
-                "link-inline": "gw-text-secondary hover:gw-text-secondary-light active:gw-text-secondary-dark gw-underline-offset-4 gw-underline",
+                "link-inline":
+                    "gw-text-secondary hover:gw-text-secondary-light active:gw-text-secondary-dark gw-underline-offset-4 gw-underline",
                 cube: "gw-bg-brand-white gw-text-brand-gray-black [&_svg]:gw-text-secondary [&_svg]:hover:gw-text-secondary-light [&_svg]:active:gw-text-secondary-dark"
             },
             size: {
@@ -47,14 +48,14 @@ const buttonVariantsClasses = cva(
 );
 
 export interface ButtonProps
-    extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    extends ButtonHTMLAttributes<HTMLButtonElement>,
         VariantProps<typeof buttonVariantsClasses> {
     asChild?: boolean;
     shadow?: boolean;
     scale?: boolean;
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ({ className, variant, size, shadow, scale, asChild = false, ...props }, ref) => {
         const Comp = asChild ? Slot : "button";
         return (
@@ -66,6 +67,5 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         );
     }
 );
-Button.displayName = "Button";
 
 export { Button, buttonVariantsClasses as buttonVariants };

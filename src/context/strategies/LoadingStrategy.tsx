@@ -1,11 +1,7 @@
-import React, { FC } from "react";
-import { GlyphContext, EmptyGlyphContext } from "../GlyphContext";
+import { EmptyGlyphContext, GlyphContext } from "../GlyphContext";
 
-const LoadingStrategy: FC<{ children: React.ReactNode }> = ({ children }) => {
-    return (
-        <GlyphContext.Provider value={EmptyGlyphContext} children={children}/>
-    );
+const LoadingStrategy = ({ children }: { children: React.ReactNode }) => {
+    return <GlyphContext.Provider value={EmptyGlyphContext} children={children} />;
 };
 
-LoadingStrategy.displayName = "LoadingStrategy";
 export default LoadingStrategy;

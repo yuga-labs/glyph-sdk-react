@@ -1,4 +1,3 @@
-import { FC, memo } from "react";
 import GlyphIcon from "../assets/svg/GlyphIcon";
 import { WalletIcon } from "../assets/svg/WalletIcon";
 import { useGlyph } from "../hooks/useGlyph";
@@ -7,11 +6,11 @@ import { GlyphWidgetButtonProps } from "../types";
 import UserAvatar from "./shared/UserAvatar";
 import { Skeleton } from "./ui/skeleton";
 
-const GlyphWidgetButton: FC<GlyphWidgetButtonProps> = ({
+export const GlyphWidgetButton = ({
     showAvatar = true,
     showBalance = true,
     showUsername = true
-}) => {
+}: GlyphWidgetButtonProps) => {
     const { user, balances } = useGlyph();
     const nativeBalance = balances?.tokens?.find?.((balance) => balance.native);
     const allValuesVisible = showAvatar && showBalance && showUsername;
@@ -52,6 +51,3 @@ const GlyphWidgetButton: FC<GlyphWidgetButtonProps> = ({
         </div>
     );
 };
-
-GlyphWidgetButton.displayName = "GlyphWidgetButton";
-export default memo(GlyphWidgetButton);

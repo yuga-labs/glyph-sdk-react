@@ -185,5 +185,4 @@ const PrivyStrategy: FC<BaseGlyphProviderOptions> = ({ children, glyphUrl, onLog
     );
 };
 
-PrivyStrategy.displayName = "PrivyStrategy";
 export default memo(PrivyStrategy);

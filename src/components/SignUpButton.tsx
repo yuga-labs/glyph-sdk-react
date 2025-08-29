@@ -1,10 +1,9 @@
 import { Loader2 } from "lucide-react";
-import { FC, memo } from "react";
 import GlyphIcon from "../assets/svg/GlyphIcon";
 import { useGlyph } from "../hooks/useGlyph";
 import { Button } from "./ui/button";
 
-const SignUpButton: FC = () => {
+export const SignUpButton = () => {
     const { glyphUrl } = useGlyph();
     const signupUrl = new URL("/", glyphUrl).toString();
 
@@ -35,6 +34,3 @@ const SignUpButton: FC = () => {
         </Button>
     );
 };
-
-SignUpButton.displayName = "SignUpButton";
-export default memo(SignUpButton);

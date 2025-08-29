@@ -241,5 +241,4 @@ const EIP1193Strategy: FC<BaseGlyphProviderOptionsWithSignature> = ({
     );
 };
 
-EIP1193Strategy.displayName = "EIP1193Strategy";
 export default EIP1193Strategy;

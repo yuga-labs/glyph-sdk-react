@@ -1,12 +1,11 @@
 import { Loader2 } from "lucide-react";
-import { FC, memo } from "react";
 import { useAccount } from "wagmi";
 import GlyphIcon from "../assets/svg/GlyphIcon";
 import { useNativeGlyphConnection } from "../hooks/useNativeGlyphConnection";
-import LoginButton from "./LoginButton";
+import { LoginButton } from "./LoginButton";
 import { Button } from "./ui/button";
 
-export const NativeGlyphConnectButton: FC = memo(() => {
+export const NativeGlyphConnectButton = () => {
     const { connect } = useNativeGlyphConnection();
     const { isConnected, isConnecting } = useAccount();
 
@@ -33,4 +32,4 @@ export const NativeGlyphConnectButton: FC = memo(() => {
     ) : (
         <LoginButton />
     );
-});
+};

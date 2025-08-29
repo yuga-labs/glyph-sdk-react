@@ -1,19 +1,19 @@
-import { FC, memo, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GlyphViewContext } from "../context/GlyphViewContext";
 import { useGlyph } from "../hooks/useGlyph";
 import useMediaQuery from "../hooks/useMediaQuery";
 import "../index.css";
 import { INTERNAL_GRADIENT_TYPE } from "../lib/constants";
 import { GlyphViewType, GlyphWidgetProps } from "../types";
-import GlyphWidgetButton from "./GlyphWidgetButton";
-import LoginButton from "./LoginButton";
+import { GlyphWidgetButton } from "./GlyphWidgetButton";
+import { LoginButton } from "./LoginButton";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHandle, DrawerTitle, DrawerTrigger } from "./ui/drawer";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Toaster } from "./ui/sonner";
 import { Wallet } from "./widget/Wallet";
 import { WidgetGradient } from "./widget/WidgetGradient";
 
-const GlyphWidget: FC<GlyphWidgetProps> = ({ buttonProps }) => {
+export const GlyphWidget = ({ buttonProps }: GlyphWidgetProps) => {
     const theme = "light";
     const isDesktop = useMediaQuery("(min-width: 768px)");
 
@@ -86,6 +86,3 @@ const GlyphWidget: FC<GlyphWidgetProps> = ({ buttonProps }) => {
         </div>
     );
 };
-
-GlyphWidget.displayName = "GlyphWidget";
-export default memo(GlyphWidget);

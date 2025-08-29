@@ -1,7 +1,7 @@
-import GlyphWidget from "./components/GlyphWidget";
-import LoginButton from "./components/LoginButton";
-import LogoutButton from "./components/LogoutButton";
-import SignUpButton from "./components/SignUpButton";
+import { GlyphWidget } from "./components/GlyphWidget";
+import { LoginButton } from "./components/LoginButton";
+import { LogoutButton } from "./components/LogoutButton";
+import { SignUpButton } from "./components/SignUpButton";
 import { GlyphProvider } from "./context/GlyphProvider";
 
 export { useBalances } from "./hooks/useBalances";
@@ -30,7 +30,7 @@ export { glyphWalletRK, glyphWalletRKStaging } from "./lib/eip1193/glyphWalletRK
 export { GLYPH_ICON_URL, GLYPH_PRIVY_APP_ID, STAGING_GLYPH_PRIVY_APP_ID } from "./lib/constants";
 export {
     GLYPH_APP_LOGIN_METHOD,
-    default as GlyphPrivyProvider,
+    GlyphPrivyProvider,
     STAGING_GLYPH_APP_LOGIN_METHOD
 } from "./lib/privy/GlyphPrivyProvider";
 export { InjectWagmiConnector } from "./lib/privy/InjectWagmiConnector";

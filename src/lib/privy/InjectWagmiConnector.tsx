@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { EIP1193Provider } from "viem";
 import { useConfig, useReconnect } from "wagmi";
 import { glyphConnectorDetails } from "../constants";

@@ -44,7 +44,6 @@ export const EmptyGlyphContext: GlyphContextType = {
 };
 
 export const GlyphContext = createContext<GlyphContextType | null>(null);
-GlyphContext.displayName = "GlyphContext";
 
 export function createApiFetch(
     baseUrl: string,

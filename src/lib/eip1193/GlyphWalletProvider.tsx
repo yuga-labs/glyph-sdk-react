@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { type Chain, http, type Transport } from "viem";
 import { createConfig, WagmiProvider } from "wagmi";
 import { GlyphProvider } from "../../context/GlyphProvider";

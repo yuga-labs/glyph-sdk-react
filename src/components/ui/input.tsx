@@ -1,8 +1,8 @@
-import * as React from "react";
+import { forwardRef, InputHTMLAttributes, ReactNode } from "react";
 import { cn } from "../../lib/utils";
 import InputHelper from "./input-helper";
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
     label?: {
         value: string;
         htmlFor: string;
@@ -10,11 +10,11 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
         floatingLabel?: boolean;
     };
     leadingIcon?: {
-        element: React.ReactNode;
+        element: ReactNode;
         className?: string;
     };
     trailingIcon?: {
-        element: React.ReactNode;
+        element: ReactNode;
         className?: string;
     };
     parentClassName?: string;
@@ -26,7 +26,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
     };
 }
 
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
+const Input = forwardRef<HTMLInputElement, InputProps>(
     (
         {
             label,
@@ -149,6 +149,5 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         );
     }
 );
-Input.displayName = "Input";
 
 export { Input };
