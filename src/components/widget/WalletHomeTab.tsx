@@ -1,14 +1,11 @@
 import { SendIcon } from "lucide-react";
-import ApecoinIcon from "../../assets/svg/ApecoinIcon";
 import { PlusSign } from "../../assets/svg/PlusSign";
 import { QRIcon } from "../../assets/svg/QRIcon";
 import { useGlyph } from "../../hooks/useGlyph";
 import { formatCurrency } from "../../lib/intl";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
-import { useChainId } from "wagmi";
-import { IS_TESTNET_CHAIN, TESTNET_CSS_CLASS } from "../../lib/constants";
-import { cn } from "../../lib/utils";
+import { NativeTokenIcon } from "../shared/ChainIcon";
 
 export type WalletHomeTabProps = {
     onAddFunds: () => void;
@@ -17,10 +14,7 @@ export type WalletHomeTabProps = {
 };
 
 export function WalletHomeTab({ onAddFunds, onReceive, onSend }: WalletHomeTabProps) {
-    const { user, balances } = useGlyph();
-    const chainId = useChainId();
-
-    const isTestnet = IS_TESTNET_CHAIN.get(chainId) || false;
+    const { user, balances, hasBalances } = useGlyph();
 
     const nativeBalance = balances?.tokens?.find?.((balance) => balance.native);
 
@@ -31,25 +25,35 @@ export function WalletHomeTab({ onAddFunds, onReceive, onSend }: WalletHomeTabPr
                 <h6>My Balance</h6>
                 <div className="gw-typography-body2 gw-text-brand-gray-600">
                     <span className="amount">
-                        {formatCurrency(nativeBalance?.amount, nativeBalance?.currency)} (
-                        {nativeBalance?.currency || "USD"})
+                        {!hasBalances || nativeBalance?.value === undefined ? (
+                            <Skeleton className="gw-w-10 gw-h-4" />
+                        ) : (
+                            <>
+                                {formatCurrency(nativeBalance?.amount, nativeBalance?.currency)} (
+                                {nativeBalance?.currency || "USD"})
+                            </>
+                        )}
                     </span>
                 </div>
             </div>
 
             <div className="gw-flex gw-justify-center gw-items-center gw-flex-col">
                 <span className="gw-typography-h1-nr">
-                    {nativeBalance?.value === undefined ? (
+                    {!hasBalances || nativeBalance?.value === undefined ? (
                         <Skeleton className="gw-w-20 gw-h-10" />
                     ) : (
                         `${nativeBalance?.value}`
                     )}
                 </span>
                 <div className="gw-inline-flex gw-items-center gw-space-x-2 gw-mt-2">
-                    <ApecoinIcon className={cn("gw-size-6", isTestnet && TESTNET_CSS_CLASS)} />
-                    <span className="gw-typography-subtitle1 gw-text-brand-gray-600">
-                        {nativeBalance?.symbol || ""}
-                    </span>
+                    {hasBalances && nativeBalance?.value !== undefined &&
+                        <>
+                            <NativeTokenIcon />
+                            <span className="gw-typography-subtitle1 gw-text-brand-gray-600">
+                                {nativeBalance?.symbol || ""}
+                            </span>
+                        </>
+                    }
                 </div>
             </div>
 

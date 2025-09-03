@@ -10,7 +10,7 @@ import WalletViewHeader from "../shared/WalletViewHeader";
 import { WalletViewTemplate } from "../shared/WalletViewTemplate";
 import { buttonVariants } from "../ui/button";
 
-const BALANCE_REFRESH_INTERVAL_MS = 5 * 1000;
+const BALANCE_REFRESH_INTERVAL_MS = 30 * 1000;
 
 export type WalletReceiveProps = {
     onBack: () => void;

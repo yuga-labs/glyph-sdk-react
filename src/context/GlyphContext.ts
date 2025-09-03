@@ -21,7 +21,6 @@ export interface GlyphContextType extends GlyphInterface {
 export const EmptyGlyphContext: GlyphContextType = {
     ready: false,
     authenticated: false,
-    symbol: "",
     glyphUrl: "",
     hideWidget: false,
     login: () => {

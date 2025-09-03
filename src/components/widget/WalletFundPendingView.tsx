@@ -1,6 +1,5 @@
 import { memo } from "react";
 import truncateEthAddress from "truncate-eth-address";
-import ApecoinIcon from "../../assets/svg/ApecoinIcon";
 import { CaretDownIcon } from "../../assets/svg/CaretDownIcon";
 import LoadingCircleIcon from "../../assets/svg/LoadingCircleIcon.";
 import { useGlyph } from "../../hooks/useGlyph";
@@ -9,6 +8,7 @@ import UserAvatar from "../shared/UserAvatar";
 import WalletViewHeader from "../shared/WalletViewHeader";
 import { WalletViewTemplate } from "../shared/WalletViewTemplate";
 import { Button } from "../ui/button";
+import { NativeTokenIcon } from "../shared/ChainIcon";
 
 interface WalletFundPendingViewProps {
     onBack: () => void;
@@ -17,7 +17,7 @@ interface WalletFundPendingViewProps {
 }
 
 const WalletFundPendingView: React.FC<WalletFundPendingViewProps> = ({ onBack, id, value }) => {
-    const { user } = useGlyph();
+    const { user, nativeSymbol } = useGlyph();
 
     return (
         <WalletViewTemplate
@@ -42,10 +42,10 @@ const WalletFundPendingView: React.FC<WalletFundPendingViewProps> = ({ onBack, i
                             <LoadingCircleIcon className="gw-absolute gw-inset-0 gw-animate-spin gw-size-64 gw-z-0" />
 
                             <div className="gw-flex gw-items-center gw-justify-center gw-relative gw-z-10">
-                                <ApecoinIcon className="gw-size-8" />
+                                <NativeTokenIcon className="gw-size-8" />
 
                                 <div className="gw-typography-h6 gw-ml-3">
-                                    <span>{value}</span> <span className="gw-text-brand-gray-500">APE</span>
+                                    <span>{value}</span> <span className="gw-text-brand-gray-500">{nativeSymbol}</span>
                                 </div>
                             </div>
 

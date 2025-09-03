@@ -29,7 +29,11 @@ export default ({ mode }: { mode: string }) => {
             react({
                 // Ensure compatibility with both React 18 and 19
                 jsxImportSource: "react",
-                jsxRuntime: "automatic"
+                jsxRuntime: "automatic",
+                // Explicitly disable React compiler for library compatibility
+                babel: {
+                    plugins: []
+                }
             }),
             dts({
                 tsconfigPath: "./tsconfig.app.json",
@@ -47,16 +51,22 @@ export default ({ mode }: { mode: string }) => {
             lib: {
                 entry: resolve(__dirname, "src/index.ts"),
                 name: "GlyphWidget",
-                fileName: (format) => `index.${format}.js`,
+                fileName: (format) => `glyph-widget.${format}.js`,
                 formats: ["es", "umd"]
             },
             sourcemap: true,
             rollupOptions: {
-                external: Object.keys(peerDependencies),
+                external: [
+                    ...Object.keys(peerDependencies),
+                    "react/jsx-runtime",
+                    "react/jsx-dev-runtime"
+                ],
                 output: {
                     globals: {
                         react: "React",
                         "react-dom": "ReactDOM",
+                        "react/jsx-runtime": "React",
+                        "react/jsx-dev-runtime": "React",
                         wagmi: "Wagmi",
                         "@privy-io/react-auth": "PrivyAuth",
                         viem: "Viem",

@@ -11,7 +11,7 @@ export const GlyphWidgetButton = ({
     showBalance = true,
     showUsername = true
 }: GlyphWidgetButtonProps) => {
-    const { user, balances } = useGlyph();
+    const { user, balances, hasBalances } = useGlyph();
     const nativeBalance = balances?.tokens?.find?.((balance) => balance.native);
     const allValuesVisible = showAvatar && showBalance && showUsername;
 
@@ -24,14 +24,14 @@ export const GlyphWidgetButton = ({
                     <div className={cn(allValuesVisible && "max-sm:gw-hidden", "gw-pl-1")}>
                         <WalletIcon className="gw-size-6" />
                     </div>
-                    {nativeBalance?.value === undefined ? (
+                    {!hasBalances || nativeBalance?.value === undefined ? (
                         <div
                             className={cn(
                                 allValuesVisible && "max-sm:gw-hidden",
                                 "gw-pl-1 gw-pr-2.5 gw-inline-flex gw-items-center"
                             )}
                         >
-                            <Skeleton className="gw-w-10 gw-h-5 gw-inline-block" />
+                            <Skeleton className="gw-w-16 gw-h-5 gw-inline-block" />
                         </div>
                     ) : (
                         <div className={cn(allValuesVisible && "max-sm:gw-hidden", "gw-pl-1 gw-pr-2.5")}>

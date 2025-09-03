@@ -26,6 +26,7 @@ export const GlyphUserDataProvider = ({ children }: GlyphUserDataProviderProps) 
     const [balances, setBalances] = useState<GlyphWidgetBalances | null>(null);
     const [balancesLoading, setBalancesLoading] = useState<boolean>(false);
     const [balancesLastRefreshed, setBalancesLastRefreshed] = useState<number>(0);
+    const [hasBalances, setHasBalances] = useState<boolean>(false);
 
     const {
         data: user,
@@ -86,7 +87,7 @@ export const GlyphUserDataProvider = ({ children }: GlyphUserDataProviderProps) 
                 const res = await glyphApiFetch(`/api/widget/balances?chainId=${chainId}`);
                 if (res.ok) {
                     const balanceData: GlyphWidgetBalances = await res.json();
-                    if (deepEqual(balances, balanceData)) return;
+                    if (deepEqual(balances, balanceData)) return setHasBalances(true);
 
                     // iterate over all cbs and call them if the balance has changed
                     Object.entries(cbs || {}).forEach(([symbol, cb]) => {
@@ -97,6 +98,7 @@ export const GlyphUserDataProvider = ({ children }: GlyphUserDataProviderProps) 
                     // update the whole object
                     setBalances(balanceData);
                     setBalancesLastRefreshed(now);
+                    setHasBalances(true);
                 } else {
                     throw new Error("Failed to refresh balances");
                 }
@@ -140,6 +142,7 @@ export const GlyphUserDataProvider = ({ children }: GlyphUserDataProviderProps) 
         if (ready && !authenticated && balances) {
             setBalances(null);
             setBalancesLastRefreshed(0);
+            setHasBalances(false);
         }
     }, [ready, authenticated, balances]);
 
@@ -152,6 +155,7 @@ export const GlyphUserDataProvider = ({ children }: GlyphUserDataProviderProps) 
     // force refresh balances when chainId changes
     useEffect(() => {
         if (chainIdRef.current !== chainId) {
+            setHasBalances(false);
             refreshBalances(true); // force balances reload
             chainIdRef.current = chainId;
         }
@@ -162,6 +166,7 @@ export const GlyphUserDataProvider = ({ children }: GlyphUserDataProviderProps) 
             value={{
                 user: user ?? null, // Provide user data from query, default to null
                 balances,
+                hasBalances,
                 refreshUser, // Provide the wrapped refetch function
                 refreshBalances
             }}

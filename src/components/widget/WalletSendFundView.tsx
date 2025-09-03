@@ -7,7 +7,6 @@ import { erc20Abi, formatUnits, Hex, parseEther, zeroAddress, createPublicClient
 import { useChainId, useAccount } from "wagmi";
 import { CaretDownIcon } from "../../assets/svg/CaretDownIcon";
 import NoTokenIcon from "../../assets/svg/NoTokenIcon";
-import { useBalances } from "../../hooks/useBalances";
 import { useGlyph } from "../../hooks/useGlyph";
 import { useGlyphApi } from "../../hooks/useGlyphApi";
 import { INTERNAL_GRADIENT_TYPE, SendView, IS_TESTNET_CHAIN, TESTNET_CSS_CLASS, TOKEN_LOGOS } from "../../lib/constants";
@@ -51,15 +50,13 @@ const SEND_STATUS_REFRESH_INTERNAL_MS = 10 * 1000; // 10 seconds
 const MAX_BALANCE_ERROR = "Not enough balance";
 
 export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientType }: WalletSendFundProps) {
-    const { user, sendTransaction } = useGlyph();
+    const { user, sendTransaction, refreshBalances, hasBalances, balances } = useGlyph();
     const { glyphApiFetch } = useGlyphApi();
     const chainId = useChainId();
     const { chain } = useAccount();
 
     const [recipientAddress, setRecipientAddress] = useState<string>("");
     const [recipientAddressError, setRecipientAddressError] = useState<string | null>(null);
-
-    const { refreshBalances, balances } = useBalances();
 
     const publicClient = useMemo(() => createPublicClient({ chain: chain, transport: http() }), [chain]);
 
@@ -339,6 +336,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                     <div className="gw-relative" ref={tokenDropdownRef}>
                                         <button
                                             onClick={() => setIsTokenDropdownOpen(!isTokenDropdownOpen)}
+                                            disabled={!hasBalances}
                                             className="gw-shadow-buttonMd gw-rounded-full gw-h-auto gw-p-1 gw-flex gw-items-center gw-space-x-1"
                                         >
                                             <TokenIcon className={cn("gw-w-6 gw-h-6 gw-mr-2", isTestnet && TESTNET_CSS_CLASS)} />
@@ -599,6 +597,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                 variant="default"
                                 className="gw-w-full gw-mt-2"
                                 disabled={
+                                    !hasBalances || // most likely means user just switched chains and balances haven't been loaded yet
                                     isSignaturePending ||
                                     quoteLoading ||
                                     !!error ||

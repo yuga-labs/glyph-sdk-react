@@ -21,7 +21,7 @@ interface WalletViewHeaderProps {
 }
 
 const WalletViewHeader = ({ fullScreenHeader, onProfileClick }: WalletViewHeaderProps) => {
-    const { user } = useGlyph();
+    const { user, hasBalances } = useGlyph();
     const chainId = useChainId();
     const { switchChain } = useSwitchChain();
     const chains = useChains();
@@ -103,6 +103,7 @@ const WalletViewHeader = ({ fullScreenHeader, onProfileClick }: WalletViewHeader
                     <div className="gw-relative" ref={dropdownRef}>
                         <button
                             onClick={() => setIsOpen(!isOpen)}
+                            disabled={!hasBalances}
                             className="gw-rounded-full gw-shadow-buttonMd gw-px-1 gw-py-1 gw-h-auto gw-w-auto gw-min-w-0 !gw-ring-0 gw-flex gw-items-center gw-space-x-1"
                         >
                             <div className="gw-w-8 gw-h-8 gw-rounded-full">

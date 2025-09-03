@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { debounce } from "throttle-debounce";
 import { formatCurrency } from "../lib/intl";
 import { openPopup } from "../lib/popup";
-import { useBalances } from "./useBalances";
 import { useGlyph } from "./useGlyph";
 import { FUND_STATUS_API, FundQuoteDTO, useGlyphFundingApi } from "./useGlyphFundingApi";
 import { useChainId } from "wagmi";
@@ -19,8 +18,7 @@ type INITIAL_FUND_STATUS = "STARTED";
 export type GLYPH_FUND_STATUS = INITIAL_FUND_STATUS | FUND_STATUS_API;
 
 export function useGlyphFunding() {
-    const { user } = useGlyph();
-    const { refreshBalances } = useBalances();
+    const { user, nativeSymbol, refreshBalances } = useGlyph();
     const chainId = useChainId();
     const { getPaymentLink, createQuote, getQuoteStatus, refreshQuote } = useGlyphFundingApi();
 
@@ -227,6 +225,7 @@ export function useGlyphFunding() {
         isOnrampEnabled: !(isOnrampDisabledByRegion || isOnrampDisabledByChain),
         onramppDisabledError,
         quoteLoading,
+        fundSymbol: nativeSymbol,
         doFunding,
         setFundAmount
     };

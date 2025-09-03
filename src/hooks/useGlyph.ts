@@ -1,5 +1,5 @@
 import { UnsignedTransactionRequest } from "@privy-io/react-auth";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Hex } from "viem";
 import { GlyphContext } from "../context/GlyphContext";
 import { GlyphUserDataContext } from "../context/GlyphUserDataContext";
@@ -26,8 +26,6 @@ export interface GlyphInterface {
      */
     hideWidget?: boolean;
 
-    symbol: string;
-
     signMessage: (params: { message: string }) => Promise<unknown>;
     sendTransaction: (params: {
         transaction: Omit<UnsignedTransactionRequest, "chainId">;
@@ -52,9 +50,19 @@ export interface GlyphHook extends GlyphInterface {
     refreshUser: (force?: boolean) => Promise<void>;
 
     /**
+     * The symbol of the native token, or "APE" if not found.
+     */
+    nativeSymbol: string;
+
+    /**
      * The balances object, or null if the user is not authenticated.
      */
     balances: GlyphWidgetBalances | null;
+
+    /**
+     * Whether the balances have been loaded (false on first load or when user just switched chains)
+     */
+    hasBalances: boolean;
 
     refreshBalances: (force?: boolean, cbs?: Record<string, (diffAmount: number) => void>) => Promise<void>;
 }
@@ -66,8 +74,17 @@ export const useGlyph = (): GlyphHook => {
     const userCtx = useContext(GlyphUserDataContext);
     if (!userCtx) throw new Error("useGlyph must be used within GlyphUserDataProvider");
 
-    const { ready, authenticated, login, logout, signMessage, symbol, sendTransaction, glyphUrl, hideWidget } = context;
-    const { user, refreshUser, balances, refreshBalances } = userCtx;
+    const { ready, authenticated, login, logout, signMessage, sendTransaction, glyphUrl, hideWidget } = context;
+    const { user, refreshUser, balances, hasBalances, refreshBalances } = userCtx;
+
+    const [nativeSymbol, setNativeSymbol] = useState<string>("");
+
+    useEffect(() => {
+        if (!hasBalances || !ready || !authenticated) return;
+        if (balances?.tokens?.find?.((token) => token.native)) {
+            setNativeSymbol(balances?.tokens?.find?.((token) => token.native)?.symbol || "APE");
+        }
+    }, [balances, hasBalances, ready, authenticated]);
 
     return {
         ready,
@@ -75,11 +92,12 @@ export const useGlyph = (): GlyphHook => {
         user,
         refreshUser,
         balances,
+        hasBalances,
         refreshBalances,
         login,
         logout,
         signMessage,
-        symbol,
+        nativeSymbol,
         sendTransaction,
         glyphUrl: glyphUrl || DASHBOARD_BASE_URL, // Return the glyphUrl if it is overridden, otherwise return the default dashboard URL from envs
         hideWidget

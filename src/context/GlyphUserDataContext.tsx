@@ -5,6 +5,7 @@ interface GlyphUserDataContextType {
     user: GlyphWidgetUser | null;
     refreshUser: (force?: boolean) => Promise<void>;
     balances: GlyphWidgetBalances | null;
+    hasBalances: boolean;
     refreshBalances: (force?: boolean, cbs?: Record<string, (diffAmount: number) => void>) => Promise<void>;
 }
 

@@ -1,6 +1,5 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@radix-ui/react-accordion";
 import { useState } from "react";
-import { useBalances } from "../../hooks/useBalances";
 import ExpandItemIcon from "../../assets/svg/ExpandItemIcon";
 import { useGlyph } from "../../hooks/useGlyph";
 import { buttonVariants } from "../ui/button";
@@ -36,8 +35,7 @@ const NFTImg = ({ url, alt, title, className, ...props }: NFTImageProps) => {
 };
 
 export function WalletNFTsTab() {
-    const { glyphUrl } = useGlyph();
-    const { balances } = useBalances();
+    const { glyphUrl, balances, hasBalances } = useGlyph();
     const [expandedItemId, setExpandedItemId] = useState<string | undefined>(undefined);
     const nfts = balances?.nfts || [];
 
@@ -50,7 +48,7 @@ export function WalletNFTsTab() {
                 <h6>My NFTs</h6>
             </div>
 
-            {nfts?.length ? (
+            {hasBalances && nfts?.length ? (
                 <div className="gw-flex gw-flex-col gw-flex-1 gw-min-h-0">
                     {/* Scrollable accordion area */}
                     <div className="gw-flex-1 gw-min-h-0 gw-overflow-auto">
@@ -142,7 +140,7 @@ export function WalletNFTsTab() {
                 </div>
             ) : (
                 <div className="gw-flex gw-justify-center gw-items-center gw-flex-1 gw-text-brand-gray-500 gw-typography-body2 gw-pr-4">
-                    No NFTs found
+                    {hasBalances ? "No NFTs found" : "Loading..."}
                 </div>
             )}
         </div>

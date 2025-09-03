@@ -171,7 +171,6 @@ const PrivyStrategy: FC<BaseGlyphProviderOptions> = ({ children, glyphUrl, onLog
             value={{
                 ready: privyReady && !loading,
                 authenticated: privyReady && privyAuthenticated,
-                symbol: "APE",
                 glyphUrl: glyphUrl as string, // Pass as string to avoid type error (we are passing fallback value in useGlyph hook at a common place)
                 login: authenticate,
                 logout,

@@ -1,4 +1,4 @@
-import { apeChain, base, curtis, mainnet } from "viem/chains";
+import { apeChain, base, curtis, mainnet, polygon } from "viem/chains";
 import APE_ETH from "../assets/svg/APE_ETH";
 import APE_USD from "../assets/svg/APE_USD";
 import WAPEIcon from "../assets/svg/APE_WAPE";
@@ -7,6 +7,8 @@ import ETH from "../assets/svg/ETH";
 import ApechainIcon from "../assets/svg/ApechainIcon";
 import USDCIcon from "../assets/svg/USDCIcon";
 import BaseIcon from "../assets/svg/BaseIcon";
+import ApecoinIcon from "../assets/svg/APEIcon";
+import POL from "../assets/svg/POL";
 
 export const DASHBOARD_BASE_URL = process.env.DASHBOARD_BASE_URL;
 export const GLYPH_PRIVY_APP_ID = process.env.PROVIDER_PRIVY_APP_ID;
@@ -56,7 +58,8 @@ export const CHAIN_ICONS: Record<number, React.FC<React.SVGProps<SVGSVGElement>>
     [apeChain.id]: ApechainIcon,
     [curtis.id]: ApechainIcon,
     [mainnet.id]: ETH,
-    [base.id]: BaseIcon
+    [base.id]: BaseIcon,
+    [polygon.id]: POL,
 };
 
 export const TOKEN_LOGOS: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
@@ -68,6 +71,12 @@ export const TOKEN_LOGOS: Record<string, React.FC<React.SVGProps<SVGSVGElement>>
     ETH: ETH,
     USDC: USDCIcon
 };
+
+export const NATIVE_TOKEN_ICONS: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
+    APE: ApecoinIcon,
+    ETH: ETH,
+    POL: POL,
+}
 
 export const TESTNET_CSS_CLASS = "gw-grayscale";
 export const IS_TESTNET_CHAIN: Map<number, boolean> = new Map([[curtis.id, true]]);

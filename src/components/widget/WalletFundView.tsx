@@ -2,7 +2,6 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import USDIcon from "../../assets/images/USDIcon.png";
-import ApecoinIcon from "../../assets/svg/ApecoinIcon";
 import { LinkIcon } from "../../assets/svg/LinkIcon";
 import { useGlyphFunding } from "../../hooks/useGlyphFunding";
 import { FundView, INTERNAL_GRADIENT_TYPE } from "../../lib/constants";
@@ -16,6 +15,7 @@ import TooltipElement from "../ui/tooltip-element";
 import WalletFundFailedView from "./WalletFundFailedView";
 import WalletFundPendingView from "./WalletFundPendingView";
 import WalletFundSuccessView from "./WalletFundSuccessView";
+import { NativeTokenIcon } from "../shared/ChainIcon";
 
 export type WalletFundProps = {
     onBack: () => void;
@@ -44,7 +44,8 @@ export function WalletFundView({ onBack, onEnd, onShowActivity, setGradientType 
         doFunding,
         setFundAmount,
         isOnrampEnabled,
-        onramppDisabledError
+        onramppDisabledError,
+        fundSymbol
     } = useGlyphFunding();
 
     const [view, setView] = useState<FundView>(FundView.BUY);
@@ -172,8 +173,8 @@ export function WalletFundView({ onBack, onEnd, onShowActivity, setGradientType 
 
                                     {!validAmountEntered && (
                                         <div className="gw-mt-4 gw-flex gw-space-x-2 gw-text-brand-gray-500 gw-items-center gw-justify-center">
-                                            <span>You will receive APE</span>
-                                            <ApecoinIcon className="gw-size-6" />
+                                            <span>You will receive {fundSymbol}</span>
+                                            <NativeTokenIcon className="gw-size-6" />
                                         </div>
                                     )}
                                 </div>
@@ -192,10 +193,10 @@ export function WalletFundView({ onBack, onEnd, onShowActivity, setGradientType 
                                                 )}
                                             </div>
 
-                                            <ApecoinIcon className="gw-size-10 gw-rounded-full" />
+                                            <NativeTokenIcon className="gw-size-10 gw-rounded-full" />
                                         </div>
                                         <div className="gw-typography-caption gw-text-brand-gray-500 gw-mt-1 gw-text-center gw-flex gw-items-center gw-justify-center gw-gap-0.5">
-                                            <span>1 APE = </span>
+                                            <span>1 {fundSymbol} = </span>
                                             {quoteLoading ? (
                                                 <Skeleton className="gw-w-6 gw-h-4 gw-inline-block" />
                                             ) : (
@@ -233,8 +234,8 @@ export function WalletFundView({ onBack, onEnd, onShowActivity, setGradientType 
                                                                 2
                                                             </div>
                                                             <p className="gw-typography-caption">
-                                                                <span className="gw-font-medium">Swap to APE:</span>{" "}
-                                                                {fundIntermediaryToken} is exchanged for APE on ApeChain
+                                                                <span className="gw-font-medium">Swap to {fundSymbol}:</span>{" "}
+                                                                {fundIntermediaryToken} is exchanged for {fundSymbol} on current chain
                                                             </p>
                                                         </div>
                                                         <div className="gw-flex gw-items-center gw-space-x-3">
@@ -243,7 +244,7 @@ export function WalletFundView({ onBack, onEnd, onShowActivity, setGradientType 
                                                             </div>
                                                             <p className="gw-typography-caption">
                                                                 <span className="gw-font-medium">Receive Funds:</span>{" "}
-                                                                APE is sent to your wallet
+                                                                {fundSymbol} is sent to your wallet
                                                             </p>
                                                         </div>
                                                     </div>

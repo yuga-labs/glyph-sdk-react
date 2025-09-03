@@ -14,7 +14,7 @@ export type WalletActivityTabProps = {
 };
 
 export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProps) {
-    const { user } = useGlyph();
+    const { user, hasBalances } = useGlyph();
     const { transactionGroups, fetchTransactions, loadMore, hasMore, isLoading } = useActivity();
 
     const observerTarget = useRef<HTMLDivElement>(null);
@@ -86,7 +86,8 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
             </div>
 
             <div className="gw-grid gw-grid-cols-1 gw-mt-2 gw-overflow-auto gw-pr-4 gw-min-h-0">
-                {isLoading && totalTransactions === 0 ? (
+                {/* hasBalances is false when just switched to a new chain */}
+                {!hasBalances || (isLoading && totalTransactions === 0) ? (
                     // initial loading state
                     new Array(3).fill(null).map((_, index) => {
                         return (

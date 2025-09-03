@@ -227,7 +227,6 @@ const EIP1193Strategy: FC<BaseGlyphProviderOptionsWithSignature> = ({
             value={{
                 ready: !loading && !!sessNonce,
                 authenticated: isConnected && !!address && token !== null,
-                symbol: "APE",
                 glyphUrl: glyphUrl as string, // Pass as string to avoid type error (we are passing fallback value in useGlyph hook at a common place)
                 hideWidget: !isConnected || !address,
                 login: authenticate,
