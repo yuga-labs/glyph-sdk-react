@@ -11,7 +11,7 @@
     "preview": "vite preview --port 3005 --host 0.0.0.0"
   },
   "dependencies": {
-    "@use-glyph/sdk-react": "^1.1.6",
+    "@use-glyph/sdk-react": "^1.1.6-release",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "wagmi": "^2.16.8",
