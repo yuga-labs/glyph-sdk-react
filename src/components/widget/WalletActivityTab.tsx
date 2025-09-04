@@ -8,13 +8,15 @@ import { LinkWithIcon } from "../shared/LinkWithIcon";
 import { ActivityRowSkeleton } from "../shared/skeletons/ActivityRowSkeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import TooltipElement from "../ui/tooltip-element";
+import { useChainId } from "wagmi";
 
 export type WalletActivityTabProps = {
     expandFirst?: boolean;
 };
 
 export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProps) {
-    const { user, hasBalances } = useGlyph();
+    const { user } = useGlyph();
+    const chainId = useChainId();
     const { transactionGroups, fetchTransactions, loadMore, hasMore, isLoading } = useActivity();
 
     const observerTarget = useRef<HTMLDivElement>(null);
@@ -22,10 +24,10 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
 
     const totalTransactions = transactionGroups.reduce((count, group) => count + group.transactions.length, 0);
 
-    // initial data load, call onOpen cb if provided
+    // initial data load or on chain change, call onOpen cb if provided
     useEffect(() => {
         fetchTransactions(true);
-    }, []);
+    }, [chainId]);
 
     // open first item if required
     useEffect(() => {
@@ -86,8 +88,7 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
             </div>
 
             <div className="gw-grid gw-grid-cols-1 gw-mt-2 gw-overflow-auto gw-pr-4 gw-min-h-0">
-                {/* hasBalances is false when just switched to a new chain */}
-                {!hasBalances || (isLoading && totalTransactions === 0) ? (
+                {(isLoading && totalTransactions === 0) ? (
                     // initial loading state
                     new Array(3).fill(null).map((_, index) => {
                         return (

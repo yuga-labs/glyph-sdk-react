@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useGlyphApi } from "./useGlyphApi";
 import { useChainId } from "wagmi";
@@ -38,11 +38,12 @@ export function useActivity(pageSize = 10) {
     const [isLoading, setIsLoading] = useState(false);
     const [transactionGroups, setTransactionGroups] = useState<ActivityGroup[]>([]);
 
-    const fetchTransactions = async (reset = false): Promise<ActivityGroup[] | null> => {
+    const fetchTransactions = useCallback(async (reset = false): Promise<ActivityGroup[] | null> => {
         try {
             setIsLoading(true);
             // start from beginning if reset
             const currentOffset = reset ? 0 : offset;
+            if(reset) setTransactionGroups([]);
 
             if (!glyphApiFetch) return null;
             const res = await glyphApiFetch(
@@ -85,7 +86,7 @@ export function useActivity(pageSize = 10) {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [glyphApiFetch, chainId, pageSize, offset, transactionGroups]);
 
     const loadMore = async (): Promise<boolean> => {
         if (!hasMore || isLoading) return false;

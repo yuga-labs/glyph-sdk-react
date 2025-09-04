@@ -36,7 +36,7 @@ const NFTImg = ({ url, alt, title, className, ...props }: NFTImageProps) => {
 
 export function WalletNFTsTab() {
     const { glyphUrl, balances, hasBalances } = useGlyph();
-    const [expandedItemId, setExpandedItemId] = useState<string | undefined>(undefined);
+    const [expandedItemId, setExpandedItemId] = useState<string>("");
     const nfts = balances?.nfts || [];
 
     const nftsURL = new URL("/nfts", glyphUrl).toString();
