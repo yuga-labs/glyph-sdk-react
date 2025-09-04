@@ -12,7 +12,6 @@ const ONRAMP_POPUP_WIDTH = 460; // recommended width of a Coinbase Onramp popup 
 const ONRAMP_FUNDING_STATUS_REFRESH_INTERNAL_MS = 10 * 1000;
 
 const ONRAMP_UNSUPPORTED_REGION_MSG = "Region not supported";
-const ONRAMP_UNSUPPORTED_CHAIN_MSG = "Chain not supported";
 
 type INITIAL_FUND_STATUS = "STARTED";
 export type GLYPH_FUND_STATUS = INITIAL_FUND_STATUS | FUND_STATUS_API;
@@ -203,11 +202,7 @@ export function useGlyphFunding() {
     //
     const isOnrampDisabledByRegion = !(user?.isOnrampEnabled || false);
     const isOnrampDisabledByChain = chainId !== apeChain.id;
-    const onramppDisabledError = isOnrampDisabledByRegion
-        ? ONRAMP_UNSUPPORTED_REGION_MSG
-        : isOnrampDisabledByChain
-          ? ONRAMP_UNSUPPORTED_CHAIN_MSG
-          : null;
+    const onramppDisabledError = isOnrampDisabledByRegion ? ONRAMP_UNSUPPORTED_REGION_MSG : null;
 
     return {
         userCurrency: currency,

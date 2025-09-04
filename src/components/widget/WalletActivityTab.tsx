@@ -18,7 +18,7 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
     const { transactionGroups, fetchTransactions, loadMore, hasMore, isLoading } = useActivity();
 
     const observerTarget = useRef<HTMLDivElement>(null);
-    const [expandedItemId, setExpandedItemId] = useState<string | undefined>(undefined);
+    const [expandedItemId, setExpandedItemId] = useState<string>("");
 
     const totalTransactions = transactionGroups.reduce((count, group) => count + group.transactions.length, 0);
 
@@ -31,7 +31,7 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
     useEffect(() => {
         if (!expandFirst) return;
 
-        setExpandedItemId(expandedItemId || transactionGroups?.[0]?.transactions?.[0]?.id || undefined);
+        setExpandedItemId(expandedItemId || transactionGroups?.[0]?.transactions?.[0]?.id || "");
     }, [expandedItemId, transactionGroups, expandFirst]);
 
     // handle infinite scrolling
