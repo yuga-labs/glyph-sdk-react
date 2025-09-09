@@ -2,6 +2,7 @@ import { ConnectorEventMap } from "@wagmi/core";
 import { createEmitter, Emitter } from "@wagmi/core/internal";
 import { EIP1193, Wallet } from "thirdweb/wallets";
 import { Chain, EIP1193Provider } from "viem";
+import { apeChain, curtis } from "viem/chains";
 import { glyphWalletConnector } from "./glyphWalletConnector";
 
 /**
@@ -19,9 +20,9 @@ import { glyphWalletConnector } from "./glyphWalletConnector";
  * <ConnectButton client={client} wallets=[glyphWalletTW()]>
  * ```
  */
-const glyphWalletTW = (chains: [Chain, ...Chain[]]): Wallet => {
+const glyphWalletTW = (chains?: [Chain, ...Chain[]]): Wallet => {
     const connector = glyphWalletConnector()({
-        chains,
+        chains: chains ?? [apeChain, curtis],
         emitter: createEmitter("io.useglyph") as Emitter<ConnectorEventMap>
     });
     return EIP1193.fromProvider({
