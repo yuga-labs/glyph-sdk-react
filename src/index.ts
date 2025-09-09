@@ -15,6 +15,7 @@ export {
     type GlyphOwnershipCheckResult
 } from "./hooks/useGlyphTokenGate";
 export { useGlyphView } from "./hooks/useGlyphView";
+
 export { glyphConnectorDetails } from "./lib/constants";
 export { GlyphViewType as GlyphView, StrategyType, WalletClientType } from "./types";
 export { GlyphProvider, GlyphWidget, LoginButton, LogoutButton, SignUpButton };
@@ -25,6 +26,7 @@ export { useNativeGlyphConnection } from "./hooks/useNativeGlyphConnection";
 export { glyphWalletConnector } from "./lib/eip1193/glyphWalletConnector";
 export { GlyphWalletProvider } from "./lib/eip1193/GlyphWalletProvider";
 export { glyphWalletRK, glyphWalletRKStaging } from "./lib/eip1193/glyphWalletRK";
+export { glyphWalletTW } from "./lib/eip1193/glyphWalletTW";
 
 // Privy Exports
 export { GLYPH_ICON_URL, GLYPH_PRIVY_APP_ID, STAGING_GLYPH_PRIVY_APP_ID } from "./lib/constants";
