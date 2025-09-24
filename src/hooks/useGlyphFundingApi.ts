@@ -52,7 +52,6 @@ export function useGlyphFundingApi() {
 
     const createQuote = useCallback(
         async (
-            address: string,
             amount: string,
             currency: string,
             country: string,
@@ -68,7 +67,7 @@ export function useGlyphFundingApi() {
             const signal = controller.signal;
             const res = await glyphApiFetch("/api/widget/onramp/quote", {
                 method: "POST",
-                body: JSON.stringify({ address, chainId, amount, currency, country, subdivision }),
+                body: JSON.stringify({ chainId, amount, currency, country, subdivision }),
                 headers: { "Content-Type": "application/json" },
                 signal
             });

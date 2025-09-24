@@ -74,11 +74,10 @@ export function useGlyphFunding() {
 
     const generateQuote = useMemo(
         () =>
-            debounce(1500, async (address: string, amount_usd: string) => {
+            debounce(1500, async (amount_usd: string) => {
                 try {
                     setQuoteLoading(true);
                     const res = await createQuote(
-                        address,
                         amount_usd,
                         currency,
                         user!.country,
@@ -128,13 +127,13 @@ export function useGlyphFunding() {
 
         if (fundQuote) {
             const interval = setInterval(
-                () => updateQuote(fundQuote.id, `${fundAmount}`),
+                () => updateQuote(fundQuote.id, fundAmount),
                 fundQuote.refresh_in_seconds * 1000
             );
             return () => clearInterval(interval);
         } else {
             // Use the debounced version of generateQuote
-            generateQuote(user!.evmWallet, `${fundAmount}`);
+            generateQuote(fundAmount);
         }
     }, [currency, fundAmount, fundAmountError, fundDone, fundInProgress, fundQuote, generateQuote, user, updateQuote]);
 

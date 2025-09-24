@@ -1,6 +1,5 @@
 import { createContext } from "react";
 import { GlyphInterface } from "../hooks/useGlyph";
-import { resolveUserIP } from "../lib/utils";
 
 export type GlyphApiFetch = (_path: string, _options?: RequestInit) => Promise<Response>;
 
@@ -49,16 +48,11 @@ export function createApiFetch(
     getToken?: () => Promise<string>,
     baseHeaders?: Record<string, string>
 ): GlyphApiFetch {
-    let ip = "";
-
     return async (path: string, options?: RequestInit): Promise<Response> => {
-        if (!ip) ip = await resolveUserIP();
-
         const headers = {
             ...(baseHeaders || {}),
             ...(getToken ? { Authorization: `Bearer ${await getToken()}` } : {}),
             "Content-Type": "application/json",
-            "x-widget-ip": ip
         } as Record<string, string>;
 
         return fetch(new URL(path, baseUrl), {

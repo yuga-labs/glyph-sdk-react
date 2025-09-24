@@ -45,17 +45,6 @@ export const ethereumAvatar = (address: string | undefined) => {
     return `https://effigy.im/a/${address || "0x0000000000000000000000000000000000000000"}.svg`;
 };
 
-export async function resolveUserIP(): Promise<string> {
-    try {
-        const localIP = await fetch("https://api.ipify.org?format=json");
-        const localIPResponse = (await localIP.json()) as { ip: string };
-
-        return localIPResponse.ip;
-    } catch (error) {
-        return "";
-    }
-}
-
 export function isEthereumAddress(address?: string): boolean {
     if (!address) return false;
     return addressRegex.test(address);
