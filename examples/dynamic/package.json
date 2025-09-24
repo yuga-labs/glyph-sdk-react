@@ -11,7 +11,7 @@
     "preview": "vite preview --port 3005 --host 0.0.0.0"
   },
   "dependencies": {
-    "@use-glyph/sdk-react": "^1.2.2",
+    "@use-glyph/sdk-react": "^1.2.3",
     "@dynamic-labs/ethereum": "^4.30",
     "@dynamic-labs/sdk-react-core": "^4.30",
     "@dynamic-labs-connectors/glyph-global-wallet-evm": "4.4.1",
