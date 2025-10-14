@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, useEffect, useMemo, useState } from "react";
 import { TooltipProvider } from "../components/ui/tooltip";
 import { DEFAULT_STRATEGY, GlyphProviderOptions, StrategyType } from "../types";
 import { GlyphUserDataProvider } from "./GlyphUserDataProvider";
@@ -40,14 +40,12 @@ export const GlyphProvider = ({
     const ContextStrategy = useMemo(() => strategyComponents[currentStrategy], [currentStrategy, strategyComponents]);
 
     return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <ContextStrategy glyphUrl={glyphUrl?.trim?.()} {...props}>
-                <GlyphUserDataProvider>
-                    <GlyphViewProvider>
-                        <TooltipProvider>{children}</TooltipProvider>
-                    </GlyphViewProvider>
-                </GlyphUserDataProvider>
-            </ContextStrategy>
-        </Suspense>
+        <ContextStrategy glyphUrl={glyphUrl?.trim?.()} {...props}>
+            <GlyphUserDataProvider>
+                <GlyphViewProvider>
+                    <TooltipProvider>{children}</TooltipProvider>
+                </GlyphViewProvider>
+            </GlyphUserDataProvider>
+        </ContextStrategy>
     );
 };

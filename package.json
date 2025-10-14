@@ -1,6 +1,6 @@
 {
     "name": "@use-glyph/sdk-react",
-    "version": "1.2.6",
+    "version": "1.2.7",
     "type": "module",
     "license": "GLYPH-1.0",
     "sideEffects": false,
@@ -88,13 +88,5 @@
         "throttle-debounce": "5.0.2",
         "truncate-eth-address": "1.0.2",
         "vaul": "1.1.2"
-    },
-    "peerDependenciesMeta": {
-        "@privy-io/cross-app-connect": {
-            "optional": true
-        },
-        "@rainbow-me/rainbowkit": {
-            "optional": true
-        }
     }
 }
