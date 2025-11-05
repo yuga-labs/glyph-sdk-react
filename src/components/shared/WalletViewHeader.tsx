@@ -6,7 +6,7 @@ import { useChainId, useChains, useSwitchChain } from "wagmi";
 import BackIcon from "../../assets/svg/BackIcon";
 import Ellipse from "../../assets/svg/Ellipse";
 import { useGlyph } from "../../hooks/useGlyph";
-import { CHAIN_ICONS, IS_TESTNET_CHAIN, TESTNET_CSS_CLASS } from "../../lib/constants";
+import { CHAIN_ICONS, CHAIN_NAMES, IS_TESTNET_CHAIN, TESTNET_CSS_CLASS } from "../../lib/constants";
 import { cn } from "../../lib/utils";
 import CopyButton from "./CopyButton";
 import UserAvatar from "./UserAvatar";
@@ -116,6 +116,7 @@ const WalletViewHeader = ({ fullScreenHeader, onProfileClick }: WalletViewHeader
                             <div className="gw-absolute gw-top-full gw-right-0 gw-mt-1 gw-bg-white gw-rounded-xl gw-shadow-md gw-z-50 gw-min-w-[8rem] gw-overflow-hidden">
                                 {sortedChains.map((ch) => {
                                     const isCurrentChain = ch.id === chainId;
+                                    const chainName = CHAIN_NAMES[ch.id] || ch.name;
                                     const OptionChainIcon = CHAIN_ICONS[ch.id] || Ellipse;
                                     const isTestnetChain = IS_TESTNET_CHAIN.get(ch.id) || false;
                                     return (
@@ -140,7 +141,7 @@ const WalletViewHeader = ({ fullScreenHeader, onProfileClick }: WalletViewHeader
                                                 />
                                             </div>
                                             <span className={cn("gw-text-sm", isCurrentChain && "!gw-font-bold")}>
-                                                {ch.name}
+                                                {chainName}
                                             </span>
                                         </button>
                                     );

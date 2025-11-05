@@ -62,6 +62,11 @@ export const CHAIN_ICONS: Record<number, React.FC<React.SVGProps<SVGSVGElement>>
     [polygon.id]: POL,
 };
 
+/** Overload specific chain names */
+export const CHAIN_NAMES: Record<number, string> = {
+    [apeChain.id]: "ApeChain", // Remove after https://github.com/wevm/viem/pull/4080 is merged
+}
+
 export const TOKEN_LOGOS: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
     APE: APEIcon,
     ApeETH: APE_ETH,
