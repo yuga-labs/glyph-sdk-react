@@ -54,12 +54,13 @@ export enum SendView {
     END = "send-end"
 }
 
+// Should be in sync with the id.yuga.com icons (See: https://github.com/yuga-labs/id.yuga.com)
 export const CHAIN_ICONS: Record<number, React.FC<React.SVGProps<SVGSVGElement>>> = {
     [apeChain.id]: ApechainIcon,
     [curtis.id]: ApechainIcon,
     [mainnet.id]: ETH,
     [base.id]: BaseIcon,
-    [polygon.id]: POL,
+    [polygon.id]: POL
 };
 
 /** Overload specific chain names */
@@ -80,8 +81,8 @@ export const TOKEN_LOGOS: Record<string, React.FC<React.SVGProps<SVGSVGElement>>
 export const NATIVE_TOKEN_ICONS: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
     APE: ApecoinIcon,
     ETH: ETH,
-    POL: POL,
-}
+    POL: POL
+};
 
 export const TESTNET_CSS_CLASS = "gw-grayscale";
 export const IS_TESTNET_CHAIN: Map<number, boolean> = new Map([[curtis.id, true]]);

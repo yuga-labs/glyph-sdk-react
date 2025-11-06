@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { debounce } from "throttle-debounce";
+import { apeChain } from "viem/chains";
+import { useChainId } from "wagmi";
 import { formatCurrency } from "../lib/intl";
 import { openPopup } from "../lib/popup";
 import { useGlyph } from "./useGlyph";
 import { FUND_STATUS_API, FundQuoteDTO, useGlyphFundingApi } from "./useGlyphFundingApi";
-import { useChainId } from "wagmi";
-import { apeChain } from "viem/chains";
 
 const ONRAMP_POPUP_HEIGHT = 720; // recommended height of a Coinbase Onramp popup window.
 const ONRAMP_POPUP_WIDTH = 460; // recommended width of a Coinbase Onramp popup window.
@@ -50,13 +50,13 @@ export function useGlyphFunding() {
             setFundAmount_(value);
 
             // Validate the amount
-            if (Number(value) < minFundingAmount) {
+            if (value && Number(value) < minFundingAmount) {
                 setFundAmountError(
                     `Minimum funding amount for your location is ${formatCurrency(minFundingAmount, currency)}.`
                 );
                 return;
             }
-            if (Number(value) > maxFundingAmount) {
+            if (value && Number(value) > maxFundingAmount) {
                 setFundAmountError(
                     `Maximum funding amount for your location is ${formatCurrency(maxFundingAmount, currency)}.`
                 );
@@ -65,7 +65,11 @@ export function useGlyphFunding() {
 
             // Clear any errors and prepare for a new quote
             setFundQuote(null);
-            setQuoteLoading(true);
+            setFundInProgress(false);
+            setFundDone(false);
+            setFundStatus("STARTED");
+            setFundStatusFetchCount(0);
+            setQuoteLoading(false);
             setFundError(null);
             setFundAmountError(null);
         },
@@ -77,13 +81,7 @@ export function useGlyphFunding() {
             debounce(1500, async (amount_usd: string) => {
                 try {
                     setQuoteLoading(true);
-                    const res = await createQuote(
-                        amount_usd,
-                        currency,
-                        user!.country,
-                        user?.subdivision,
-                        true
-                    );
+                    const res = await createQuote(amount_usd, currency, user!.country, user?.subdivision, true);
                     if (!res.ok) throw new Error(res?.error || "Could not fetch the quote");
 
                     setFundError(null);
