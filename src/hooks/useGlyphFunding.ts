@@ -69,7 +69,7 @@ export function useGlyphFunding() {
             setFundDone(false);
             setFundStatus("STARTED");
             setFundStatusFetchCount(0);
-            setQuoteLoading(false);
+            setQuoteLoading(true);
             setFundError(null);
             setFundAmountError(null);
         },

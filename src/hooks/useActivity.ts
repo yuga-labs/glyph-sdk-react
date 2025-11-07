@@ -8,9 +8,24 @@ export type ActivityBlockExplorerItem = {
     text: string;
 };
 
+export enum DB_OFFCHAIN_TX_TYPE {
+    FUND = "FUND",
+    SWAP = "SWAP",
+    WITHDRAW = "WITHDRAW"
+}
+
+export enum DB_ONCHAIN_TX_TYPE {
+    SEND = "SEND",
+    RECEIVE = "RECEIVE",
+    TRANSFER = "TRANSFER",
+    PAY = "PAY"
+}
+
+export type ActivityType = DB_OFFCHAIN_TX_TYPE | DB_ONCHAIN_TX_TYPE;
+
 export type ActivityItem = {
     id: string;
-    type: "fund" | "send";
+    type: ActivityType;
     type_text: string;
     status: string;
     status_text: string | null;
@@ -30,7 +45,12 @@ export type ActivityGroup = {
     transactions: ActivityItem[];
 };
 
-export function useActivity(pageSize = 10) {
+export function useActivity(
+    pageSize = 10,
+    filter?: {
+        types: ActivityType[];
+    }
+) {
     const { glyphApiFetch } = useGlyphApi();
     const chainId = useChainId();
     const [offset, setOffset] = useState(0);
@@ -38,55 +58,58 @@ export function useActivity(pageSize = 10) {
     const [isLoading, setIsLoading] = useState(false);
     const [transactionGroups, setTransactionGroups] = useState<ActivityGroup[]>([]);
 
-    const fetchTransactions = useCallback(async (reset = false): Promise<ActivityGroup[] | null> => {
-        try {
-            setIsLoading(true);
-            // start from beginning if reset
-            const currentOffset = reset ? 0 : offset;
-            if(reset) setTransactionGroups([]);
+    const fetchTransactions = useCallback(
+        async (reset = false): Promise<ActivityGroup[] | null> => {
+            try {
+                setIsLoading(true);
+                // start from beginning if reset
+                const currentOffset = reset ? 0 : offset;
+                if (reset) setTransactionGroups([]);
 
-            if (!glyphApiFetch) return null;
-            const res = await glyphApiFetch(
-                `/api/widget/activity?chainId=${chainId}&offset=${currentOffset}&size=${pageSize}`
-            );
-            if (!res.ok) throw new Error("Failed to fetch transactions");
+                if (!glyphApiFetch) return null;
+                const res = await glyphApiFetch(
+                    `/api/widget/activity?chainId=${chainId}&offset=${currentOffset}&size=${pageSize}&type=${filter?.types?.join(",")}`
+                );
+                if (!res.ok) throw new Error("Failed to fetch transactions");
 
-            const data = await res.json();
-            let newGroups: ActivityGroup[] = [];
+                const data = await res.json();
+                let newGroups: ActivityGroup[] = [];
 
-            // grouped transactions
-            if (data.groups) newGroups = data.groups;
-            // support old format (no grouping)
-            else if (data.transactions) {
-                newGroups = [
-                    {
-                        label: "",
-                        transactions: data.transactions
-                    }
-                ];
+                // grouped transactions
+                if (data.groups) newGroups = data.groups;
+                // support old format (no grouping)
+                else if (data.transactions) {
+                    newGroups = [
+                        {
+                            label: "",
+                            transactions: data.transactions
+                        }
+                    ];
+                }
+
+                if (reset) {
+                    setTransactionGroups(newGroups);
+                    setOffset(newGroups.reduce((count, group) => count + group.transactions.length, 0));
+                } else {
+                    const mergedGroups = mergeTransactionGroups(transactionGroups, newGroups);
+                    setTransactionGroups(mergedGroups);
+                    setOffset(currentOffset + pageSize);
+                }
+
+                // check if we have more to load
+                const totalNewTransactions = newGroups.reduce((count, group) => count + group.transactions.length, 0);
+                setHasMore(totalNewTransactions === pageSize);
+
+                return newGroups;
+            } catch (e) {
+                toast.error("Failed to fetch transactions");
+                return null;
+            } finally {
+                setIsLoading(false);
             }
-
-            if (reset) {
-                setTransactionGroups(newGroups);
-                setOffset(newGroups.reduce((count, group) => count + group.transactions.length, 0));
-            } else {
-                const mergedGroups = mergeTransactionGroups(transactionGroups, newGroups);
-                setTransactionGroups(mergedGroups);
-                setOffset(currentOffset + pageSize);
-            }
-
-            // check if we have more to load
-            const totalNewTransactions = newGroups.reduce((count, group) => count + group.transactions.length, 0);
-            setHasMore(totalNewTransactions === pageSize);
-
-            return newGroups;
-        } catch (e) {
-            toast.error("Failed to fetch transactions");
-            return null;
-        } finally {
-            setIsLoading(false);
-        }
-    }, [glyphApiFetch, chainId, pageSize, offset, transactionGroups]);
+        },
+        [glyphApiFetch, chainId, pageSize, offset, transactionGroups]
+    );
 
     const loadMore = async (): Promise<boolean> => {
         if (!hasMore || isLoading) return false;
