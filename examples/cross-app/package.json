@@ -11,7 +11,7 @@
     "preview": "vite preview --port 3002 --host 0.0.0.0"
   },
   "dependencies": {
-    "@use-glyph/sdk-react": "^1.2.11",
+    "@use-glyph/sdk-react": "^1.2.12",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "@privy-io/react-auth": "^2.22.0",

@@ -8,6 +8,14 @@ export { useBalances } from "./hooks/useBalances";
 export { useGlyph } from "./hooks/useGlyph";
 export { useGlyphFunding, type GLYPH_FUND_STATUS } from "./hooks/useGlyphFunding";
 export {
+    useActivity,
+    type ActivityType,
+    type ActivityItem,
+    type ActivityGroup,
+    DB_OFFCHAIN_TX_TYPE,
+    DB_ONCHAIN_TX_TYPE
+} from "./hooks/useActivity";
+export {
     useGlyphTokenGate,
     useGlyphOwnershipCheck,
     type GlyphOwnershipCheckRequest,
