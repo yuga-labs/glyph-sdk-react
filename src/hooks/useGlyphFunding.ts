@@ -135,28 +135,36 @@ export function useGlyphFunding() {
         }
     }, [currency, fundAmount, fundAmountError, fundDone, fundInProgress, fundQuote, generateQuote, user, updateQuote]);
 
-    const doFunding = async (onSuccess: () => void, onError: (error: string) => void) => {
+    const doFunding = async (
+        onSuccess: (url?: string) => void,
+        onError: (error: string) => void,
+        shouldAutoOpenPopup: boolean = true
+    ) => {
         if (!user) return onError("User not authenticated");
 
+        let paymentLink: string = "";
         try {
             if (!fundQuote) return onError("Cannot create payment link for invalid quote");
 
-            // open a new empty tab (Safari does not support opening a new tab with a popup)
-            const popUpWindow = openPopup({ url: "", height: ONRAMP_POPUP_HEIGHT, width: ONRAMP_POPUP_WIDTH });
-
-            if (!popUpWindow) return onError("Cannot open popup");
-
             const res = await getPaymentLink(fundQuote);
-            if (!res.ok) return onError(res?.error || "Cannot create payment link");
+            if (!res.ok || !res.url) return onError(res?.error || "Cannot create payment link");
+            paymentLink = res.url;
 
-            // redirect to the payment link
-            popUpWindow.location.href = res.url;
+            if (shouldAutoOpenPopup) {
+                // open a new empty tab (Safari does not support opening a new tab with a popup)
+                const popUpWindow = openPopup({ url: "", height: ONRAMP_POPUP_HEIGHT, width: ONRAMP_POPUP_WIDTH });
+
+                if (!popUpWindow) return onError("Cannot open popup");
+
+                // redirect to the payment link
+                popUpWindow.location.href = paymentLink;
+            }
             setFundInProgress(true);
         } catch (e: any) {
             return onError(e?.message || "Error initiating funding");
         }
 
-        return onSuccess();
+        return onSuccess(paymentLink);
     };
 
     const fetchFundStatus = useCallback(
