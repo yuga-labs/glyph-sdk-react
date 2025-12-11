@@ -1,7 +1,6 @@
 import { memo } from "react";
 import ActivityIcon from "../../assets/svg/ActivityIcon";
 import HomeIcon from "../../assets/svg/HomeIcon";
-import NFTsIcon from "../../assets/svg/NFTsIcon";
 import TokensIcon from "../../assets/svg/TokensIcon";
 import WalletsTabFilledIcon from "../../assets/svg/WalletsTabFilledIcon";
 import WalletsTabOutlinedIcon from "../../assets/svg/WalletsTabOutlinedIcon";
@@ -40,13 +39,14 @@ const WalletViewFooterNav: React.FC<WalletViewFooterNavProps> = ({ tab, setTab }
                         "gw-size-5"
                     )}
                 />
-                <span className="gw-sr-only">Tokens</span>
+                <span className="gw-sr-only">Tokens & NFTs</span>
             </button>
 
-            <button className="tab" onClick={() => setTab(WalletMainViewTab.NFTS)}>
+            {/* Replace the button below with discover once we reach that point */}
+            {/* <button className="tab" onClick={() => setTab(WalletMainViewTab.NFTS)}>
                 <NFTsIcon selected={tab === WalletMainViewTab.NFTS} />
                 <span className="gw-sr-only">NFTs</span>
-            </button>
+            </button> */}
 
             {/* Only show Wallets tab button for Glyph users */}
             {user?.hasProfile && (

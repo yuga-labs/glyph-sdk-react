@@ -11,7 +11,7 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerHandle, DrawerTitle, Dr
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Toaster } from "./ui/sonner";
 import { Wallet } from "./widget/Wallet";
-import { WidgetGradient } from "./widget/WidgetGradient";
+import { WidgetGradient } from "./widget/internal/WidgetGradient";
 
 export const GlyphWidget = ({ buttonProps }: GlyphWidgetProps) => {
     const theme = "light";

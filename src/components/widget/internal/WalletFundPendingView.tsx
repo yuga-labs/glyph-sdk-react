@@ -1,14 +1,14 @@
 import { memo } from "react";
 import truncateEthAddress from "truncate-eth-address";
-import { CaretDownIcon } from "../../assets/svg/CaretDownIcon";
-import LoadingCircleIcon from "../../assets/svg/LoadingCircleIcon.";
-import { useGlyph } from "../../hooks/useGlyph";
-import CopyButton from "../shared/CopyButton";
-import UserAvatar from "../shared/UserAvatar";
-import WalletViewHeader from "../shared/WalletViewHeader";
-import { WalletViewTemplate } from "../shared/WalletViewTemplate";
-import { Button } from "../ui/button";
-import { NativeTokenIcon } from "../shared/ChainIcon";
+import { CaretDownIcon } from "../../../assets/svg/CaretDownIcon";
+import LoadingCircleIcon from "../../../assets/svg/LoadingCircleIcon.";
+import { useGlyph } from "../../../hooks/useGlyph";
+import CopyButton from "../../shared/CopyButton";
+import UserAvatar from "../../shared/UserAvatar";
+import WalletViewHeader from "../../shared/WalletViewHeader";
+import { WalletViewTemplate } from "../../shared/WalletViewTemplate";
+import { Button } from "../../ui/button";
+import NativeTokenIcon from "../../shared/NativeTokenIcon";
 
 interface WalletFundPendingViewProps {
     onBack: () => void;

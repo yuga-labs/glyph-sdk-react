@@ -1,17 +1,15 @@
 import { memo } from "react";
 import truncateEthAddress from "truncate-eth-address";
-import { useChainId } from "wagmi";
-import { CaretDownIcon } from "../../assets/svg/CaretDownIcon";
-import LoadingCircleIcon from "../../assets/svg/LoadingCircleIcon.";
-import { useGlyph } from "../../hooks/useGlyph";
-import { IS_TESTNET_CHAIN, TESTNET_CSS_CLASS } from "../../lib/constants";
-import { cn, ethereumAvatar } from "../../lib/utils";
-import { LinkWithIcon } from "../shared/LinkWithIcon";
-import UserAvatar from "../shared/UserAvatar";
-import WalletViewHeader from "../shared/WalletViewHeader";
-import { WalletViewTemplate } from "../shared/WalletViewTemplate";
-import { Button } from "../ui/button";
-import { SendFundQuote } from "./WalletSendFundView";
+import { CaretDownIcon } from "../../../assets/svg/CaretDownIcon";
+import LoadingCircleIcon from "../../../assets/svg/LoadingCircleIcon.";
+import { useGlyph } from "../../../hooks/useGlyph";
+import { ethereumAvatar } from "../../../lib/utils";
+import { LinkWithIcon } from "../../shared/LinkWithIcon";
+import UserAvatar from "../../shared/UserAvatar";
+import WalletViewHeader from "../../shared/WalletViewHeader";
+import { WalletViewTemplate } from "../../shared/WalletViewTemplate";
+import { Button } from "../../ui/button";
+import { SendFundQuote } from "../WalletSendFundView";
 
 interface WalletSendFundPendingViewProps {
     onBack: () => void;
@@ -20,7 +18,7 @@ interface WalletSendFundPendingViewProps {
     txBlockExplorerName: string | undefined;
     quote: SendFundQuote;
     tokenSymbol: string;
-    TokenIcon: React.FC<React.SVGProps<SVGSVGElement>>;
+    TokenIcon: React.JSX.Element;
 }
 
 const WalletSendFundPendingView: React.FC<WalletSendFundPendingViewProps> = ({
@@ -33,8 +31,6 @@ const WalletSendFundPendingView: React.FC<WalletSendFundPendingViewProps> = ({
     TokenIcon
 }) => {
     const { user } = useGlyph();
-    const chainId = useChainId();
-    const isTestnet = IS_TESTNET_CHAIN.get(chainId) || false;
 
     return (
         <WalletViewTemplate
@@ -75,8 +71,7 @@ const WalletSendFundPendingView: React.FC<WalletSendFundPendingViewProps> = ({
                                 </div>
 
                                 <div className="gw-flex gw-items-center gw-justify-center gw-relative gw-z-10">
-                                    <TokenIcon className={cn("gw-size-6", isTestnet && TESTNET_CSS_CLASS)} />
-
+                                    {TokenIcon}
                                     <div className="gw-typography-body2 gw-ml-2">
                                         <span>{quote?.receivable_amount_in_token}</span>{" "}
                                         <span className="gw-text-brand-gray-500">{tokenSymbol}</span>

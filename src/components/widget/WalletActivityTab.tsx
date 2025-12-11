@@ -1,5 +1,6 @@
 import { ArrowUpRight } from "lucide-react";
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useChainId } from "wagmi";
 import { useActivity } from "../../hooks/useActivity";
 import { useGlyph } from "../../hooks/useGlyph";
 import { ActivityRow } from "../shared/ActivityRow";
@@ -8,14 +9,13 @@ import { LinkWithIcon } from "../shared/LinkWithIcon";
 import { ActivityRowSkeleton } from "../shared/skeletons/ActivityRowSkeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import TooltipElement from "../ui/tooltip-element";
-import { useChainId } from "wagmi";
 
 export type WalletActivityTabProps = {
     expandFirst?: boolean;
 };
 
 export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProps) {
-    const { user } = useGlyph();
+    const { user, fetchForAllNetworks } = useGlyph();
     const chainId = useChainId();
     const { transactionGroups, fetchTransactions, loadMore, hasMore, isLoading } = useActivity();
 
@@ -27,7 +27,7 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
     // initial data load or on chain change, call onOpen cb if provided
     useEffect(() => {
         fetchTransactions(true);
-    }, [chainId]);
+    }, [chainId, fetchForAllNetworks]);
 
     // open first item if required
     useEffect(() => {
@@ -88,7 +88,7 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
             </div>
 
             <div className="gw-grid gw-grid-cols-1 gw-mt-2 gw-overflow-auto gw-pr-4 gw-min-h-0">
-                {(isLoading && totalTransactions === 0) ? (
+                {isLoading && totalTransactions === 0 ? (
                     // initial loading state
                     new Array(3).fill(null).map((_, index) => {
                         return (
@@ -129,18 +129,21 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
                                                                 value: t.value,
                                                                 amount: t.amount,
                                                                 amount_currency: t.amount_currency,
-                                                                name_on_list: t.name_on_list
+                                                                name_on_list: t.name_on_list,
+                                                                chain_id: fetchForAllNetworks ? t.chain_id : undefined // Do not show chain icon when a particular chain is selected
                                                             }}
                                                         />
                                                     </AccordionTrigger>
                                                     <AccordionContent>
-                                                        {
-                                                            t.detail_rows?.length ? (
-                                                                <div className="gw-w-[50%] gw-flex gw-flex-col gw-space-y-1 gw-px-3 gw-text-brand-gray-500">
-                                                                    {t.detail_rows?.map?.((row) => (<div className="gw-line-clamp-1 gw-truncate">{row.toUpperCase()}</div>))}
-                                                                </div>
-                                                            ) : null
-                                                        }
+                                                        {t.detail_rows?.length ? (
+                                                            <div className="gw-w-[50%] gw-flex gw-flex-col gw-space-y-1 gw-px-3 gw-text-brand-gray-500">
+                                                                {t.detail_rows?.map?.((row) => (
+                                                                    <div className="gw-line-clamp-1 gw-truncate">
+                                                                        {row.toUpperCase()}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        ) : null}
                                                         {t.blockExplorerTxns?.length ? (
                                                             <div className="gw-flex gw-flex-col gw-items-start gw-space-y-1 gw-mb-2">
                                                                 {t.blockExplorerTxns?.map?.((tx) => (

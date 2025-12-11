@@ -1,5 +1,8 @@
 import { TxSendIcon } from "../../assets/svg/TxSendIcon";
+import { TxSwapIcon } from "../../assets/svg/TxSwapIcon";
+import { CHAIN_NAMES } from "../../lib/constants";
 import { formatCurrency } from "../../lib/intl";
+import { relayClient } from "../../lib/relay";
 import { cn } from "../../lib/utils";
 
 export interface ActivityRowProps {
@@ -11,24 +14,51 @@ export interface ActivityRowProps {
         amount: string;
         amount_currency: string;
         name_on_list: string | null;
+        chain_id?: number; // Only pass chain_id if fetchForAllNetworks is true
     };
 }
 
 export function ActivityRow({ data }: ActivityRowProps) {
+    const chain = data?.chain_id ? relayClient.chains.find((c) => c.id === data.chain_id) : undefined;
+
     return (
         <div className="gw-flex gw-items-center gw-typography-body1 gw-flex-1 gw-space-x-3">
-            <div
-                className={cn(
-                    "gw-rounded-full gw-size-10 gw-flex-shrink-0 gw-flex gw-justify-center gw-items-center",
-                    data.status === "Confirmed"
-                        ? "gw-bg-brand-success"
-                        : data.status === "Failed"
-                          ? "gw-bg-destructive"
-                          : "gw-bg-brand-warning"
+            <span className="gw-relative gw-flex-shrink-0">
+                <span
+                    className={cn(
+                        "gw-rounded-full gw-size-10 gw-flex-shrink-0 gw-flex gw-justify-center gw-items-center",
+                        data.status === "Confirmed"
+                            ? data.type === "swap"
+                                ? "gw-bg-brand-swapsuccess"
+                                : "gw-bg-brand-success"
+                            : data.status === "Failed"
+                              ? "gw-bg-destructive"
+                              : "gw-bg-brand-warning"
+                    )}
+                >
+                    {data.type === "swap" ? (
+                        <TxSwapIcon />
+                    ) : data.type === "receive" ? (
+                        <TxSendIcon className="gw-size-3 gw-rotate-180" />
+                    ) : (
+                        <TxSendIcon />
+                    )}
+                </span>
+
+                {chain?.iconUrl && (
+                    <span
+                        className={cn(
+                            "gw-absolute gw-bottom-0 gw-right-0 gw-translate-x-[10%] gw-translate-y-[10%] gw-size-5 gw-rounded-full gw-bg-background"
+                        )}
+                    >
+                        <img
+                            src={chain?.iconUrl}
+                            alt={CHAIN_NAMES[chain?.id] || chain?.name}
+                            className="gw-rounded-full gw-size-full"
+                        />
+                    </span>
                 )}
-            >
-                {data.type === "receive" ? <TxSendIcon className="gw-size-3 gw-rotate-180" /> : <TxSendIcon />}
-            </div>
+            </span>
             <div className="gw-w-full gw-flex gw-justify-between gw-items-center gw-flex-1">
                 <div className="gw-max-w-[45%] gw-flex gw-flex-col gw-text-start">
                     <div className="gw-font-medium gw-capitalize">{data.type_text || data.type}</div>

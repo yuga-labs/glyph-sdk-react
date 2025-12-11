@@ -1,6 +1,6 @@
 {
     "name": "@use-glyph/sdk-react",
-    "version": "1.2.13",
+    "version": "2.0.0-rc.4",
     "type": "module",
     "license": "GLYPH-1.0",
     "sideEffects": false,
@@ -76,9 +76,11 @@
     },
     "dependencies": {
         "@radix-ui/react-accordion": "^1.2.12",
+        "@radix-ui/react-dialog": "^1.1.15",
         "@radix-ui/react-popover": "^1.1.15",
         "@radix-ui/react-slot": "^1.2.3",
         "@radix-ui/react-tooltip": "1.2.8",
+        "@relayprotocol/relay-sdk": "3.1.0",
         "@types/throttle-debounce": "5.0.2",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",

@@ -1,17 +1,27 @@
 import { X } from "lucide-react";
 import { memo } from "react";
-import { FailureIcon } from "../../assets/svg/FailureIcon";
-import CopyButton from "../shared/CopyButton";
-import { WalletViewTemplate } from "../shared/WalletViewTemplate";
-import { Button } from "../ui/button";
+import { FailureIcon } from "../../../assets/svg/FailureIcon";
+import { LinkWithIcon } from "../../shared/LinkWithIcon";
+import { WalletViewTemplate } from "../../shared/WalletViewTemplate";
+import { Button } from "../../ui/button";
 
-interface WalletFundFailedViewProps {
+interface WalletTradeFailedViewProps {
     onEnd: () => void;
     onShowActivity: () => void;
-    id: string;
+    txDetails?: {
+        hash?: string;
+        blockExplorerUrl?: string;
+        blockExplorerName?: string;
+    };
+    reason?: string | null;
 }
 
-const WalletFundFailedView: React.FC<WalletFundFailedViewProps> = ({ onEnd, onShowActivity, id }) => {
+const WalletTradeFailedView: React.FC<WalletTradeFailedViewProps> = ({
+    onEnd,
+    onShowActivity,
+    txDetails,
+    reason
+}) => {
     return (
         <WalletViewTemplate
             content={
@@ -39,13 +49,20 @@ const WalletFundFailedView: React.FC<WalletFundFailedViewProps> = ({ onEnd, onSh
                                 {`Your transaction failed.\nPlease try again.`}
                             </span>
 
-                            <div className="gw-my-10 gw-flex gw-p-4 gw-items-center gw-w-full gw-justify-center gw-space-x-2 gw-typography-caption">
-                                <span>Transaction ID: </span>
-                                <CopyButton
-                                    className="!gw-text-foreground"
-                                    textToCopy={id}
-                                    text={id.slice(0, 20) + "..."}
-                                />
+                            {reason ? (
+                                <span className="gw-mt-3 gw-min-h-8 gw-typography-caption gw-text-center gw-whitespace-pre-wrap !gw-leading-tight">
+                                    Reason: <span className="gw-capitalize">{reason}</span>
+                                </span>
+                            ) : null}
+
+                            <div className="gw-my-6 gw-flex gw-p-4 gw-items-center gw-w-full gw-justify-center gw-space-x-2 gw-typography-caption">
+                                {txDetails?.hash && txDetails?.blockExplorerUrl ? (
+                                    <LinkWithIcon
+                                        key={txDetails?.hash}
+                                        text={`View on ${txDetails?.blockExplorerName || "block explorer"}`}
+                                        url={txDetails?.blockExplorerUrl}
+                                    />
+                                ) : null}
                             </div>
 
                             <Button variant="tertiary" className="gw-w-full" onClick={onShowActivity}>
@@ -59,4 +76,4 @@ const WalletFundFailedView: React.FC<WalletFundFailedViewProps> = ({ onEnd, onSh
     );
 };
 
-export default memo(WalletFundFailedView);
+export default memo(WalletTradeFailedView);

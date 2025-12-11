@@ -1,13 +1,13 @@
 import { X } from "lucide-react";
 import { memo } from "react";
 import truncateEthAddress from "truncate-eth-address";
-import { CaretDownIcon } from "../../assets/svg/CaretDownIcon";
-import { SuccessIcon } from "../../assets/svg/SuccessIcon";
-import { useGlyph } from "../../hooks/useGlyph";
-import UserAvatar from "../shared/UserAvatar";
-import { WalletViewTemplate } from "../shared/WalletViewTemplate";
-import { Button } from "../ui/button";
-import { NativeTokenIcon } from "../shared/ChainIcon";
+import { CaretDownIcon } from "../../../assets/svg/CaretDownIcon";
+import { SuccessIcon } from "../../../assets/svg/SuccessIcon";
+import { useGlyph } from "../../../hooks/useGlyph";
+import UserAvatar from "../../shared/UserAvatar";
+import { WalletViewTemplate } from "../../shared/WalletViewTemplate";
+import { Button } from "../../ui/button";
+import NativeTokenIcon from "../../shared/NativeTokenIcon";
 
 interface WalletFundSuccessViewProps {
     onEnd: () => void;
@@ -44,7 +44,9 @@ const WalletFundSuccessView: React.FC<WalletFundSuccessViewProps> = ({ onEnd, on
                             <div className="gw-my-10 gw-rounded-2xl gw-bg-background gw-drop-shadow-buttonLg gw-flex gw-p-4 gw-items-center gw-space-x-3 gw-w-full gw-justify-center">
                                 <NativeTokenIcon className="gw-size-6 gw-flex-shrink-0" />
                                 <div className="gw-typography-body2">
-                                    <span>{value} {nativeSymbol}</span>
+                                    <span>
+                                        {value} {nativeSymbol}
+                                    </span>
                                 </div>
                                 <div className="gw-flex gw-items-center gw-justify-center gw-text-brand-success gw-relative gw-z-10">
                                     <CaretDownIcon className="gw-w-3 -gw-rotate-90 gw-opacity-50" />

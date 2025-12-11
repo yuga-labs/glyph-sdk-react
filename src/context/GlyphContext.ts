@@ -32,6 +32,10 @@ export const EmptyGlyphContext: GlyphContextType = {
         console.error("Glyph context not ready");
         return Promise.reject(new Error("Glyph context not ready"));
     },
+    signTypedData: () => {
+        console.error("Glyph context not ready");
+        return Promise.reject(new Error("Glyph context not ready"));
+    },
     sendTransaction: () => {
         console.error("Glyph context not ready");
         return Promise.reject(new Error("Glyph context not ready"));
@@ -52,7 +56,7 @@ export function createApiFetch(
         const headers = {
             ...(baseHeaders || {}),
             ...(getToken ? { Authorization: `Bearer ${await getToken()}` } : {}),
-            "Content-Type": "application/json",
+            "Content-Type": "application/json"
         } as Record<string, string>;
 
         return fetch(new URL(path, baseUrl), {

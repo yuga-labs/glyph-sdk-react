@@ -6,7 +6,10 @@ interface GlyphUserDataContextType {
     refreshUser: (force?: boolean) => Promise<void>;
     balances: GlyphWidgetBalances | null;
     hasBalances: boolean;
+    isBalancesLoading: boolean;
     refreshBalances: (force?: boolean, cbs?: Record<string, (diffAmount: number) => void>) => Promise<void>;
+    setFetchForAllNetworks: (value: boolean) => void;
+    fetchForAllNetworks: boolean;
 }
 
 export const GlyphUserDataContext = createContext<GlyphUserDataContextType | undefined>(undefined);

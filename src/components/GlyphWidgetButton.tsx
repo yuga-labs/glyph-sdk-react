@@ -1,7 +1,8 @@
 import GlyphIcon from "../assets/svg/GlyphIcon";
 import { WalletIcon } from "../assets/svg/WalletIcon";
 import { useGlyph } from "../hooks/useGlyph";
-import { cn } from "../lib/utils";
+import { formatCurrency } from "../lib/intl";
+import { cn, formatTokenCount } from "../lib/utils";
 import { GlyphWidgetButtonProps } from "../types";
 import UserAvatar from "./shared/UserAvatar";
 import { Skeleton } from "./ui/skeleton";
@@ -11,8 +12,13 @@ export const GlyphWidgetButton = ({
     showBalance = true,
     showUsername = true
 }: GlyphWidgetButtonProps) => {
-    const { user, balances, hasBalances } = useGlyph();
+    const { user, balances, hasBalances, fetchForAllNetworks } = useGlyph();
+
+    // We can safely fetch the native balance here without chainId check because we only show this when a single chain is selected
     const nativeBalance = balances?.tokens?.find?.((balance) => balance.native);
+    const allBalances = balances?.wallet_value;
+    const tokens = balances?.tokens;
+
     const allValuesVisible = showAvatar && showBalance && showUsername;
 
     return (
@@ -24,20 +30,45 @@ export const GlyphWidgetButton = ({
                     <div className={cn(allValuesVisible && "max-sm:gw-hidden", "gw-pl-1")}>
                         <WalletIcon className="gw-size-6" />
                     </div>
-                    {!hasBalances || nativeBalance?.value === undefined ? (
-                        <div
-                            className={cn(
-                                allValuesVisible && "max-sm:gw-hidden",
-                                "gw-pl-1 gw-pr-2.5 gw-inline-flex gw-items-center"
-                            )}
-                        >
-                            <Skeleton className="gw-w-16 gw-h-5 gw-inline-block" />
-                        </div>
-                    ) : (
-                        <div className={cn(allValuesVisible && "max-sm:gw-hidden", "gw-pl-1 gw-pr-2.5")}>
-                            {nativeBalance?.value || "0.00"} {nativeBalance?.symbol || ""}
-                        </div>
-                    )}
+                    {!fetchForAllNetworks &&
+                        (!hasBalances || nativeBalance?.value === undefined ? (
+                            <div
+                                className={cn(
+                                    allValuesVisible && "max-sm:gw-hidden",
+                                    "gw-pl-1 gw-pr-2.5 gw-inline-flex gw-items-center"
+                                )}
+                            >
+                                <Skeleton className="gw-w-16 gw-h-5 gw-inline-block" />
+                            </div>
+                        ) : (
+                            <div className={cn(allValuesVisible && "max-sm:gw-hidden", "gw-pl-1 gw-pr-2.5")}>
+                                {formatTokenCount(
+                                    nativeBalance?.valueInWei,
+                                    nativeBalance?.decimals,
+                                    nativeBalance?.displayDecimals
+                                )}{" "}
+                                {nativeBalance?.symbol}
+                            </div>
+                        ))}
+                    {fetchForAllNetworks &&
+                        (!hasBalances || allBalances?.total === undefined ? (
+                            <div
+                                className={cn(
+                                    allValuesVisible && "max-sm:gw-hidden",
+                                    "gw-pl-1 gw-pr-2.5 gw-inline-flex gw-items-center"
+                                )}
+                            >
+                                <Skeleton className="gw-w-16 gw-h-5 gw-inline-block" />
+                            </div>
+                        ) : (
+                            <div className={cn(allValuesVisible && "max-sm:gw-hidden", "gw-pl-1 gw-pr-2.5")}>
+                                {formatCurrency(
+                                    allBalances?.tokens,
+                                    allBalances?.currency,
+                                    tokens?.some((t) => BigInt(t.valueInWei) !== 0n)
+                                )}
+                            </div>
+                        ))}
                 </>
             )}
             {showAvatar && (

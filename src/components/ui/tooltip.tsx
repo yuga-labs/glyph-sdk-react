@@ -1,5 +1,5 @@
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
-import { ComponentPropsWithoutRef, ElementRef, forwardRef } from "react";
+import { ComponentPropsWithoutRef, ComponentRef, forwardRef } from "react";
 import { cn } from "../../lib/utils";
 
 const TooltipProvider = TooltipPrimitive.Provider;
@@ -11,7 +11,7 @@ const TooltipTrigger = TooltipPrimitive.Trigger;
 const TooltipArrow = TooltipPrimitive.TooltipArrow;
 
 const TooltipContent = forwardRef<
-    ElementRef<typeof TooltipPrimitive.Content>,
+    ComponentRef<typeof TooltipPrimitive.Content>,
     ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
 >(({ className, sideOffset = 4, ...props }, ref) => (
     <TooltipPrimitive.Content

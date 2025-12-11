@@ -1,11 +1,12 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@radix-ui/react-accordion";
 import { useState } from "react";
 import ExpandItemIcon from "../../assets/svg/ExpandItemIcon";
-import { useGlyph } from "../../hooks/useGlyph";
-import { buttonVariants } from "../ui/button";
-import { NFTImgFail } from "../../assets/svg/NFTImgFail";
 import LinkedNFTChip from "../../assets/svg/LinkedNFTChip";
+import { NFTImgFail } from "../../assets/svg/NFTImgFail";
+import { useGlyph } from "../../hooks/useGlyph";
+import { formatCurrency } from "../../lib/intl";
 import { cn } from "../../lib/utils";
+import { buttonVariants } from "../ui/button";
 
 type NFTImageProps = React.SVGProps<SVGSVGElement> & {
     alt: string;
@@ -38,14 +39,20 @@ export function WalletNFTsTab() {
     const { glyphUrl, balances, hasBalances } = useGlyph();
     const [expandedItemId, setExpandedItemId] = useState<string>("");
     const nfts = balances?.nfts || [];
+    const totalValue = balances?.wallet_value?.nfts || 0;
 
     const nftsURL = new URL("/nfts", glyphUrl).toString();
 
     return (
         <div className="gw-pl-4 gw-pt-4 gw-flex gw-flex-col gw-h-full">
             {/* Fixed header */}
-            <div className="gw-flex gw-mb-2 gw-flex-row gw-justify-between gw-items-center gw-w-full gw-flex-shrink-0">
+            <div className="gw-flex gw-mb-2 gw-flex-row gw-justify-between gw-items-center gw-w-full gw-flex-shrink-0 gw-pr-4">
                 <h6>My NFTs</h6>
+                <div className="gw-typography-body2">
+                    <span className="amount">
+                        {formatCurrency(totalValue, balances?.wallet_value?.currency, nfts.length > 0)}
+                    </span>
+                </div>
             </div>
 
             {hasBalances && nfts?.length ? (

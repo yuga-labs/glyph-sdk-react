@@ -1,25 +1,17 @@
 import { X } from "lucide-react";
 import { memo } from "react";
-import { FailureIcon } from "../../assets/svg/FailureIcon";
-import { LinkWithIcon } from "../shared/LinkWithIcon";
-import { WalletViewTemplate } from "../shared/WalletViewTemplate";
-import { Button } from "../ui/button";
+import { FailureIcon } from "../../../assets/svg/FailureIcon";
+import CopyButton from "../../shared/CopyButton";
+import { WalletViewTemplate } from "../../shared/WalletViewTemplate";
+import { Button } from "../../ui/button";
 
-interface WalletSendFundFailedViewProps {
+interface WalletFundFailedViewProps {
     onEnd: () => void;
     onShowActivity: () => void;
-    txHash: string | undefined;
-    txBlockExplorerUrl: string | undefined;
-    txBlockExplorerName: string | undefined;
+    id: string;
 }
 
-const WalletSendFundFailedView: React.FC<WalletSendFundFailedViewProps> = ({
-    onEnd,
-    onShowActivity,
-    txHash,
-    txBlockExplorerUrl,
-    txBlockExplorerName
-}) => {
+const WalletFundFailedView: React.FC<WalletFundFailedViewProps> = ({ onEnd, onShowActivity, id }) => {
     return (
         <WalletViewTemplate
             content={
@@ -48,13 +40,12 @@ const WalletSendFundFailedView: React.FC<WalletSendFundFailedViewProps> = ({
                             </span>
 
                             <div className="gw-my-10 gw-flex gw-p-4 gw-items-center gw-w-full gw-justify-center gw-space-x-2 gw-typography-caption">
-                                {txHash && txBlockExplorerUrl ? (
-                                    <LinkWithIcon
-                                        key={txHash}
-                                        text={`View on ${txBlockExplorerName || "block explorer"}`}
-                                        url={txBlockExplorerUrl}
-                                    />
-                                ) : null}
+                                <span>Transaction ID: </span>
+                                <CopyButton
+                                    className="!gw-text-foreground"
+                                    textToCopy={id}
+                                    text={id.slice(0, 20) + "..."}
+                                />
                             </div>
 
                             <Button variant="tertiary" className="gw-w-full" onClick={onShowActivity}>
@@ -68,4 +59,4 @@ const WalletSendFundFailedView: React.FC<WalletSendFundFailedViewProps> = ({
     );
 };
 
-export default memo(WalletSendFundFailedView);
+export default memo(WalletFundFailedView);
