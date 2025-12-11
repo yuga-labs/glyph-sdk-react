@@ -11,7 +11,7 @@
     "preview": "vite preview --port 3005 --host 0.0.0.0"
   },
   "dependencies": {
-    "@use-glyph/sdk-react": "^refs/heads/main",
+    "@use-glyph/sdk-react": "*",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "wagmi": "^2.16.8",
