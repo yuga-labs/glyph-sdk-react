@@ -4,10 +4,11 @@ import { LogoutButton } from "./components/LogoutButton";
 import { SignUpButton } from "./components/SignUpButton";
 import { GlyphProvider } from "./context/GlyphProvider";
 
+export { useGlyphConfigureDynamicChains } from "./hooks/useGlyphConfigureDynamicChains";
+export { configureRelayChains } from "./lib/relay";
 export { useBalances } from "./hooks/useBalances";
 export { useGlyph } from "./hooks/useGlyph";
 export { useGlyphFunding, type GLYPH_FUND_STATUS } from "./hooks/useGlyphFunding";
-export { useGlyphConfigureDynamicChains } from "./hooks/useGlyphConfigureDynamicChains";
 export {
     useActivity,
     type ActivityType,
