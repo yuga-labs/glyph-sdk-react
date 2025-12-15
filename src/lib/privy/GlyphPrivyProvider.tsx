@@ -49,7 +49,7 @@ export const GlyphPrivyProvider = ({
     onLogout,
     ...props
 }: GlyphPrivyProviderProps) => {
-    const { chains } = useGlyphConfigureDynamicChains();
+    const { chains } = useGlyphConfigureDynamicChains(glyphUrl);
 
     const wagmiConfig = useMemo(() => {
         if (!chains || chains.length === 0) {

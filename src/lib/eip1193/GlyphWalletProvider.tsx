@@ -45,29 +45,26 @@ export const GlyphWalletProvider = ({
     ssr,
     ...glyphProviderOptions
 }: GlyphWalletProviderProps) => {
-    const { chains } = useGlyphConfigureDynamicChains();
+    const { chains } = useGlyphConfigureDynamicChains(glyphProviderOptions.glyphUrl);
 
-    const wagmiConfig = useMemo(
-        () => {
-            if (chains && chains.length > 0) {
-                return createConfig({
-                    chains,
-                    ssr,
-                    connectors: [glyphWalletConnector({ useStagingTenant: glyphProviderOptions.useStagingTenant })],
-                    transports: chains.reduce(
-                        (acc, chain) => {
-                            acc[chain.id] = http();
-                            return acc;
-                        },
-                        {} as Record<number, Transport>
-                    ),
-                    multiInjectedProviderDiscovery: false
-                })
-            }
-            return null;
-        },
-        [chains, glyphProviderOptions.useStagingTenant, ssr]
-    );
+    const wagmiConfig = useMemo(() => {
+        if (chains && chains.length > 0) {
+            return createConfig({
+                chains,
+                ssr,
+                connectors: [glyphWalletConnector({ useStagingTenant: glyphProviderOptions.useStagingTenant })],
+                transports: chains.reduce(
+                    (acc, chain) => {
+                        acc[chain.id] = http();
+                        return acc;
+                    },
+                    {} as Record<number, Transport>
+                ),
+                multiInjectedProviderDiscovery: false
+            });
+        }
+        return null;
+    }, [chains, glyphProviderOptions.useStagingTenant, ssr]);
 
     if (!wagmiConfig) {
         return null;
