@@ -6,7 +6,7 @@ import {
     useDisconnect,
     useSendTransaction,
     useSignMessage,
-    useSignTypedData
+    useSignTypedData,
 } from "wagmi";
 import { WIDGET_API_BASE_URL } from "../../lib/constants";
 import { createLogger } from "../../lib/utils";

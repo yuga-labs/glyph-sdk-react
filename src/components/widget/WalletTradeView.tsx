@@ -32,14 +32,13 @@ export type WalletTradeProps = {
 };
 
 export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType }: WalletTradeProps) {
+    const { user } = useGlyph();
+    const chainId = useChainId();
+    
     const [view, setView] = useState<SwapView>(SwapView.START);
     const [txStatus, setTxStatus] = useState<"SUCCESS" | "FAILED" | "PENDING">("PENDING");
     const [intentRequestId, setIntentRequestId] = useState<string | null>(null);
     const [swapTxnId, setSwapTxnId] = useState<string | null>(null);
-
-    const chainId = useChainId();
-
-    const { user } = useGlyph();
 
     // Swap hooks
     const { update, reportSwapFailed, fromCurrency, toCurrency, tradeType, amount, topupGas } = useGlyphSwap();
@@ -149,17 +148,17 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
         balance: sellTokenBalance,
         isLoading: sellTokenBalanceLoading,
         error: sellTokenBalanceError
-    } = useTokenBalance(user?.evmWallet as Hex, fromCurrency?.address as Hex, fromCurrency?.chainId);
+    } = useTokenBalance(fromCurrency?.address, fromCurrency?.chainId);
 
     const {
         balance: buyTokenBalance,
         isLoading: buyTokenBalanceLoading,
         error: buyTokenBalanceError
-    } = useTokenBalance(user?.evmWallet as Hex, toCurrency?.address as Hex, toCurrency?.chainId);
+    } = useTokenBalance(toCurrency?.address, toCurrency?.chainId);
 
     const insufficientBalanceError =
         fromCurrency?.decimals && sellAmount && sellTokenBalance !== undefined
-            ? Number(formatUnits(sellTokenBalance, fromCurrency?.decimals)) < Number(sellAmount)
+            ? Number(formatUnits(BigInt(sellTokenBalance), fromCurrency?.decimals)) < Number(sellAmount)
                 ? "Insufficient balance"
                 : null
             : null;
@@ -309,7 +308,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                         ) : sellTokenBalance !== undefined && fromCurrency?.decimals ? (
                                             <div className="gw-typography-caption gw-flex gw-items-center gw-mr-4">
                                                 {displayNumberPrecision(
-                                                    parseFloat(formatUnits(sellTokenBalance, fromCurrency?.decimals)),
+                                                    parseFloat(formatUnits(BigInt(sellTokenBalance), fromCurrency?.decimals)),
                                                     Math.min(
                                                         fromCurrency?.decimals || MAX_DECIMALS_FOR_CRYPTO,
                                                         MAX_DECIMALS_FOR_CRYPTO
@@ -453,7 +452,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                             ) : buyTokenBalance !== undefined && toCurrency?.decimals ? (
                                                 <div className="gw-typography-caption gw-flex gw-items-center gw-mr-4">
                                                     {displayNumberPrecision(
-                                                        parseFloat(formatUnits(buyTokenBalance, toCurrency?.decimals)),
+                                                        parseFloat(formatUnits(BigInt(buyTokenBalance), toCurrency?.decimals)),
                                                         Math.min(
                                                             toCurrency?.decimals || MAX_DECIMALS_FOR_CRYPTO,
                                                             MAX_DECIMALS_FOR_CRYPTO
@@ -582,7 +581,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                             <Button
                                 variant={"tertiary"}
                                 className="gw-w-full"
-                                disabled={!!blockingError || !quote}
+                                disabled={!!blockingError || !quote || !currencyInUsd}
                                 onClick={async () => {
                                     if (!quote || blockingError) return;
 

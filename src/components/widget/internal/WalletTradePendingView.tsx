@@ -49,7 +49,7 @@ const WalletTradePendingView: React.FC<WalletTradePendingViewProps> = ({
             }
             content={
                 <div className="gw-p-4 gw-h-full">
-                    <h6>Finalizing Purchase</h6>
+                    <h6>Finalizing Transaction</h6>
                     <div className="gw-mt-4 gw-typography-caption gw-flex gw-justify-between gw-items-center">
                         <span>Estimated wait time:</span>
                         <span className="gw-text-brand-gray-500">

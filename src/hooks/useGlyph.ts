@@ -1,6 +1,6 @@
 import { SignTypedDataParams, UnsignedTransactionRequest } from "@privy-io/react-auth";
 import { useContext, useEffect, useState } from "react";
-
+import { type WalletClient } from "viem";
 import { useChainId } from "wagmi";
 import { GlyphContext } from "../context/GlyphContext";
 import { GlyphUserDataContext } from "../context/GlyphUserDataContext";
@@ -70,6 +70,12 @@ export interface GlyphHook extends GlyphInterface {
 
     setFetchForAllNetworks: (value: boolean) => void;
     fetchForAllNetworks: boolean;
+
+    /**
+     * A viem WalletClient instance for interacting with the wallet.
+     * Returns null if the context is not ready or the user is not authenticated.
+     */
+    walletClient: WalletClient | null;
 }
 
 export const useGlyph = (): GlyphHook => {
@@ -79,7 +85,7 @@ export const useGlyph = (): GlyphHook => {
     const userCtx = useContext(GlyphUserDataContext);
     if (!userCtx) throw new Error("useGlyph must be used within GlyphUserDataProvider");
 
-    const { ready, authenticated, login, logout, signMessage, signTypedData, sendTransaction, glyphUrl, hideWidget } =
+    const { ready, authenticated, login, logout, signMessage, signTypedData, sendTransaction, glyphUrl, hideWidget, walletClient } =
         context;
     const {
         user,
@@ -122,6 +128,7 @@ export const useGlyph = (): GlyphHook => {
         glyphUrl: glyphUrl || DASHBOARD_BASE_URL, // Return the glyphUrl if it is overridden, otherwise return the default dashboard URL from envs
         hideWidget,
         fetchForAllNetworks,
-        setFetchForAllNetworks
+        setFetchForAllNetworks,
+        walletClient: walletClient || null
     };
 };

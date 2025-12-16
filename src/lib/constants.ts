@@ -9,7 +9,7 @@ export const USER_REFRESH_INTERVAL_MS = 60 * 1000;
 export const TOKEN_REFRESH_INTERVAL_MS = 60 * 1000;
 
 // TODO: update before launch (and keep it in sync with id.yuga.com/src/lib/web3.ts)
-export const RELAY_APP_FEE_RECIPIENT = "0x822c48376E5C0bbDC01cB5Ef08d27a53D7D0f9eA";
+export const RELAY_APP_FEE_RECIPIENT = "0x3c7fb61850cCD1490B820D317f565358D6f1Fb87";
 export const RELAY_APP_FEE_BPS = 80;
 
 export const MAX_DECIMALS_FOR_CRYPTO = 6; // Useful for BTC, ETH and other expensive currencies

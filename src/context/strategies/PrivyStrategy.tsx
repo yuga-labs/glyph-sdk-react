@@ -3,11 +3,10 @@ import {
     UnsignedTransactionRequest,
     useCrossAppAccounts,
     usePrivy,
-    useWallets,
     WalletWithMetadata
 } from "@privy-io/react-auth";
 import react, { memo, useCallback, useEffect, useState } from "react";
-import { useChainId } from "wagmi";
+import { useChainId, useConfig } from "wagmi";
 import { GLYPH_PRIVY_APP_ID, STAGING_GLYPH_PRIVY_APP_ID, WIDGET_API_BASE_URL } from "../../lib/constants";
 import { createLogger, isEthereumAddress } from "../../lib/utils";
 import { BaseGlyphProviderOptions } from "../../types";
@@ -37,7 +36,7 @@ const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
         logout: privyLogout,
         signMessage: privySignMessage,
         signTypedData: privySignTypedData,
-        sendTransaction: privySendTransaction
+        sendTransaction: privySendTransaction,
     } = usePrivy();
 
     const {
@@ -47,7 +46,6 @@ const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
     } = useCrossAppAccounts();
 
     logger.debug(privyReady, privyAuthenticated, !!privyUser);
-    const { wallets } = useWallets();
 
     useEffect(() => {
         // If Privy is not ready, reset widget state (loading: true)
@@ -140,7 +138,6 @@ const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
         privyUser,
         useStagingTenant,
         usesCrossapp,
-        wallets,
         walletAddress,
         getPrivyAccessToken,
         privyLogout
@@ -188,6 +185,7 @@ const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
         },
         [chainId, usesCrossapp, walletAddress, crossAppSendTransaction, privySendTransaction]
     );
+
 
     return (
         <GlyphContext.Provider

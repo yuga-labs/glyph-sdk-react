@@ -42,7 +42,7 @@ export const EmptyGlyphContext: GlyphContextType = {
     },
     apiFetch: (): Promise<Response> => {
         return Promise.reject(new Error("Glyph context not ready"));
-    }
+    },
 };
 
 export const GlyphContext = createContext<GlyphContextType | null>(null);

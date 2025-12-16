@@ -22,9 +22,6 @@ export default defineConfig(({ command }) => {
 	return {
 		base: "/rainbowkit",
 		plugins: [react(), pluginWatchNodeModules(["@use-glyph/sdk-react"])],
-		optimizeDeps: {
-			exclude: ["@use-glyph/sdk-react"],
-		},
 		// Dev server config only used in development
 		...(isDev
 			? {

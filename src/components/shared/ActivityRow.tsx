@@ -60,7 +60,8 @@ export function ActivityRow({ data }: ActivityRowProps) {
                 )}
             </span>
             <div className="gw-w-full gw-flex gw-justify-between gw-items-center gw-flex-1">
-                <div className="gw-max-w-[45%] gw-flex gw-flex-col gw-text-start">
+                {/* Left side */}
+                <div className="gw-max-w-[35%] gw-flex gw-flex-col gw-text-start">
                     <div className="gw-font-medium gw-capitalize">{data.type_text || data.type}</div>
                     <div
                         className={cn(
@@ -75,7 +76,8 @@ export function ActivityRow({ data }: ActivityRowProps) {
                         {data.status}
                     </div>
                 </div>
-                <div className="gw-max-w-[40%] gw-flex gw-flex-col gw-items-end">
+                {/* Right side */}
+                <div className="gw-max-w-[55%] gw-flex gw-flex-col gw-items-end">
                     <div className="gw-font-medium">{data.value}</div>
                     <div className="gw-typography-caption gw-text-brand-gray-500 gw-line-clamp-1">{`${data.name_on_list !== null ? data.name_on_list.toUpperCase() : formatCurrency(data.amount, data.amount_currency)}`}</div>
                 </div>

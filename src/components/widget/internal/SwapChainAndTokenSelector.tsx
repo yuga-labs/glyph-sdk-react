@@ -15,6 +15,8 @@ import { Skeleton } from "../../ui/skeleton";
 import TooltipElement from "../../ui/tooltip-element";
 import { TokenAndChainIcon } from "./TokenAndChainIcon";
 
+// The swap token selector component behaves a bit differently from the send token selector component
+// because this component is being used twice on the same screen - (to and from currency) and hence we cannot switch chain from each of them, so they have their own state of currentChainId and once user goes on to perform the transaction only then we change the chainId in wagmi, unlike the send token selector where we switch the chainId in wagmi as soon as the user selects a chain in the selector
 const SwapChainAndTokenSelector = ({
     onTokenSelect,
     selectedToken,
