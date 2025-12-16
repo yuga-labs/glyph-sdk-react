@@ -24,7 +24,7 @@ const SwapChainAndTokenSelector = ({
 }: {
     onTokenSelect: (token: RelayAPIToken) => void;
     selectedToken: RelayAPIToken | undefined;
-    defaultChainId?: number;
+    defaultChainId?: number | undefined;
 }) => {
     const chains = relayClient.chains || [];
     const chainIds = useMemo(() => chains.map((chain) => chain.id), []);
@@ -151,7 +151,7 @@ const SwapChainAndTokenSelector = ({
                                 <Button
                                     size={"icon"}
                                     variant={"outline"}
-                                    className={cn("gw-h-10 gw-p-0.5", !currentChainId && "gw-border-primary")}
+                                    className={cn("gw-h-10 gw-p-0.5", currentChainId === undefined && "gw-border-primary")}
                                     shadow
                                     onClick={() => setCurrentChainId(undefined)}
                                 >

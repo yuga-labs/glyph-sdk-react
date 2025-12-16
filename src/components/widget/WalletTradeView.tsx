@@ -32,7 +32,7 @@ export type WalletTradeProps = {
 };
 
 export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType }: WalletTradeProps) {
-    const { user } = useGlyph();
+    const { user, fetchForAllNetworks } = useGlyph();
     const chainId = useChainId();
     
     const [view, setView] = useState<SwapView>(SwapView.START);
@@ -283,7 +283,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                                         });
                                                     }
                                                 }}
-                                                defaultChainId={chainId}
+                                                defaultChainId={fetchForAllNetworks ? undefined : chainId}
                                             />
                                         )}
                                     </div>
@@ -426,7 +426,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                                         });
                                                     }
                                                 }}
-                                                defaultChainId={chainId}
+                                                defaultChainId={fetchForAllNetworks ? undefined : chainId}
                                             />
                                         )}
                                     </div>
