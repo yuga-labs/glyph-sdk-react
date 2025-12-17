@@ -69,18 +69,26 @@ export const useGlyphRelayEvmAdapter = (config: Config | undefined): AdaptedWall
                 });
             },
             handleConfirmTransactionStep: async (txHash, chainId, onReplaced, onCancelled) => {
+                console.log(config, chainId);
                 const publicClient = getPublicClient(config, { chainId: chainId });
-                assertHasValue(publicClient, "publicClient is required");
-                const receipt = await publicClient.waitForTransactionReceipt({
-                    hash: txHash as Address,
-                    onReplaced: (replacement) => {
-                        if (replacement.reason === "cancelled") {
-                            onCancelled();
-                            throw Error("Transaction cancelled");
+                let receipt = null;
+                try {
+                    assertHasValue(publicClient, "publicClient is required");
+                    receipt = await publicClient.waitForTransactionReceipt({
+                        hash: txHash as Address,
+                        onReplaced: (replacement) => {
+                            if (replacement.reason === "cancelled") {
+                                onCancelled();
+                                throw Error("Transaction cancelled");
+                            }
+                            onReplaced(replacement.transaction.hash);
                         }
-                        onReplaced(replacement.transaction.hash);
-                    }
-                });
+                    });
+                } catch (e) {
+                    console.log(publicClient);
+                }
+
+                console.log(receipt);
 
                 return receipt;
             },
