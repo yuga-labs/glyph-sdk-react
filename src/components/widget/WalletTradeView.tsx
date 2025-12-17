@@ -176,7 +176,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
     const hasSourceGas =
         sourceGasBalance !== undefined &&
         sourceGasBalance !== null &&
-        buyTokenBalance &&
+        fromCurrency &&
         (gasCurrencyAddress !== fromCurrency?.address
             ? BigInt(sourceGasBalance) > BigInt(quoteGas?.amount || 0) // If different token than gas token -> check if gas is available
             : BigInt(sourceGasBalance) - parseUnits(amount, fromCurrency.decimals!) > BigInt(quoteGas?.amount || 0)); // If same token is being sold, reserve some for gas
