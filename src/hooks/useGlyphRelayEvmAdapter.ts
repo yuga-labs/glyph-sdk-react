@@ -6,7 +6,7 @@ import { Address, hexToBigInt } from "viem";
 import { Config, useSwitchChain } from "wagmi";
 import { getChainId, getPublicClient } from "wagmi/actions";
 import { relayClient } from "../lib/relay";
-import { assertHasValue } from "../lib/utils";
+import { createDefaultPublicClient } from "../lib/rpcPublic";
 
 export const useGlyphRelayEvmAdapter = (config: Config | undefined): AdaptedWallet | null => {
     const { user, signMessage, signTypedData, sendTransaction } = useGlyph();
@@ -70,23 +70,22 @@ export const useGlyphRelayEvmAdapter = (config: Config | undefined): AdaptedWall
             },
             handleConfirmTransactionStep: async (txHash, chainId, onReplaced, onCancelled) => {
                 console.log(config, chainId);
-                const publicClient = getPublicClient(config, { chainId: chainId });
-                let receipt = null;
-                try {
-                    assertHasValue(publicClient, "publicClient is required");
-                    receipt = await publicClient.waitForTransactionReceipt({
-                        hash: txHash as Address,
-                        onReplaced: (replacement) => {
-                            if (replacement.reason === "cancelled") {
-                                onCancelled();
-                                throw Error("Transaction cancelled");
-                            }
-                            onReplaced(replacement.transaction.hash);
+
+                const firstPassAtPublicClient = getPublicClient(config, { chainId: chainId });
+                const publicClient = firstPassAtPublicClient ?? createDefaultPublicClient(chainId);
+
+                console.log(firstPassAtPublicClient, publicClient);
+
+                const receipt = await publicClient.waitForTransactionReceipt({
+                    hash: txHash as Address,
+                    onReplaced: (replacement) => {
+                        if (replacement.reason === "cancelled") {
+                            onCancelled();
+                            throw Error("Transaction cancelled");
                         }
-                    });
-                } catch (e) {
-                    console.log(publicClient);
-                }
+                        onReplaced(replacement.transaction.hash);
+                    }
+                });
 
                 console.log(receipt);
 
