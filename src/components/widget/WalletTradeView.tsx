@@ -2,7 +2,7 @@ import { ArrowUpDown } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { debounce } from "throttle-debounce";
-import { formatUnits, zeroAddress } from "viem";
+import { formatUnits, parseUnits, zeroAddress } from "viem";
 import { useChainId } from "wagmi";
 import { GlyphSwapContextData, useGlyphSwap } from "../../context/GlyphSwapContext";
 import { useGlyph } from "../../hooks/useGlyph";
@@ -32,7 +32,7 @@ export type WalletTradeProps = {
 };
 
 export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType }: WalletTradeProps) {
-    const { user, fetchForAllNetworks } = useGlyph();
+    const { fetchForAllNetworks } = useGlyph();
     const chainId = useChainId();
 
     const [view, setView] = useState<SwapView>(SwapView.START);
@@ -156,6 +156,16 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
         error: buyTokenBalanceError
     } = useTokenBalance(toCurrency?.address, toCurrency?.chainId);
 
+    const quoteGas = quote?.fees?.gas;
+
+    // Source chain gas balance to determine if transaction can be executed
+    const gasCurrencyAddress = quoteGas?.currency?.address || zeroAddress;
+    const {
+        balance: sourceGasBalance,
+        isLoading: sourceGasBalanceLoading,
+        error: sourceGasBalanceError
+    } = useTokenBalance(gasCurrencyAddress, fromCurrency?.chainId);
+
     const insufficientBalanceError =
         fromCurrency?.decimals && sellAmount && sellTokenBalance !== undefined
             ? Number(formatUnits(BigInt(sellTokenBalance), fromCurrency?.decimals)) < Number(sellAmount)
@@ -163,11 +173,29 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                 : null
             : null;
 
+    const hasSourceGas =
+        sourceGasBalance !== undefined &&
+        sourceGasBalance !== null &&
+        buyTokenBalance &&
+        (gasCurrencyAddress !== fromCurrency?.address
+            ? BigInt(sourceGasBalance) > BigInt(quoteGas?.amount || 0) // If different token than gas token -> check if gas is available
+            : BigInt(sourceGasBalance) - parseUnits(amount, fromCurrency.decimals!) > BigInt(quoteGas?.amount || 0)); // If same token is being sold, reserve some for gas
+
+    const gasUnavailableError =
+        quote && fromCurrency?.chainId && !sourceGasBalanceLoading && !hasSourceGas
+            ? "Insufficient gas to execute transaction."
+            : null;
+
     const blockingError =
         swapError || // Error from swap intent status
         executeError || // Error during execution
         (view === SwapView.START
-            ? quoteError?.message || sellTokenBalanceError || buyTokenBalanceError || insufficientBalanceError
+            ? quoteError?.message ||
+              sellTokenBalanceError ||
+              buyTokenBalanceError ||
+              sourceGasBalanceError ||
+              insufficientBalanceError ||
+              gasUnavailableError
             : undefined); // These errors are only relevant when on start screen
 
     const appFees = Number(quote?.fees?.app?.amountUsd || "0"); // It's absolute value

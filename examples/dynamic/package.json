@@ -16,7 +16,7 @@
     "@dynamic-labs/sdk-react-core": "^4.30",
     "@dynamic-labs/wagmi-connector": "^4.30",
     "@tanstack/react-query": "^5.85.5",
-    "@use-glyph/sdk-react": "^2.0.1",
+    "@use-glyph/sdk-react": "^2.0.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "viem": "^2.36.0",
