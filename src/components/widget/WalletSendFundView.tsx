@@ -13,7 +13,7 @@ import {
     parseEther,
     zeroAddress
 } from "viem";
-import { useAccount, useChainId } from "wagmi";
+import { useChainId, useChains } from "wagmi";
 import { CaretDownIcon } from "../../assets/svg/CaretDownIcon";
 import NoTokenIcon from "../../assets/svg/NoTokenIcon";
 import { useGlyph } from "../../hooks/useGlyph";
@@ -71,7 +71,9 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
     const { user, sendTransaction, refreshBalances, hasBalances, balances } = useGlyph();
     const { glyphApiFetch } = useGlyphApi();
     const chainId = useChainId();
-    const { chain } = useAccount();
+    const chains = useChains();
+
+    const chain = useMemo(() => chains.find((c) => c.id === chainId), [chainId, chains]);
 
     const [recipientAddress, setRecipientAddress] = useState<string>("");
     const [recipientAddressError, setRecipientAddressError] = useState<string | null>(null);
@@ -127,7 +129,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
     useEffect(() => {
         const fetchQuote = async () => {
             // If on any other screen or signature is pending, don't fetch quote
-            if (view !== SendView.ENTER_AMOUNT || isSignaturePending || maxValueError) return;
+            if (view !== SendView.ENTER_AMOUNT || isSignaturePending || maxValueError || !publicClient) return;
 
             if (
                 token &&
@@ -607,6 +609,9 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                     try {
                                         if (!quote?.receivable_amount) {
                                             throw new Error("No receivable amount");
+                                        }
+                                        if (!publicClient) {
+                                            throw new Error("Missing publicClient");
                                         }
 
                                         let hash_: string | undefined;

@@ -2,7 +2,7 @@ import { ArrowUpDown } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { debounce } from "throttle-debounce";
-import { formatUnits, Hex, zeroAddress } from "viem";
+import { formatUnits, zeroAddress } from "viem";
 import { useChainId } from "wagmi";
 import { GlyphSwapContextData, useGlyphSwap } from "../../context/GlyphSwapContext";
 import { useGlyph } from "../../hooks/useGlyph";
@@ -34,7 +34,7 @@ export type WalletTradeProps = {
 export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType }: WalletTradeProps) {
     const { user, fetchForAllNetworks } = useGlyph();
     const chainId = useChainId();
-    
+
     const [view, setView] = useState<SwapView>(SwapView.START);
     const [txStatus, setTxStatus] = useState<"SUCCESS" | "FAILED" | "PENDING">("PENDING");
     const [intentRequestId, setIntentRequestId] = useState<string | null>(null);
@@ -308,7 +308,9 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                         ) : sellTokenBalance !== undefined && fromCurrency?.decimals ? (
                                             <div className="gw-typography-caption gw-flex gw-items-center gw-mr-4">
                                                 {displayNumberPrecision(
-                                                    parseFloat(formatUnits(BigInt(sellTokenBalance), fromCurrency?.decimals)),
+                                                    parseFloat(
+                                                        formatUnits(BigInt(sellTokenBalance), fromCurrency?.decimals)
+                                                    ),
                                                     Math.min(
                                                         fromCurrency?.decimals || MAX_DECIMALS_FOR_CRYPTO,
                                                         MAX_DECIMALS_FOR_CRYPTO
@@ -452,7 +454,9 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                             ) : buyTokenBalance !== undefined && toCurrency?.decimals ? (
                                                 <div className="gw-typography-caption gw-flex gw-items-center gw-mr-4">
                                                     {displayNumberPrecision(
-                                                        parseFloat(formatUnits(BigInt(buyTokenBalance), toCurrency?.decimals)),
+                                                        parseFloat(
+                                                            formatUnits(BigInt(buyTokenBalance), toCurrency?.decimals)
+                                                        ),
                                                         Math.min(
                                                             toCurrency?.decimals || MAX_DECIMALS_FOR_CRYPTO,
                                                             MAX_DECIMALS_FOR_CRYPTO
@@ -473,7 +477,6 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                     {toCurrency?.address !== zeroAddress ? (
                                         <WalletSwapTopUpGas
                                             destinationChainId={toCurrency?.chainId}
-                                            walletAddress={user?.evmWallet as Hex}
                                             topUpGas={topupGas}
                                             setTopUpGas={(v) => {
                                                 update({

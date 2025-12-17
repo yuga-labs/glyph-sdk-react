@@ -1,6 +1,6 @@
 import { paths } from "@relayprotocol/relay-sdk";
 import { CheckIcon, PlusIcon, X } from "lucide-react";
-import { Hex, zeroAddress } from "viem";
+import { zeroAddress } from "viem";
 import { useTokenBalance } from "../../../hooks/useTokenBalance";
 import { MAX_DECIMALS_FOR_CRYPTO } from "../../../lib/constants";
 import { formatCurrency } from "../../../lib/intl";
@@ -16,7 +16,6 @@ export type TopUpDetails =
 
 type WalletSwapTopUpGasProps = {
     destinationChainId?: number;
-    walletAddress?: Hex;
     topUpGas: boolean;
     setTopUpGas: (value: boolean) => void;
     topUpDetails: TopUpDetails;
@@ -25,13 +24,12 @@ type WalletSwapTopUpGasProps = {
 
 export const WalletSwapTopUpGas = ({
     destinationChainId,
-    walletAddress,
     topUpGas,
     setTopUpGas,
     topUpDetails,
     quoteReady
 }: WalletSwapTopUpGasProps) => {
-    const { balance } = useTokenBalance(walletAddress, zeroAddress, destinationChainId);
+    const { balance } = useTokenBalance(zeroAddress, destinationChainId);
 
     const topupValue = displayNumberPrecision(
         parseFloat(topUpDetails?.amountFormatted || "0"),
@@ -41,7 +39,7 @@ export const WalletSwapTopUpGas = ({
 
     const topupCurrency = topUpDetails?.currency;
 
-    if (balance === undefined || balance === null || balance > 0n || !quoteReady) {
+    if (balance === undefined || balance === null || BigInt(balance) > 0n || !quoteReady) {
         return null;
     }
 
