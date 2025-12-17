@@ -69,12 +69,10 @@ export const useGlyphRelayEvmAdapter = (config: Config | undefined): AdaptedWall
                 });
             },
             handleConfirmTransactionStep: async (txHash, chainId, onReplaced, onCancelled) => {
-                console.log(config, chainId);
-
                 const firstPassAtPublicClient = getPublicClient(config, { chainId: chainId });
                 const publicClient = firstPassAtPublicClient ?? createDefaultPublicClient(chainId);
 
-                console.log(firstPassAtPublicClient, publicClient);
+                console.log(!!firstPassAtPublicClient, !!publicClient);
 
                 const receipt = await publicClient.waitForTransactionReceipt({
                     hash: txHash as Address,
@@ -87,7 +85,7 @@ export const useGlyphRelayEvmAdapter = (config: Config | undefined): AdaptedWall
                     }
                 });
 
-                console.log(receipt);
+                console.log(!!receipt.transactionHash);
 
                 return receipt;
             },
