@@ -654,7 +654,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                                 });
                                                 hash_ = receipt;
                                             } catch (error) {
-                                                logger.error("error sending txn", error);
+                                                logger.error("error sending txn - send tx failed", error);
                                                 throw error;
                                             }
                                         }

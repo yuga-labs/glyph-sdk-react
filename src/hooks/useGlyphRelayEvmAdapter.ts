@@ -3,21 +3,24 @@ import { useMemo } from "react";
 import { useGlyph } from "./useGlyph";
 
 import { Address, hexToBigInt } from "viem";
-import { useConfig, useSwitchChain } from "wagmi";
+import { Config, useSwitchChain } from "wagmi";
 import { getChainId, getPublicClient } from "wagmi/actions";
 import { relayClient } from "../lib/relay";
-import { assertAndReturn, assertHasValue } from "../lib/utils";
+import { assertHasValue } from "../lib/utils";
 
-export const useGlyphRelayEvmAdapter = (): AdaptedWallet => {
+export const useGlyphRelayEvmAdapter = (config: Config | undefined): AdaptedWallet | null => {
     const { user, signMessage, signTypedData, sendTransaction } = useGlyph();
 
-    const config = useConfig();
     const { switchChainAsync } = useSwitchChain();
 
     return useMemo(() => {
+        if (!user?.evmWallet || !switchChainAsync || !config) {
+            return null;
+        }
+
         return {
             vmType: "evm",
-            address: () => Promise.resolve(assertAndReturn(user).evmWallet),
+            address: () => Promise.resolve(user?.evmWallet),
             getChainId: async () => {
                 const chainId = getChainId(config);
                 console.log("getting chain id for relay:", chainId);
@@ -86,5 +89,5 @@ export const useGlyphRelayEvmAdapter = (): AdaptedWallet => {
                 await switchChainAsync({ chainId });
             }
         };
-    }, [config, switchChainAsync, sendTransaction, signMessage, signTypedData, user]);
+    }, [switchChainAsync, sendTransaction, signMessage, signTypedData, user?.evmWallet, config]);
 };
