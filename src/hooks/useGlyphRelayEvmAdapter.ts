@@ -72,6 +72,11 @@ export const useGlyphRelayEvmAdapter = (config: Config | undefined): AdaptedWall
                 const firstPassAtPublicClient = getPublicClient(config, { chainId: chainId });
                 const publicClient = firstPassAtPublicClient ?? createDefaultPublicClient(chainId);
 
+                if (!publicClient) {
+                    console.error("Public client couldn't be initialized");
+                    throw new Error("Couldn't fetch transaction status");
+                }
+
                 console.log(!!firstPassAtPublicClient, !!publicClient);
 
                 const receipt = await publicClient.waitForTransactionReceipt({
