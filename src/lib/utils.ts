@@ -41,9 +41,9 @@ export const generateNonce = () => {
     // Convert to number, ensuring it's within safe range
     const number = Number(
         "0x" +
-        Array.from(array)
-            .map((b) => b.toString(16).padStart(2, "0"))
-            .join("")
+            Array.from(array)
+                .map((b) => b.toString(16).padStart(2, "0"))
+                .join("")
     );
     return number % Number.MAX_SAFE_INTEGER;
 };
@@ -127,7 +127,7 @@ export function assertAndReturn<T>(item: T, message?: string): NonNullable<T> {
 export const getRPCErrorString = (error: any) => {
     try {
         if (
-            (typeof error === "string" && error?.toLowerCase()?.includes("eth_estimategas")) ||
+            (typeof error === "string" && error?.toLowerCase()?.includes("estimategas")) ||
             (error?.toLowerCase()?.includes?.("gas") && error?.toLowerCase()?.includes?.("exceeds"))
         ) {
             return "Not enough gas available";
@@ -141,8 +141,8 @@ export const getRPCErrorString = (error: any) => {
     return typeof error === "string" && error.length < 255
         ? error
         : typeof error === "object"
-            ? (error as any)?.message
-            : undefined;
+          ? (error as any)?.message
+          : undefined;
 };
 
 export function getBlockExplorerURL(chainId: number, chains?: readonly Chain[]) {
@@ -188,7 +188,8 @@ export const isNativeAndWrappedPair = (
     if (fromCurrency?.chainId !== toCurrency?.chainId) return false;
 
     // One of them has to be the native token
-    if (![fromCurrency?.address?.toLowerCase?.(), toCurrency?.address?.toLowerCase?.()].includes(zeroAddress)) return false;
+    if (![fromCurrency?.address?.toLowerCase?.(), toCurrency?.address?.toLowerCase?.()].includes(zeroAddress))
+        return false;
 
     const chains = relayClient?.chains || [];
     // We inject wrappedTokenAddress from the Glyph Backend while fetching `supported_chains`

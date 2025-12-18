@@ -1,12 +1,32 @@
 import { useQuery } from "@tanstack/react-query";
 import { parseUnits, zeroAddress } from "viem";
-import { useGlyphSwap } from "../context/GlyphSwapContext";
+import { RelayAPIToken, useGlyphSwap } from "../context/GlyphSwapContext";
 import { RELAY_APP_FEE_BPS, RELAY_APP_FEE_RECIPIENT } from "../lib/constants";
 import { relayClient, SOLANA_RELAY_ID } from "../lib/relay";
 import { assertHasValue, isNativeAndWrappedPair } from "../lib/utils";
 import { useGlyph } from "./useGlyph";
 
 const QUOTE_REFETCH_INTERVAL = 30_000;
+
+export const GAS_BUFFER = 115n; // 15%
+
+export const checkIfGasIsEnough = (
+    gasCurrencyAddress: string,
+    sourceToken: RelayAPIToken | undefined,
+    quoteGasAmountInWei: number | string | undefined | null,
+    sourceGasBalanceInWei: number | string | undefined | null,
+    sellAmount: string | undefined | null
+) => {
+    return (
+        sourceGasBalanceInWei !== undefined &&
+        sourceGasBalanceInWei !== null &&
+        sourceToken &&
+        (gasCurrencyAddress !== sourceToken?.address
+            ? BigInt(sourceGasBalanceInWei) * 100n > BigInt(quoteGasAmountInWei || 0) * GAS_BUFFER // If different token than gas token -> check if gas is at least 15% more than required
+            : (BigInt(sourceGasBalanceInWei) - parseUnits(sellAmount || "0", sourceToken.decimals!)) * 100n >
+              BigInt(quoteGasAmountInWei || 0) * GAS_BUFFER)
+    ); // If same token is being sold, reserve some for gas and require 15% buffer
+};
 
 export const useRelayQuote = (enabled?: boolean) => {
     const swapState = useGlyphSwap();

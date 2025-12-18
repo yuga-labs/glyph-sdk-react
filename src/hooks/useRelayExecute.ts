@@ -6,6 +6,12 @@ import { relayClient, SOLANA_RELAY_ID } from "../lib/relay";
 import { useGlyphApi } from "./useGlyphApi";
 import { useGlyphRelayEvmAdapter } from "./useGlyphRelayEvmAdapter";
 
+export const PRECHECK_FAILURE_CODE = "PRECHECK_FAILED";
+
+export const buildErrorPayloadWithCode = (code: string, message: string) => {
+    return { code: code, message: message };
+};
+
 export const useRelayExecute = () => {
     const chainId = useChainId();
     const { glyphApiFetch } = useGlyphApi();
@@ -15,35 +21,59 @@ export const useRelayExecute = () => {
     const evmAdapter = useGlyphRelayEvmAdapter(config);
 
     return useMutation({
-        mutationFn: async (qt: Execute) => {
+        mutationFn: async ({ qt, onExecutionStart }: { qt: Execute; onExecutionStart?: (quote: Execute) => void }) => {
             if (!config) {
                 console.error("useConfig not ready");
-                throw new Error("wallet client not ready");
+                throw buildErrorPayloadWithCode(
+                    PRECHECK_FAILURE_CODE,
+                    "wallet not ready, please refresh and try again"
+                );
             }
             if (!evmAdapter) {
                 console.error("evmAdapter function not ready");
-                throw new Error("wallet client not ready");
+                throw buildErrorPayloadWithCode(
+                    PRECHECK_FAILURE_CODE,
+                    "wallet not ready, please refresh and try again"
+                );
             }
 
             const quoteChainId = qt.details?.currencyIn?.currency?.chainId;
             if (quoteChainId === SOLANA_RELAY_ID) {
                 // TODO: implement solana adapter
-                throw new Error("Solana adapter not implemented");
+                throw buildErrorPayloadWithCode(PRECHECK_FAILURE_CODE, "solana wallet not implemented");
             }
 
-            if (!glyphApiFetch) return null;
-            const res = await glyphApiFetch(`/api/widget/swap/quote`, {
-                method: "POST",
-                body: JSON.stringify({ ...qt.request?.data })
-            });
-            if (!res.ok) throw new Error("Failed to fetch transactions");
+            if (!glyphApiFetch) {
+                throw buildErrorPayloadWithCode(
+                    PRECHECK_FAILURE_CODE,
+                    "wallet not authenticated properly, please refresh and try again"
+                );
+            }
+            let parsedRes = null;
 
-            if (quoteChainId && quoteChainId !== chainId) {
-                console.log("Switching chain from", chainId, "to", quoteChainId);
-                await evmAdapter.switchChain(quoteChainId);
+            // Handle error related to qupte generations differently than execution error. We want to show quote generation error right on the START screen for better UX
+            try {
+                const res = await glyphApiFetch(`/api/widget/swap/quote`, {
+                    method: "POST",
+                    body: JSON.stringify({ ...qt.request?.data })
+                });
+                if (!res.ok)
+                    throw { code: PRECHECK_FAILURE_CODE, message: "Failed to lock in the quote, please try again" };
+
+                if (quoteChainId && quoteChainId !== chainId) {
+                    console.log("Switching chain from", chainId, "to", quoteChainId);
+                    await evmAdapter.switchChain(quoteChainId);
+                }
+                parsedRes = await res.json();
+            } catch (e) {
+                console.error(e);
+                throw buildErrorPayloadWithCode(PRECHECK_FAILURE_CODE, "Failed to lock in the quote, please try again");
             }
 
-            const { id: txnId, quote: finalQuote } = await res.json();
+            const { id: txnId, quote: finalQuote } = parsedRes;
+
+            onExecutionStart?.(finalQuote);
+
             const result = await relayClient.actions
                 .execute({
                     quote: finalQuote,

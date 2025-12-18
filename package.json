@@ -1,6 +1,6 @@
 {
     "name": "@use-glyph/sdk-react",
-    "version": "2.0.7",
+    "version": "2.0.8",
     "type": "module",
     "license": "GLYPH-1.0",
     "sideEffects": false,
