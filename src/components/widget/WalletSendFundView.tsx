@@ -58,8 +58,9 @@ export type SendFundQuote = {
     currency: string;
     in_amount: string;
     receiver_address: Hex;
-    maxPriorityFeePerGas: bigint;
-    maxFeePerGas: bigint;
+    maxPriorityFeePerGas?: bigint;
+    maxFeePerGas?: bigint;
+    gasPrice?: bigint;
     gasLimit: bigint;
 };
 
@@ -141,7 +142,17 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                 setQuote(null);
                 setQuoteLoading(true);
                 setError(null);
-                const { maxFeePerGas } = await publicClient.estimateFeesPerGas();
+                let maxFeePerGas: bigint | undefined;
+                let maxPriorityFeePerGas: bigint | undefined;
+                let gasPrice: bigint | undefined;
+
+                try {
+                    const fees = await publicClient.estimateFeesPerGas();
+                    maxFeePerGas = fees.maxFeePerGas;
+                    maxPriorityFeePerGas = fees.maxPriorityFeePerGas ?? fees.maxFeePerGas / 2n;
+                } catch {
+                    gasPrice = await publicClient.getGasPrice();
+                }
 
                 let gasUnits;
 
@@ -166,9 +177,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                             functionName: "transfer",
                             args: [recipientAddress as Hex, valueToSend],
                             account: user?.evmWallet as Hex,
-                            address: token?.address as Hex,
-                            maxFeePerGas,
-                            maxPriorityFeePerGas: maxFeePerGas / 2n
+                            address: token?.address as Hex
                         });
                     }
                 } catch (error: any) {
@@ -179,7 +188,13 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                 }
                 console.debug("Send - reached checkpoint 2");
 
-                const gasCost = maxFeePerGas * gasUnits;
+                const feePerGas = maxFeePerGas ?? gasPrice;
+                if (!feePerGas) {
+                    setError("Failed to estimate fees");
+                    setQuoteLoading(false);
+                    return;
+                }
+                const gasCost = feePerGas * gasUnits;
 
                 let valueToReturn: bigint;
                 // If user is sending native token and has selected max amount, we need to subtract the gas cost from the total balance
@@ -202,8 +217,6 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                 }
                 console.debug("Send - reached checkpoint 3");
 
-                const maxPriorityFeePerGas = maxFeePerGas / 2n;
-
                 const receivableAmountInToken = displayNumberPrecision(
                     +formatUnits(valueToReturn, token.decimals || 18),
                     token.displayDecimals
@@ -214,6 +227,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                     receiver_address: recipientAddress as Hex,
                     maxPriorityFeePerGas,
                     maxFeePerGas,
+                    gasPrice,
                     receivable_amount: valueToReturn,
                     receivable_amount_in_token: receivableAmountInToken,
                     receivable_amount_in_currency: formatCurrency(
@@ -333,12 +347,12 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
     const selectedTokenValueFormatted = token
         ? token?.rateInCurrency
             ? formatCurrency(
-                  parseFloat(formatUnits(BigInt(token?.valueInWei || 0), token?.decimals)) *
+                  parseFloat(formatUnits(BigInt(token?.valueInWei || 0), token?.decimals ?? 18)) *
                       parseFloat(token?.rateInCurrency),
                   token?.currency,
-                  BigInt(token?.valueInWei) > 0n
+                  BigInt(token?.valueInWei || 0) > 0n
               )
-            : formatCurrency(token?.amount || 0, token?.currency, BigInt(token?.valueInWei) !== 0n)
+            : formatCurrency(token?.amount || 0, token?.currency, BigInt(token?.valueInWei || 0) !== 0n)
         : undefined;
 
     return (
@@ -629,8 +643,12 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                                 transaction: {
                                                     to: recipientAddress,
                                                     value: quote?.receivable_amount,
-                                                    maxFeePerGas: quote?.maxFeePerGas,
-                                                    maxPriorityFeePerGas: quote?.maxPriorityFeePerGas
+                                                    ...(quote?.gasPrice
+                                                        ? { type: 0, gasPrice: quote.gasPrice }
+                                                        : {
+                                                              maxFeePerGas: quote?.maxFeePerGas,
+                                                              maxPriorityFeePerGas: quote?.maxPriorityFeePerGas
+                                                          })
                                                 }
                                             });
                                             hash_ = receipt;
@@ -642,9 +660,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                                 address: token?.address as Hex,
                                                 args: [recipientAddress as Hex, quote?.receivable_amount],
                                                 chain,
-                                                gas: quote?.gasLimit,
-                                                maxFeePerGas: quote?.maxFeePerGas,
-                                                maxPriorityFeePerGas: quote?.maxPriorityFeePerGas
+                                                gas: quote?.gasLimit
                                             });
                                             try {
                                                 const data = encodeFunctionData({
@@ -657,8 +673,13 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                                     transaction: {
                                                         to: token?.address,
                                                         data,
-                                                        maxFeePerGas: txData?.request?.maxFeePerGas,
-                                                        maxPriorityFeePerGas: txData?.request?.maxPriorityFeePerGas
+                                                        ...(quote?.gasPrice
+                                                            ? { type: 0, gasPrice: quote.gasPrice }
+                                                            : {
+                                                                  maxFeePerGas: txData?.request?.maxFeePerGas,
+                                                                  maxPriorityFeePerGas:
+                                                                      txData?.request?.maxPriorityFeePerGas
+                                                              })
                                                     }
                                                 });
                                                 hash_ = receipt;

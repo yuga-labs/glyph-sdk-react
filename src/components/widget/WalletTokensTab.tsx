@@ -62,7 +62,7 @@ export function WalletTokensTab() {
                                             TokenIcon
                                         )}
                                         <div className="gw-flex gw-flex-col gw-items-between gw-justify-end">
-                                            <span className="gw-font-medium gw-max-w-36 gw-truncate">
+                                            <span className="gw-font-medium gw-max-w-32 gw-truncate">
                                                 {t.symbol || t.name}
                                             </span>
                                             {Number.isFinite(t.priceChangePct) && t.priceChangePct !== 0 && (
@@ -86,7 +86,9 @@ export function WalletTokensTab() {
                                             <span>
                                                 {formatTokenCount(t.valueInWei, t.decimals, t.displayDecimals)}{" "}
                                             </span>
-                                            <span className="gw-max-w-28 gw-truncate gw-inline-block">{t.symbol}</span>
+                                            <span className="gw-max-w-20 gw-truncate gw-inline-block gw-break-words">
+                                                {t.symbol}
+                                            </span>
                                         </span>
                                     </div>
                                 </div>
