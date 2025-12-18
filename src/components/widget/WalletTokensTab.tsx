@@ -62,8 +62,10 @@ export function WalletTokensTab() {
                                             TokenIcon
                                         )}
                                         <div className="gw-flex gw-flex-col gw-items-between gw-justify-end">
-                                            <span className="gw-font-medium">{t.name}</span>
-                                            {Number.isFinite(t.priceChangePct) && (
+                                            <span className="gw-font-medium gw-max-w-36 gw-truncate">
+                                                {t.symbol || t.name}
+                                            </span>
+                                            {Number.isFinite(t.priceChangePct) && t.priceChangePct !== 0 && (
                                                 <span
                                                     className={`gw-typography-caption 
                                                     ${t.priceChangePct >= 0 ? "gw-text-brand-success" : "gw-text-destructive"}`}
@@ -80,8 +82,11 @@ export function WalletTokensTab() {
                                             {/* If USD amount is 0, but token value is not 0, show <0.01 */}
                                             {formatCurrency(t.amount, t.currency, BigInt(t.valueInWei) !== 0n)}
                                         </span>
-                                        <span className="gw-typography-caption gw-text-brand-gray-500">
-                                            {formatTokenCount(t.valueInWei, t.decimals, t.displayDecimals)} {t.symbol}
+                                        <span className="gw-typography-caption gw-text-brand-gray-500 gw-flex gw-items-center gw-justify-end gw-gap-0.5">
+                                            <span>
+                                                {formatTokenCount(t.valueInWei, t.decimals, t.displayDecimals)}{" "}
+                                            </span>
+                                            <span className="gw-max-w-28 gw-truncate gw-inline-block">{t.symbol}</span>
                                         </span>
                                     </div>
                                 </div>

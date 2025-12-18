@@ -144,11 +144,16 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                 const { maxFeePerGas } = await publicClient.estimateFeesPerGas();
 
                 let gasUnits;
+
+                console.debug("Send  - reached checkpoint 1");
                 try {
                     const valueToSend =
                         (transferMax || debouncedSendAmount === Number(token.value || 0)) && token.valueInWei
                             ? BigInt(token.valueInWei || 0)
-                            : parseEther(`${debouncedSendAmount}`);
+                            : token?.address === zeroAddress
+                              ? parseEther(`${debouncedSendAmount}`)
+                              : tokenToBigIntWei(debouncedSendAmount, token.decimals || 18);
+
                     if (token?.address === zeroAddress) {
                         gasUnits = await publicClient.estimateGas({
                             account: user?.evmWallet as Hex,
@@ -167,10 +172,12 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                         });
                     }
                 } catch (error: any) {
+                    console.debug(error);
                     setError(error?.shortMessage || "Failed to estimate gas");
                     setQuoteLoading(false);
                     return;
                 }
+                console.debug("Send - reached checkpoint 2");
 
                 const gasCost = maxFeePerGas * gasUnits;
 
@@ -188,10 +195,12 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                         setQuoteLoading(false);
                         return;
                     }
-                    valueToReturn = transferMax
-                        ? BigInt(token.valueInWei || 0)
-                        : tokenToBigIntWei(debouncedSendAmount, token.decimals || 18);
+                    valueToReturn =
+                        transferMax || debouncedSendAmount === Number(token.value || 0)
+                            ? BigInt(token.valueInWei || 0)
+                            : tokenToBigIntWei(debouncedSendAmount, token.decimals || 18);
                 }
+                console.debug("Send - reached checkpoint 3");
 
                 const maxPriorityFeePerGas = maxFeePerGas / 2n;
 
@@ -313,7 +322,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
     const validAmountEntered = debouncedSendAmount > 0 && debouncedSendAmount <= Number(token?.value || "0");
 
     const TokenIcon = token?.logo ? (
-        <img src={token.logo} alt={token.symbol} className="gw-w-6 gw-h-6 gw-mr-2" />
+        <img src={token.logo} alt={token.symbol} className="gw-w-6 gw-h-6 gw-mr-1 gw-rounded-full" />
     ) : (
         <NoTokenIcon />
     );
