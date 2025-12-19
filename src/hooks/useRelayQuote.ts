@@ -72,7 +72,10 @@ export const useRelayQuote = (enabled?: boolean) => {
                 currency: fromCurrency.address!,
                 toChainId: toCurrency.chainId!,
                 toCurrency: toCurrency.address!,
-                amount: parseUnits(amount, fromCurrency.decimals!).toString(),
+                amount: parseUnits(
+                    amount,
+                    tradeType === "EXACT_INPUT" ? fromCurrency.decimals! : toCurrency.decimals!
+                ).toString(),
                 user: fromWallet,
                 recipient: toWallet,
                 options: {

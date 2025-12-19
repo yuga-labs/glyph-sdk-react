@@ -82,7 +82,7 @@ export function WalletTokensTab() {
                                             {/* If USD amount is 0, but token value is not 0, show <0.01 */}
                                             {formatCurrency(t.amount, t.currency, BigInt(t.valueInWei) !== 0n)}
                                         </span>
-                                        <span className="gw-typography-caption gw-text-brand-gray-500 gw-flex gw-items-center gw-justify-end gw-gap-0.5">
+                                        <span className="gw-typography-caption gw-text-brand-gray-500 gw-flex gw-items-center gw-justify-end gw-gap-0.5 gw-flex-wrap">
                                             <span>
                                                 {formatTokenCount(t.valueInWei, t.decimals, t.displayDecimals)}{" "}
                                             </span>

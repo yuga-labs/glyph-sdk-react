@@ -58,7 +58,7 @@ export const useGlyphRelayEvmAdapter = (config: Config | undefined): AdaptedWall
             },
             handleSendTransactionStep: async (chainId, stepItem) => {
                 const stepData = stepItem.data;
-                return sendTransaction({
+                const res = await sendTransaction({
                     transaction: {
                         data: stepData.data,
                         to: stepData.to,
@@ -67,6 +67,7 @@ export const useGlyphRelayEvmAdapter = (config: Config | undefined): AdaptedWall
                         chainId: chainId
                     }
                 });
+                return res;
             },
             handleConfirmTransactionStep: async (txHash, chainId, onReplaced, onCancelled) => {
                 const firstPassAtPublicClient = getPublicClient(config, { chainId: chainId });
@@ -77,7 +78,7 @@ export const useGlyphRelayEvmAdapter = (config: Config | undefined): AdaptedWall
                     throw new Error("Couldn't fetch transaction status");
                 }
 
-                console.log(!!firstPassAtPublicClient, !!publicClient);
+                console.debug(!!firstPassAtPublicClient, !!publicClient);
 
                 const receipt = await publicClient.waitForTransactionReceipt({
                     hash: txHash as Address,
@@ -90,7 +91,7 @@ export const useGlyphRelayEvmAdapter = (config: Config | undefined): AdaptedWall
                     }
                 });
 
-                console.log(!!receipt.transactionHash);
+                console.debug(!!receipt.transactionHash);
 
                 return receipt;
             },

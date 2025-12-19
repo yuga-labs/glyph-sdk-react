@@ -2,6 +2,7 @@ import { Execute } from "@relayprotocol/relay-sdk";
 import { useMutation } from "@tanstack/react-query";
 import { useChainId, useConfig } from "wagmi";
 import { useGlyphSwap } from "../context/GlyphSwapContext";
+import { SWAP_ERROR_MESSAGES } from "../lib/customErrors";
 import { relayClient, SOLANA_RELAY_ID } from "../lib/relay";
 import { useGlyphApi } from "./useGlyphApi";
 import { useGlyphRelayEvmAdapter } from "./useGlyphRelayEvmAdapter";
@@ -24,30 +25,21 @@ export const useRelayExecute = () => {
         mutationFn: async ({ qt, onExecutionStart }: { qt: Execute; onExecutionStart?: (quote: Execute) => void }) => {
             if (!config) {
                 console.error("useConfig not ready");
-                throw buildErrorPayloadWithCode(
-                    PRECHECK_FAILURE_CODE,
-                    "wallet not ready, please refresh and try again"
-                );
+                throw buildErrorPayloadWithCode(PRECHECK_FAILURE_CODE, SWAP_ERROR_MESSAGES.WALLET_NOT_READY);
             }
             if (!evmAdapter) {
                 console.error("evmAdapter function not ready");
-                throw buildErrorPayloadWithCode(
-                    PRECHECK_FAILURE_CODE,
-                    "wallet not ready, please refresh and try again"
-                );
+                throw buildErrorPayloadWithCode(PRECHECK_FAILURE_CODE, SWAP_ERROR_MESSAGES.WALLET_NOT_READY);
             }
 
             const quoteChainId = qt.details?.currencyIn?.currency?.chainId;
             if (quoteChainId === SOLANA_RELAY_ID) {
                 // TODO: implement solana adapter
-                throw buildErrorPayloadWithCode(PRECHECK_FAILURE_CODE, "solana wallet not implemented");
+                throw buildErrorPayloadWithCode(PRECHECK_FAILURE_CODE, SWAP_ERROR_MESSAGES.SOLANA_NOT_IMPLEMENTED);
             }
 
             if (!glyphApiFetch) {
-                throw buildErrorPayloadWithCode(
-                    PRECHECK_FAILURE_CODE,
-                    "wallet not authenticated properly, please refresh and try again"
-                );
+                throw buildErrorPayloadWithCode(PRECHECK_FAILURE_CODE, SWAP_ERROR_MESSAGES.NO_GLYPHAPIFETCH);
             }
             let parsedRes = null;
 
@@ -57,8 +49,7 @@ export const useRelayExecute = () => {
                     method: "POST",
                     body: JSON.stringify({ ...qt.request?.data })
                 });
-                if (!res.ok)
-                    throw { code: PRECHECK_FAILURE_CODE, message: "Failed to lock in the quote, please try again" };
+                if (!res.ok) throw { code: PRECHECK_FAILURE_CODE, message: SWAP_ERROR_MESSAGES.NO_FINAL_QUOTE };
 
                 if (quoteChainId && quoteChainId !== chainId) {
                     console.log("Switching chain from", chainId, "to", quoteChainId);
@@ -67,7 +58,7 @@ export const useRelayExecute = () => {
                 parsedRes = await res.json();
             } catch (e) {
                 console.error(e);
-                throw buildErrorPayloadWithCode(PRECHECK_FAILURE_CODE, "Failed to lock in the quote, please try again");
+                throw buildErrorPayloadWithCode(PRECHECK_FAILURE_CODE, SWAP_ERROR_MESSAGES.NO_FINAL_QUOTE);
             }
 
             const { id: txnId, quote: finalQuote } = parsedRes;

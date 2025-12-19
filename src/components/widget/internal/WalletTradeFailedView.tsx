@@ -16,12 +16,7 @@ interface WalletTradeFailedViewProps {
     reason?: string | null;
 }
 
-const WalletTradeFailedView: React.FC<WalletTradeFailedViewProps> = ({
-    onEnd,
-    onShowActivity,
-    txDetails,
-    reason
-}) => {
+const WalletTradeFailedView: React.FC<WalletTradeFailedViewProps> = ({ onEnd, onShowActivity, txDetails, reason }) => {
     return (
         <WalletViewTemplate
             content={
@@ -51,7 +46,7 @@ const WalletTradeFailedView: React.FC<WalletTradeFailedViewProps> = ({
 
                             {reason ? (
                                 <span className="gw-mt-3 gw-min-h-8 gw-typography-caption gw-text-center gw-whitespace-pre-wrap !gw-leading-tight">
-                                    Reason: <span className="gw-capitalize">{reason}</span>
+                                    Reason - <span className="first-letter:gw-uppercase">{reason}</span>
                                 </span>
                             ) : null}
 

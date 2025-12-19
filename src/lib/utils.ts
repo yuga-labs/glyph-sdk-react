@@ -87,7 +87,7 @@ export const displayNumberPrecision = (value: number | null | undefined, precisi
     return Number(
         value
             ?.toLocaleString?.("en-US", {
-                minimumFractionDigits: 0,
+                minimumFractionDigits: 2,
                 maximumFractionDigits: precision
             })
             ?.replace(/,/g, "") || "0"
@@ -125,24 +125,7 @@ export function assertAndReturn<T>(item: T, message?: string): NonNullable<T> {
 }
 
 export const getRPCErrorString = (error: any) => {
-    try {
-        if (
-            (typeof error === "string" && error?.toLowerCase()?.includes("estimategas")) ||
-            (error?.toLowerCase()?.includes?.("gas") && error?.toLowerCase()?.includes?.("exceeds"))
-        ) {
-            return "Not enough gas available";
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (e) {
-        // ignore error
-    }
-
-    return typeof error === "string" && error.length < 255
-        ? error
-        : typeof error === "object"
-          ? (error as any)?.message
-          : undefined;
+    return typeof error === "string" ? error : typeof error === "object" ? (error as any)?.message : undefined;
 };
 
 export function getBlockExplorerURL(chainId: number, chains?: readonly Chain[]) {
