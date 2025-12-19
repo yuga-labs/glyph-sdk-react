@@ -44,12 +44,13 @@ export const useRelayQuote = (enabled?: boolean) => {
     }
 
     const isQuotable =
-        !!evmWallet &&
-        !!solanaWallet &&
-        !!fromCurrency &&
-        !!toCurrency &&
-        amountIsValid &&
-        (enabled !== undefined ? enabled : true); // Only use this if enabled is passed as props
+        fromCurrency?.chainId === SOLANA_RELAY_ID
+            ? !!solanaWallet
+            : !!evmWallet &&
+              !!fromCurrency &&
+              !!toCurrency &&
+              amountIsValid &&
+              (enabled !== undefined ? enabled : true); // Only use this if enabled is passed as props
 
     const nativeAndWrappedPair = isNativeAndWrappedPair(fromCurrency, toCurrency);
     const operation = nativeAndWrappedPair ? (fromCurrency?.address === zeroAddress ? "wrap" : "unwrap") : "swap";

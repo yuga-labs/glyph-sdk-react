@@ -67,9 +67,31 @@ export const useRelayExecute = () => {
 
             let result: any;
             try {
-                result = await relayClient.actions.execute({
-                    quote: finalQuote,
-                    wallet: evmAdapter
+                const EXECUTE_TIMEOUT_MS = 180_000;
+                let timeoutId: ReturnType<typeof setTimeout> | undefined;
+                const resetTimeout = (reject: (reason?: any) => void) => {
+                    if (timeoutId) clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => {
+                        reject(new Error("Swap execution timed out. Check blockchain for transaction status."));
+                    }, EXECUTE_TIMEOUT_MS);
+                };
+
+                result = await new Promise((resolve, reject) => {
+                    resetTimeout(reject);
+                    relayClient.actions
+                        .execute({
+                            quote: finalQuote,
+                            wallet: evmAdapter,
+                            onProgress: (data) => {
+                                console.debug("onProgress", data);
+                                resetTimeout(reject);
+                            }
+                        })
+                        .then(resolve)
+                        .catch(reject)
+                        .finally(() => {
+                            if (timeoutId) clearTimeout(timeoutId);
+                        });
                 });
             } catch (error) {
                 console.debug("error while executing", error);
