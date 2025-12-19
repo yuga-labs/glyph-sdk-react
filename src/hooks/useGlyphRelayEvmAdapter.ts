@@ -91,6 +91,10 @@ export const useGlyphRelayEvmAdapter = (config: Config | undefined): AdaptedWall
                     }
                 });
 
+                if (receipt.status === "reverted") {
+                    throw new Error(`Execution reverted`);
+                }
+
                 console.debug(!!receipt.transactionHash);
 
                 return receipt;

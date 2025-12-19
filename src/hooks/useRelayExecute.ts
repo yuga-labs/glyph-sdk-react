@@ -65,15 +65,35 @@ export const useRelayExecute = () => {
 
             onExecutionStart?.(finalQuote);
 
-            const result = await relayClient.actions
-                .execute({
+            let result: any;
+            try {
+                result = await relayClient.actions.execute({
                     quote: finalQuote,
                     wallet: evmAdapter
-                })
-                .catch(async (error) => {
-                    await reportSwapFailed(txnId);
-                    throw error; // throw the error to be handled by the caller
                 });
+            } catch (error) {
+                console.debug("error while executing", error);
+                await reportSwapFailed(txnId);
+                throw error;
+            }
+
+            // Some relay-sdk flows resolve with a failure object instead of throwing.
+            // Normalize that into an exception so the UI catch path runs.
+            const resultStatus = (result as any)?.status ?? (result as any)?.state;
+            const resultError = (result as any)?.error ?? (result as any)?.reason ?? (result as any)?.message;
+            const failedStatuses = new Set(["error", "failed", "failure", "reverted"]);
+            if (failedStatuses.has(String(resultStatus).toLowerCase()) || (result as any)?.ok === false) {
+                console.debug(
+                    "failedStatuses",
+                    failedStatuses,
+                    "resultStatus",
+                    resultStatus,
+                    "resultError",
+                    resultError
+                );
+                await reportSwapFailed(txnId);
+                throw new Error(typeof resultError === "string" ? resultError : "Relay execution failed");
+            }
 
             const requestId = (finalQuote as any)?.steps?.[0]?.requestId as string | undefined;
 
