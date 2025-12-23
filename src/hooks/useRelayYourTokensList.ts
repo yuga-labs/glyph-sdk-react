@@ -39,13 +39,13 @@ export const useRelayYourTokensList = (currentChainId: number | "all", chainIds:
         const relaySupportedTokensBalances = nonZeroBalances?.reduce(
             (acc, token) => {
                 const relayToken = yourTokenList?.find(
-                    (t) => t.chainId === token.chainId && t.address === token.address
+                    (t) => t.chainId === token.chainId && t.address?.toLowerCase() === token.address?.toLowerCase()
                 );
                 if (!relayToken) {
                     return acc;
                 }
 
-                acc[`${token.chainId!}:${token.address.toLowerCase()!}`] = {
+                acc[`${token.chainId!}:${token.address!.toLowerCase()}`] = {
                     ...token,
                     relayToken: relayToken
                 };
