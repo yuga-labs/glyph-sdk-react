@@ -1,13 +1,17 @@
-import { AlertTriangle, ChevronDown, FuelIcon } from "lucide-react";
+import { RelayChain } from "@relayprotocol/relay-sdk";
+import { AlertTriangle, ChevronDown, FuelIcon, Loader2 } from "lucide-react";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { debounce } from "throttle-debounce";
 import truncateEthAddress from "truncate-eth-address";
 import { isAddress, zeroAddress } from "viem";
 import { RelayAPIToken } from "../../../context/GlyphSwapContext";
 import useRelayTokenList from "../../../hooks/useRelayTokenList";
+import { useRelayYourTokensList } from "../../../hooks/useRelayYourTokensList";
 import { CHAIN_NAMES } from "../../../lib/constants";
+import { formatCurrency } from "../../../lib/intl";
 import { relayClient } from "../../../lib/relay";
-import { cn } from "../../../lib/utils";
+import { cn, formatTokenCount } from "../../../lib/utils";
+import { GlyphWidgetTokenBalancesItem } from "../../../types";
 import { Button } from "../../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../../ui/dialog";
 import { Input } from "../../ui/input";
@@ -38,6 +42,12 @@ const SwapChainAndTokenSelector = ({
         if (!selectedToken?.chainId) return null;
         return chains.find((chain) => chain.id === selectedToken.chainId);
     }, [selectedToken?.chainId]);
+
+    const {
+        relaySupportedTokensBalances,
+        relaySupportedTokensBalancesLength,
+        isLoading: isYourTokensLoading
+    } = useRelayYourTokensList(currentChainId ?? "all", chainIds);
 
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("");
@@ -133,16 +143,26 @@ const SwapChainAndTokenSelector = ({
                         <DialogDescription className="gw-sr-only">Select a token to swap</DialogDescription>
                     </DialogHeader>
 
-                    <div className="gw-flex gw-flex-col gw-gap-4">
-                        <Input
-                            type="text"
-                            placeholder="Search token name or paste address"
-                            value={searchTerm}
-                            onChange={(e) => {
-                                setSearchTerm(e.target.value);
-                                debouncedFunc(e.target.value);
-                            }}
-                        />
+                    <div className="gw-flex gw-flex-col gw-gap-6">
+                        <div className="gw-flex gw-relative">
+                            <Input
+                                type="text"
+                                placeholder="Search token name or paste address"
+                                value={searchTerm}
+                                onChange={(e) => {
+                                    setSearchTerm(e.target.value);
+                                    debouncedFunc(e.target.value);
+                                }}
+                                parentClassName="gw-pb-0"
+                            />
+
+                            {isYourTokensLoading ? (
+                                <div className="gw-flex gw-z-0 gw-w-full gw-absolute -gw-bottom-1.5 gw-translate-y-full gw-origin-top gw-justify-center gw-items-center gw-gap-1 gw-text-[10px] gw-text-brand-gray-600 !gw-leading-none">
+                                    <Loader2 className="gw-size-2.5 gw-animate-spin" />
+                                    <span>Retrieving tokens available in your wallet</span>
+                                </div>
+                            ) : null}
+                        </div>
 
                         {/* Networks */}
                         <div className="gw-flex gw-flex-col gw-gap-2">
@@ -151,7 +171,10 @@ const SwapChainAndTokenSelector = ({
                                 <Button
                                     size={"icon"}
                                     variant={"outline"}
-                                    className={cn("gw-h-10 gw-p-0.5", currentChainId === undefined && "gw-border-primary")}
+                                    className={cn(
+                                        "gw-h-10 gw-p-0.5",
+                                        currentChainId === undefined && "gw-border-primary"
+                                    )}
                                     shadow
                                     onClick={() => setCurrentChainId(undefined)}
                                 >
@@ -231,12 +254,41 @@ const SwapChainAndTokenSelector = ({
                             </div>
                         )}
 
+                        {/* Your Tokens List */}
+                        {!debouncedSearchTerm && !!relaySupportedTokensBalancesLength && (
+                            <div className="gw-flex gw-flex-col gw-gap-2">
+                                <div className="gw-typography-body2 gw-text-brand-gray-500">Your Tokens</div>
+                                <div className="gw-grid gw-grid-cols-1 gw-min-h-0 gw-overflow-auto">
+                                    {Object.values(relaySupportedTokensBalances || {})?.map((token, index) => {
+                                        const tokenChain =
+                                            currentChain ?? chains.find((chain) => chain.id === token.chainId)!;
+
+                                        const isTokenSelected =
+                                            selectedToken?.address === token.address &&
+                                            selectedToken?.chainId === tokenChain.id;
+                                        return (
+                                            <TokenTile
+                                                key={`${tokenChain.id}:${token.address}_token_list`}
+                                                currentChainId={currentChainId}
+                                                handleTokenSelect={handleTokenSelect}
+                                                isTokenSelected={isTokenSelected}
+                                                token={token?.relayToken}
+                                                tokenChain={tokenChain}
+                                                showDivider={index < relaySupportedTokensBalancesLength - 1}
+                                                tokenBalance={token}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Token List */}
                         <div className="gw-flex gw-flex-col gw-gap-2">
                             <div className="gw-typography-body2 gw-text-brand-gray-500">
                                 {debouncedSearchTerm ? "Search Results" : "Global 24H Volume"}
                             </div>
-                            <div className="gw-grid gw-grid-cols-1 gw-mt-2 gw-min-h-0 gw-overflow-auto">
+                            <div className="gw-grid gw-grid-cols-1 gw-min-h-0 gw-overflow-auto">
                                 {isLoading ? (
                                     new Array(12).fill(0).map((_, index) => (
                                         <div key={index} className="gw-w-full">
@@ -245,8 +297,8 @@ const SwapChainAndTokenSelector = ({
                                         </div>
                                     ))
                                 ) : isError ? (
-                                    <div className="gw-flex gw-items-center gw-justify-center gw-h-full gw-text-destructive">
-                                        <AlertTriangle className="gw-size-5" /> Couldn't fetch the token list
+                                    <div className="gw-flex gw-justify-center gw-items-center gw-flex-1 gw-text-destructive gw-typography-body2 gw-pr-4">
+                                        <AlertTriangle className="gw-size-5 gw-mr-2" /> Couldn't fetch the token list
                                     </div>
                                 ) : tokenList?.length === 0 ? (
                                     <div className="gw-flex gw-justify-center gw-items-center gw-flex-1 gw-text-brand-gray-500 gw-typography-body2 gw-pr-4">
@@ -261,86 +313,20 @@ const SwapChainAndTokenSelector = ({
                                             selectedToken?.address === token.address &&
                                             selectedToken?.chainId === tokenChain.id;
                                         return (
-                                            <div
-                                                tabIndex={0}
-                                                role="button"
-                                                onKeyDown={(e) => {
-                                                    if (e.key === "Enter") {
-                                                        handleTokenSelect(token);
-                                                    }
-                                                }}
-                                                onClick={() => handleTokenSelect(token)}
+                                            <TokenTile
                                                 key={`${tokenChain.id}:${token.address}_token_list`}
-                                                className="gw-w-full"
-                                            >
-                                                <div
-                                                    className={cn(
-                                                        "gw-flex gw-justify-between gw-items-center gw-w-full gw-p-2 gw-rounded-xl",
-                                                        {
-                                                            "gw-bg-muted": isTokenSelected
-                                                        }
-                                                    )}
-                                                >
-                                                    <div className="gw-flex gw-items-center gw-space-x-3">
-                                                        <TokenAndChainIcon
-                                                            token={{
-                                                                name: token.name,
-                                                                logoUrl: token.metadata?.logoURI
-                                                            }}
-                                                            chain={{
-                                                                id: tokenChain.id,
-                                                                name: tokenChain.name,
-                                                                logoUrl: tokenChain.iconUrl
-                                                            }}
-                                                        />
-                                                        <div className="gw-flex gw-flex-col gw-items-between gw-justify-end">
-                                                            <span className="gw-font-medium gw-flex gw-gap-1 gw-items-center">
-                                                                <span className="gw-font-medium">{token.symbol}</span>
-                                                                {token.metadata?.verified === false && (
-                                                                    <TooltipElement
-                                                                        side="bottom"
-                                                                        align="center"
-                                                                        stopPropagation
-                                                                        description="Not verified"
-                                                                    >
-                                                                        <span className="gw-size-[18px] gw-bg-brand-warning gw-rounded-full gw-flex gw-items-center gw-justify-center gw-p-1 gw-text-background">
-                                                                            <AlertTriangle />
-                                                                        </span>
-                                                                    </TooltipElement>
-                                                                )}
-                                                                {currentChainId && token.address === zeroAddress && (
-                                                                    <TooltipElement
-                                                                        side="bottom"
-                                                                        align="center"
-                                                                        stopPropagation
-                                                                        description="Gas Token"
-                                                                    >
-                                                                        <span className="gw-size-[18px] gw-bg-brand-success gw-rounded-full gw-flex gw-items-center gw-justify-center gw-p-1 gw-text-background">
-                                                                            <FuelIcon />
-                                                                        </span>
-                                                                    </TooltipElement>
-                                                                )}
-                                                            </span>
-
-                                                            <span
-                                                                className={`gw-typography-caption gw-text-brand-gray-500    `}
-                                                            >
-                                                                {CHAIN_NAMES[tokenChain.id] || tokenChain.displayName}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="gw-flex gw-flex-col gw-items-between gw-justify-end gw-h-full">
-                                                        <span className="gw-h-5"></span>
-                                                        <span className="gw-typography-caption gw-text-brand-gray-500">
-                                                            {truncateEthAddress(token.address!)}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                {index < tokenList.length - 1 && (
-                                                    <hr className="gw-my-2 gw-border-muted gw-mx-2" />
-                                                )}
-                                            </div>
+                                                currentChainId={currentChainId}
+                                                handleTokenSelect={handleTokenSelect}
+                                                isTokenSelected={isTokenSelected}
+                                                token={token}
+                                                tokenChain={tokenChain}
+                                                showDivider={index < tokenList.length - 1}
+                                                tokenBalance={
+                                                    relaySupportedTokensBalances?.[
+                                                        `${token.chainId}:${token.address?.toLowerCase()}`
+                                                    ]
+                                                }
+                                            />
                                         );
                                     })
                                 )}
@@ -350,6 +336,103 @@ const SwapChainAndTokenSelector = ({
                 </DialogContent>
             </Dialog>
         </>
+    );
+};
+
+const TokenTile = ({
+    handleTokenSelect,
+    token,
+    tokenChain,
+    currentChainId,
+    isTokenSelected,
+    showDivider,
+    tokenBalance
+}: {
+    handleTokenSelect: (token: RelayAPIToken) => void;
+    token: RelayAPIToken;
+    tokenChain: RelayChain;
+    currentChainId: number | undefined;
+    isTokenSelected: boolean;
+    showDivider?: boolean;
+    tokenBalance?: GlyphWidgetTokenBalancesItem;
+}) => {
+    return (
+        <div
+            tabIndex={0}
+            role="button"
+            onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                    handleTokenSelect(token);
+                }
+            }}
+            onClick={() => handleTokenSelect(token)}
+            className="gw-w-full"
+        >
+            <div
+                className={cn("gw-flex gw-justify-between gw-items-center gw-w-full gw-p-2 gw-rounded-xl", {
+                    "gw-bg-muted": isTokenSelected
+                })}
+            >
+                <div className="gw-flex gw-items-center gw-space-x-3">
+                    <TokenAndChainIcon
+                        token={{
+                            name: token.name,
+                            logoUrl: token.metadata?.logoURI
+                        }}
+                        chain={{
+                            id: tokenChain.id,
+                            name: tokenChain.name,
+                            logoUrl: tokenChain.iconUrl
+                        }}
+                    />
+                    <div className="gw-flex gw-flex-col gw-items-between gw-justify-end">
+                        <span className="gw-font-medium gw-flex gw-gap-1 gw-items-center">
+                            <span className="gw-font-medium">{token.symbol}</span>
+                            {token.metadata?.verified === false && (
+                                <TooltipElement side="bottom" align="center" stopPropagation description="Not verified">
+                                    <span className="gw-size-[18px] gw-bg-brand-warning gw-rounded-full gw-flex gw-items-center gw-justify-center gw-p-1 gw-text-background">
+                                        <AlertTriangle />
+                                    </span>
+                                </TooltipElement>
+                            )}
+                            {currentChainId && token.address === zeroAddress && (
+                                <TooltipElement side="bottom" align="center" stopPropagation description="Gas Token">
+                                    <span className="gw-size-[18px] gw-bg-brand-success gw-rounded-full gw-flex gw-items-center gw-justify-center gw-p-1 gw-text-background">
+                                        <FuelIcon />
+                                    </span>
+                                </TooltipElement>
+                            )}
+                        </span>
+
+                        <span className={`gw-typography-caption gw-text-brand-gray-500    `}>
+                            {/* {CHAIN_NAMES[tokenChain.id] || tokenChain.displayName} */}
+                            {truncateEthAddress(token.address!)}
+                        </span>
+                    </div>
+                </div>
+
+                {tokenBalance && (
+                    <div className="gw-flex gw-flex-col gw-items-between gw-justify-end gw-h-full gw-text-end">
+                        <span className="gw-min-h-5 gw-font-medium">
+                            {formatCurrency(
+                                tokenBalance.amount,
+                                tokenBalance.currency,
+                                BigInt(tokenBalance.valueInWei) !== 0n
+                            )}
+                        </span>
+                        <span className="gw-typography-caption gw-text-brand-gray-500">
+                            {formatTokenCount(
+                                tokenBalance.valueInWei,
+                                tokenBalance.decimals,
+                                tokenBalance.displayDecimals
+                            )}{" "}
+                            {token.symbol}
+                        </span>
+                    </div>
+                )}
+            </div>
+            {showDivider && <hr className="gw-my-2 gw-border-muted gw-mx-2" />}
+        </div>
     );
 };
 
