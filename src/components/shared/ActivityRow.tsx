@@ -2,8 +2,7 @@ import { TxSendIcon } from "../../assets/svg/TxSendIcon";
 import { TxSwapIcon } from "../../assets/svg/TxSwapIcon";
 import { CHAIN_NAMES } from "../../lib/constants";
 import { formatCurrency } from "../../lib/intl";
-import { relayClient } from "../../lib/relay";
-import { cn } from "../../lib/utils";
+import { chainIdToRelayChain, cn } from "../../lib/utils";
 
 export interface ActivityRowProps {
     data: {
@@ -19,7 +18,7 @@ export interface ActivityRowProps {
 }
 
 export function ActivityRow({ data }: ActivityRowProps) {
-    const chain = data?.chain_id ? relayClient.chains.find((c) => c.id === data.chain_id) : undefined;
+    const chain = data?.chain_id ? chainIdToRelayChain(data.chain_id) : undefined;
 
     return (
         <div className="gw-flex gw-items-center gw-typography-body1 gw-flex-1 gw-space-x-3">

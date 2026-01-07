@@ -164,6 +164,13 @@ export const isNativeAndWrappedPair = (
     fromCurrency: RelayAPIToken | undefined,
     toCurrency: RelayAPIToken | undefined
 ) => {
+    const fromChainNativeAddress = fromCurrency?.chainId
+        ? (chainIdToRelayChain(fromCurrency?.chainId)?.currency?.address ?? zeroAddress)
+        : zeroAddress;
+    const toChainNativeAddress = toCurrency?.chainId
+        ? (chainIdToRelayChain(toCurrency?.chainId)?.currency?.address ?? zeroAddress)
+        : zeroAddress;
+
     // If any of them is undefined return false
     if (!fromCurrency || !toCurrency) return false;
 
@@ -171,7 +178,10 @@ export const isNativeAndWrappedPair = (
     if (fromCurrency?.chainId !== toCurrency?.chainId) return false;
 
     // One of them has to be the native token
-    if (![fromCurrency?.address?.toLowerCase?.(), toCurrency?.address?.toLowerCase?.()].includes(zeroAddress))
+    if (
+        !(fromCurrency?.address?.toLowerCase?.() === fromChainNativeAddress?.toLowerCase()) &&
+        !(toCurrency?.address?.toLowerCase?.() === toChainNativeAddress?.toLowerCase())
+    )
         return false;
 
     const chains = relayClient?.chains || [];

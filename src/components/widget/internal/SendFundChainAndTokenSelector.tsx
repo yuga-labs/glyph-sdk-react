@@ -1,18 +1,18 @@
 import { ChevronDown, FuelIcon } from "lucide-react";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { zeroAddress } from "viem";
+import { useChainId, useSwitchChain } from "wagmi";
 import { useBalances } from "../../../hooks/useBalances";
 import { CHAIN_NAMES } from "../../../lib/constants";
 import { formatCurrency } from "../../../lib/intl";
 import { relayClient } from "../../../lib/relay";
-import { cn, formatTokenCount } from "../../../lib/utils";
+import { chainIdToRelayChain, cn, formatTokenCount } from "../../../lib/utils";
 import { GlyphWidgetTokenBalancesItem } from "../../../types";
 import { Button } from "../../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../../ui/dialog";
 import { Skeleton } from "../../ui/skeleton";
 import TooltipElement from "../../ui/tooltip-element";
 import { TokenAndChainIcon } from "./TokenAndChainIcon";
-import { useChainId, useSwitchChain } from "wagmi";
 
 const SendFundChainAndTokenSelector = ({
     onTokenSelect,
@@ -21,8 +21,6 @@ const SendFundChainAndTokenSelector = ({
     onTokenSelect: (token: GlyphWidgetTokenBalancesItem | undefined) => void;
     selectedToken: GlyphWidgetTokenBalancesItem | undefined;
 }) => {
-    const chains = relayClient.chains || [];
-
     const [open, setOpen] = useState<boolean>(false);
 
     const chainId = useChainId();
@@ -33,7 +31,7 @@ const SendFundChainAndTokenSelector = ({
 
     const selectedTokenChain = useMemo(() => {
         if (!selectedToken?.chainId) return null;
-        return chains.find((chain) => chain.id === selectedToken.chainId);
+        return chainIdToRelayChain(selectedToken.chainId);
     }, [selectedToken?.chainId]);
 
     // const [searchTerm, setSearchTerm] = useState<string>("");
@@ -49,7 +47,7 @@ const SendFundChainAndTokenSelector = ({
 
     const [currentChain] = useMemo(() => {
         if (currentChainId === "all") return [null];
-        const chain = chains.find((chain) => chain.id === currentChainId);
+        const chain = chainIdToRelayChain(currentChainId);
         return [chain];
     }, [currentChainId]);
 
@@ -142,7 +140,7 @@ const SendFundChainAndTokenSelector = ({
                                 >
                                     <span className="gw-typography-caption">All</span>
                                 </Button>
-                                {chains.map((chain) => (
+                                {relayClient.chains.map((chain) => (
                                     <Button
                                         key={`${chain.id}_networks`}
                                         size={"icon"}
@@ -186,12 +184,11 @@ const SendFundChainAndTokenSelector = ({
                             <div className="gw-grid gw-grid-cols-1 gw-mt-2 gw-min-h-0 gw-overflow-auto">
                                 {hasBalances && balances?.tokens.length ? (
                                     balances?.tokens?.map((token, index) => {
-                                        const tokenChain =
-                                            currentChain ?? chains.find((chain) => chain.id === token?.chainId)!;
+                                        const tokenChain = currentChain ?? chainIdToRelayChain(token?.chainId)!;
 
                                         const isTokenSelected =
                                             selectedToken?.address === token.address &&
-                                            selectedToken?.chainId === tokenChain.id;
+                                            selectedToken?.chainId === tokenChain?.id;
                                         return (
                                             <div
                                                 tabIndex={0}

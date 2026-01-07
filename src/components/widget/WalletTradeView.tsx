@@ -1,8 +1,8 @@
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { debounce } from "throttle-debounce";
-import { formatUnits, zeroAddress } from "viem";
+import { formatUnits, parseUnits, zeroAddress } from "viem";
 import { useChainId } from "wagmi";
 import { GlyphSwapContextData, useGlyphSwap } from "../../context/GlyphSwapContext";
 import { useGlyph } from "../../hooks/useGlyph";
@@ -14,7 +14,8 @@ import { INTERNAL_GRADIENT_TYPE, MAX_DECIMALS_FOR_CRYPTO, RELAY_APP_FEE_BPS, Swa
 import { reformatSwapError, SWAP_ERROR_MESSAGES } from "../../lib/customErrors";
 import { formatCurrency } from "../../lib/intl";
 import { formatInputNumber } from "../../lib/numericInputs";
-import { cn, displayNumberPrecision, formatTokenCount, getRPCErrorString } from "../../lib/utils";
+import { getFeeBufferAmount } from "../../lib/relayNativeMaxAmount";
+import { chainIdToRelayChain, cn, displayNumberPrecision, formatTokenCount, getRPCErrorString } from "../../lib/utils";
 import WalletViewHeader from "../shared/WalletViewHeader";
 import { WalletViewTemplate } from "../shared/WalletViewTemplate";
 import { Button } from "../ui/button";
@@ -65,9 +66,9 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
 
     const switchTokensHandler = () => {
         const prevFromCurrency = fromCurrency;
-        const prevFromAmount = amount;
+        const prevFromAmount = formatUnits(BigInt(amount), fromCurrency?.decimals || 18);
         const prevToCurrency = toCurrency;
-        const prevToAmount = amount;
+        const prevToAmount = formatUnits(BigInt(amount), toCurrency?.decimals || 18);
         update({
             fromCurrency: prevToCurrency,
             toCurrency: prevFromCurrency,
@@ -84,10 +85,10 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
     // Update the amount and trade type with some debounce - such that quote is not fetched for every user interaction
     const debouncedAmountFunc = useMemo(
         () =>
-            debounce(500, (value: string, newTradeType: GlyphSwapContextData["tradeType"]) => {
+            debounce(500, (value: bigint, newTradeType: GlyphSwapContextData["tradeType"]) => {
                 setExecuteError("");
                 update({
-                    amount: value,
+                    amount: value.toString(),
                     tradeType: newTradeType
                 });
             }),
@@ -126,8 +127,37 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
     const [sellAmount, setSellAmount] = useState<string>("");
     const [buyAmount, setBuyAmount] = useState<string>("");
 
+    const [transferMaxLoading, setTransferMaxLoading] = useState<boolean>(false);
+    const [lastFeeBuffer, setLastFeeBuffer] = useState<bigint>(0n);
+
     useEffect(() => {
         if (quote) {
+            const quoteGasWithBuffer = (BigInt(quote?.fees?.gas?.amount || "0") * 120n) / 100n; // 5% more than the error check
+            if (transferMaxLoading) {
+                // If the last fee buffer is less than the quote gas, recalculate the fee buffer
+                if (lastFeeBuffer < BigInt(quote?.fees?.gas?.amount || "0")) {
+                    console.debug("Incorrect fee buffer, recalculating...");
+                    const newFeeBuffer = quoteGasWithBuffer;
+                    setLastFeeBuffer(newFeeBuffer);
+                    const isNativeToken =
+                        fromCurrency?.address ===
+                        (chainIdToRelayChain(fromCurrency!.chainId!)!.currency?.address ?? zeroAddress);
+                    const valueToSet = isNativeToken ? maxSellAmount(newFeeBuffer) : maxSellAmount(0n);
+                    setSellAmount(valueToSet);
+                    debouncedAmountFunc(
+                        isNativeToken
+                            ? BigInt(sellTokenBalance ?? "0") > newFeeBuffer
+                                ? BigInt(sellTokenBalance ?? "0") - newFeeBuffer
+                                : 0n
+                            : BigInt(sellTokenBalance ?? "0"),
+                        "EXACT_INPUT"
+                    );
+                    setTransferMaxLoading(false);
+                    return;
+                }
+                // If the last fee buffer is greater than the quote gas, we are good to go and we can set the transfer max loading to false
+                setTransferMaxLoading(false);
+            }
             if (tradeType === "EXACT_INPUT" && quote.details?.currencyOut?.amount) {
                 setBuyAmount(
                     formatTokenCount(
@@ -154,6 +184,20 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
         error: sellTokenBalanceError
     } = useTokenBalance(fromCurrency?.address, fromCurrency?.chainId);
 
+    // Calculate max sell amount from balance
+    const maxSellAmount = useCallback(
+        (gasFee: bigint) => {
+            if (sellTokenBalance !== undefined && fromCurrency?.decimals && BigInt(sellTokenBalance) > gasFee) {
+                return displayNumberPrecision(
+                    parseFloat(formatUnits(BigInt(sellTokenBalance) - gasFee, fromCurrency.decimals)),
+                    Math.min(fromCurrency.decimals || MAX_DECIMALS_FOR_CRYPTO, MAX_DECIMALS_FOR_CRYPTO)
+                ).toString();
+            }
+            return "0";
+        },
+        [sellTokenBalance, fromCurrency?.decimals]
+    );
+
     const {
         balance: buyTokenBalance,
         isLoading: buyTokenBalanceLoading,
@@ -170,9 +214,11 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
         error: sourceGasBalanceError
     } = useTokenBalance(gasCurrencyAddress, fromCurrency?.chainId);
 
+    const sellAmountInWeiToUse =
+        tradeType === "EXACT_INPUT" ? amount : parseUnits(sellAmount, fromCurrency?.decimals || 18);
     const insufficientBalanceError =
         fromCurrency?.decimals && sellAmount && sellTokenBalance !== undefined
-            ? Number(formatUnits(BigInt(sellTokenBalance), fromCurrency?.decimals)) < Number(sellAmount)
+            ? BigInt(sellTokenBalance) < BigInt(sellAmountInWeiToUse)
                 ? SWAP_ERROR_MESSAGES.INSUFFICENT_BALANCE
                 : null
             : null;
@@ -182,11 +228,16 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
         fromCurrency,
         quoteGas?.amount || "0",
         sourceGasBalance,
-        amount || "0"
+        sellAmountInWeiToUse.toString()
     );
 
     const gasUnavailableError =
-        quote && fromCurrency?.chainId && !sourceGasBalanceLoading && !hasSourceGas
+        quote &&
+        fromCurrency?.chainId &&
+        !sourceGasBalanceLoading &&
+        !hasSourceGas &&
+        !transferMaxLoading &&
+        buyAmount !== ""
             ? SWAP_ERROR_MESSAGES.INSUFFICENT_GAS
             : null;
 
@@ -284,7 +335,10 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                                         }
 
                                                         // If sell amount is manually changed - that means user want swap of type "EXACT_INPUT"
-                                                        debouncedAmountFunc(value, "EXACT_INPUT");
+                                                        debouncedAmountFunc(
+                                                            parseUnits(value, fromCurrency?.decimals || 18),
+                                                            "EXACT_INPUT"
+                                                        );
 
                                                         return value;
                                                     });
@@ -302,6 +356,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                                     update({
                                                         fromCurrency: t
                                                     });
+
                                                     // Sell token and buy token cannot be same - unset buy token if it is same
                                                     if (
                                                         toCurrency &&
@@ -338,7 +393,66 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                                 <Skeleton className="gw-h-4 gw-w-10 gw-inline-block gw-ml-0.5" />
                                             </div>
                                         ) : sellTokenBalance !== undefined && fromCurrency?.decimals ? (
-                                            <div className="gw-typography-caption gw-flex gw-items-center gw-mr-4">
+                                            <div className="gw-typography-caption gw-flex gw-items-center gw-mr-4 gw-gap-1">
+                                                {/* Max button */}
+                                                <Button
+                                                    variant="link"
+                                                    size="xs"
+                                                    disabled={
+                                                        !sellTokenBalance ||
+                                                        sellTokenBalance === "0" ||
+                                                        sellTokenBalanceLoading ||
+                                                        !fromCurrency ||
+                                                        transferMaxLoading ||
+                                                        !toCurrency
+                                                    }
+                                                    className="gw-py-0.5 gw-px-0.5 gw-h-auto gw-underline hover:gw-no-underline gw-underline-offset-2 gw-gap-1"
+                                                    onClick={async () => {
+                                                        setTransferMaxLoading(true);
+                                                        try {
+                                                            if (!fromCurrency) {
+                                                                console.debug("No fromCurrency to set max sell amount");
+                                                                return;
+                                                            }
+                                                            const isNativeToken =
+                                                                fromCurrency?.address ===
+                                                                (chainIdToRelayChain(fromCurrency.chainId!)!.currency
+                                                                    ?.address ?? zeroAddress); // if native token
+                                                            const feeGasBuffer = await getFeeBufferAmount(
+                                                                fromCurrency?.chainId as number,
+                                                                BigInt(sellTokenBalance)
+                                                            );
+                                                            const valueToSet = isNativeToken
+                                                                ? maxSellAmount(feeGasBuffer)
+                                                                : maxSellAmount(0n);
+                                                            // If the max sell amount is 0, throw an error as we don't have enough balance to cover the gas fee
+                                                            if (valueToSet === "0") {
+                                                                throw new Error(SWAP_ERROR_MESSAGES.INSUFFICENT_GAS);
+                                                            }
+
+                                                            const newWeiValueForQuote = isNativeToken
+                                                                ? BigInt(sellTokenBalance) - feeGasBuffer
+                                                                : BigInt(sellTokenBalance);
+
+                                                            if (newWeiValueForQuote.toString() !== amount) {
+                                                                setLastFeeBuffer(feeGasBuffer);
+                                                                setSellAmount(valueToSet);
+                                                                setBuyAmount("");
+                                                                debouncedAmountFunc(newWeiValueForQuote, "EXACT_INPUT");
+                                                            } else {
+                                                                setTransferMaxLoading(false);
+                                                            }
+                                                        } catch (_e: any) {
+                                                            setExecuteError(_e?.message);
+                                                            setTransferMaxLoading(false);
+                                                        }
+                                                    }}
+                                                >
+                                                    {transferMaxLoading && (
+                                                        <Loader2 className="gw-size-3 gw-animate-spin" />
+                                                    )}
+                                                    <span className="gw-typography-caption">Max</span>
+                                                </Button>
                                                 {displayNumberPrecision(
                                                     parseFloat(
                                                         formatUnits(BigInt(sellTokenBalance), fromCurrency?.decimals)
@@ -359,7 +473,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                 {/* Swap to and from tokens */}
                                 <Button
                                     className={cn(
-                                        "gw-absolute gw-z-10 gw-bottom-0 gw-shadow-buttonMd gw-translate-y-1/2 gw-left-1/2 -gw-translate-x-1/2 gw-h-10 gw-transition-transform gw-duration-300 gw-ease-in-out",
+                                        "gw-absolute gw-z-10 gw-bottom-0 gw-shadow-buttonMd gw-translate-y-1/2 gw-left-1/2 -gw-translate-x-1/2 gw-h-8 gw-w-8 gw-transition-transform gw-duration-300 gw-ease-in-out",
                                         swapFromAndToTokensAnimation && "gw-rotate-180"
                                     )}
                                     variant={"outline"}
@@ -367,11 +481,10 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setSwapFromAndToTokensAnimation((v) => !v);
-                                        // TODO: Logic to swap to and from tokens
                                         switchTokensHandler();
                                     }}
                                 >
-                                    <ArrowUpDown className="!gw-size-6 !gw-text-brand-gray-500" />
+                                    <ArrowUpDown className="!gw-size-5 !gw-text-brand-gray-500" />
                                 </Button>
                             </div>
 
@@ -429,7 +542,10 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                                         }
 
                                                         // If buy amount is manually changed - that means user want swap of type "EXACT_OUTPUT"
-                                                        debouncedAmountFunc(value, "EXACT_OUTPUT");
+                                                        debouncedAmountFunc(
+                                                            parseUnits(value, toCurrency?.decimals || 18),
+                                                            "EXACT_OUTPUT"
+                                                        );
 
                                                         return value;
                                                     })
@@ -631,7 +747,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                                     fromCurrency,
                                                     gasAmount || "0",
                                                     sourceGasBalance,
-                                                    amount || "0"
+                                                    sellAmountInWeiToUse.toString()
                                                 );
 
                                                 if (!sourceGasBalanceLoading && !hasEnoughGas) {

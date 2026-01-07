@@ -2,7 +2,7 @@ import { memo, useMemo } from "react";
 import { CaretDownIcon } from "../../../assets/svg/CaretDownIcon";
 import LoadingCircleIcon from "../../../assets/svg/LoadingCircleIcon.";
 import { useGlyphSwap } from "../../../context/GlyphSwapContext";
-import { relayClient } from "../../../lib/relay";
+import { chainIdToRelayChain } from "../../../lib/utils";
 import { LinkWithIcon } from "../../shared/LinkWithIcon";
 import WalletViewHeader from "../../shared/WalletViewHeader";
 import { WalletViewTemplate } from "../../shared/WalletViewTemplate";
@@ -27,15 +27,16 @@ const WalletTradePendingView: React.FC<WalletTradePendingViewProps> = ({
     sellAmount,
     buyAmount
 }) => {
-    const relayChains = relayClient.chains || [];
-
     const { fromCurrency, toCurrency } = useGlyphSwap();
 
     const fromChain = useMemo(
-        () => relayChains.find((chain) => chain.id === fromCurrency?.chainId),
+        () => (fromCurrency?.chainId ? chainIdToRelayChain(fromCurrency?.chainId) : undefined),
         [fromCurrency?.chainId]
     );
-    const toChain = useMemo(() => relayChains.find((chain) => chain.id === toCurrency?.chainId), [toCurrency?.chainId]);
+    const toChain = useMemo(
+        () => (toCurrency?.chainId ? chainIdToRelayChain(toCurrency?.chainId) : undefined),
+        [toCurrency?.chainId]
+    );
 
     return (
         <WalletViewTemplate
@@ -69,11 +70,13 @@ const WalletTradePendingView: React.FC<WalletTradePendingViewProps> = ({
                                         logoUrl: fromCurrency?.metadata?.logoURI
                                     }}
                                     chain={
-                                        fromChain && {
-                                            id: fromChain?.id,
-                                            name: fromChain?.name,
-                                            logoUrl: fromChain?.iconUrl
-                                        }
+                                        fromChain
+                                            ? {
+                                                  id: fromChain?.id,
+                                                  name: fromChain?.name,
+                                                  logoUrl: fromChain?.iconUrl
+                                              }
+                                            : undefined
                                     }
                                     tokenClassName="gw-size-8"
                                     chainClassName="gw-size-4"
@@ -102,11 +105,13 @@ const WalletTradePendingView: React.FC<WalletTradePendingViewProps> = ({
                                         logoUrl: toCurrency?.metadata?.logoURI
                                     }}
                                     chain={
-                                        toChain && {
-                                            id: toChain.id,
-                                            name: toChain.name,
-                                            logoUrl: toChain.iconUrl
-                                        }
+                                        toChain
+                                            ? {
+                                                  id: toChain.id,
+                                                  name: toChain.name,
+                                                  logoUrl: toChain.iconUrl
+                                              }
+                                            : undefined
                                     }
                                     tokenClassName="gw-size-8"
                                     chainClassName="gw-size-4"

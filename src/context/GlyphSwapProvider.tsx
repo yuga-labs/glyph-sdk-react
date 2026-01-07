@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
-import { GlyphSwapContext, GlyphSwapContextData } from "./GlyphSwapContext";
 import { useGlyphApi } from "../hooks/useGlyphApi";
+import { GlyphSwapContext, GlyphSwapContextData } from "./GlyphSwapContext";
 
 export function GlyphSwapProvider({ children }: { children: React.ReactNode }) {
     const { glyphApiFetch } = useGlyphApi();
@@ -18,12 +18,17 @@ export function GlyphSwapProvider({ children }: { children: React.ReactNode }) {
         setData((prev) => ({ ...prev, ...data }));
     }, []);
 
-    const reportSwapFailed = useCallback(async (id: string) => {
-        if (!glyphApiFetch) return;
-        await glyphApiFetch(`/api/widget/swap/quote/${id}/failed`, {
-            method: "PATCH"
-        });
-    }, [glyphApiFetch]);
+    const reportSwapFailed = useCallback(
+        async (id: string) => {
+            if (!glyphApiFetch) return;
+            await glyphApiFetch(`/api/widget/swap/quote/${id}/failed`, {
+                method: "PATCH"
+            });
+        },
+        [glyphApiFetch]
+    );
 
-    return <GlyphSwapContext.Provider value={{ ...data, update, reportSwapFailed }}>{children}</GlyphSwapContext.Provider>;
+    return (
+        <GlyphSwapContext.Provider value={{ ...data, update, reportSwapFailed }}>{children}</GlyphSwapContext.Provider>
+    );
 }

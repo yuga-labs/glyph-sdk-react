@@ -1,13 +1,10 @@
 import NoTokenIcon from "../../assets/svg/NoTokenIcon";
 import { useBalances } from "../../hooks/useBalances";
 import { formatCurrency } from "../../lib/intl";
-import { relayClient } from "../../lib/relay";
-import { formatTokenCount } from "../../lib/utils";
+import { chainIdToRelayChain, formatTokenCount } from "../../lib/utils";
 import { TokenAndChainIcon } from "./internal/TokenAndChainIcon";
 
 export function WalletTokensTab() {
-    const chains = relayClient.chains;
-
     const { balances, hasBalances, fetchForAllNetworks } = useBalances();
 
     const tokens = balances?.tokens || [];
@@ -40,7 +37,7 @@ export function WalletTokensTab() {
                             <NoTokenIcon className="gw-size-10" />
                         );
 
-                        const chain = chains.find((c) => c.id === t.chainId)!;
+                        const chain = chainIdToRelayChain(t.chainId);
 
                         return (
                             <div key={`${t?.chainId}:${t?.address}_token_list`} className="gw-w-full">
@@ -54,7 +51,7 @@ export function WalletTokensTab() {
                                                 }}
                                                 chain={{
                                                     id: t?.chainId,
-                                                    name: chain?.name,
+                                                    name: chain?.name ?? "",
                                                     logoUrl: chain?.iconUrl ?? undefined
                                                 }}
                                             />
