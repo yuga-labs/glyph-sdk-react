@@ -480,8 +480,8 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                                             <TooltipElement
                                                                 description={
                                                                     !toCurrency
-                                                                        ? "Please select destination token to continue"
-                                                                        : "Since you’re using a native token, a small portion of your balance will be set aside to pay for gas fees."
+                                                                        ? "Select destination token to continue"
+                                                                        : "This swap uses a native token, a small amount will be reserved to cover gas fees."
                                                                 }
                                                                 stopPropagation
                                                                 side="bottom"

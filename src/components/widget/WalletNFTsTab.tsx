@@ -147,8 +147,15 @@ export function WalletNFTsTab() {
                     </div>
                 </div>
             ) : (
-                <div className="gw-flex gw-justify-center gw-items-center gw-flex-1 gw-text-brand-gray-500 gw-typography-body2 gw-pr-4">
-                    {hasBalances ? "No NFTs found" : "Loading..."}
+                <div
+                    className={cn(
+                        "gw-flex gw-justify-center gw-items-center gw-flex-1 gw-text-brand-gray-500 gw-typography-body2 gw-pr-2 gw-whitespace-pre-wrap gw-text-center",
+                        hasBalances ? "!gw-text-[13px]" : ""
+                    )}
+                >
+                    {hasBalances
+                        ? `No NFTs found.\nIf you own NFTs, they may be on a different network.\nCheck your network selection.`
+                        : "Loading..."}
                 </div>
             )}
         </div>
