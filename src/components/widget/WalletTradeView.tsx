@@ -20,6 +20,7 @@ import WalletViewHeader from "../shared/WalletViewHeader";
 import { WalletViewTemplate } from "../shared/WalletViewTemplate";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
+import TooltipElement from "../ui/tooltip-element";
 import SwapChainAndTokenSelector from "./internal/SwapChainAndTokenSelector";
 import { WalletSwapTopUpGas } from "./internal/WalletSwapTopUpGas";
 import WalletTradeFailedView from "./internal/WalletTradeFailedView";
@@ -265,12 +266,27 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
         ? Number(quote?.details?.currencyOut?.amountUsd)
         : undefined;
 
+    const isFromTokenNative = useMemo(
+        () =>
+            fromCurrency?.address && fromCurrency?.chainId
+                ? fromCurrency.address ===
+                  (chainIdToRelayChain(fromCurrency.chainId!)!.currency?.address ?? zeroAddress)
+                : undefined,
+        [fromCurrency?.address, fromCurrency?.chainId]
+    ); // if from token is native token
+
+    const [isToTokenNative, destinationChainNativeAddress] = useMemo(() => {
+        if (!toCurrency?.address || !toCurrency?.chainId) return [false, undefined];
+        const nativeAddress = chainIdToRelayChain(toCurrency.chainId!)!.currency?.address ?? zeroAddress;
+        return [toCurrency.address === nativeAddress, nativeAddress];
+    }, [toCurrency?.address, toCurrency?.chainId]); // if to token is native token and destination chain native address
+
     return (
         <>
             {view === SwapView.START && (
                 <WalletViewTemplate
                     headerClassName="!gw-py-2"
-                    footerClassName="!gw-py-3 !gw-px-3"
+                    footerClassName="!gw-pb-3 !gw-pt-2 !gw-px-3"
                     header={
                         <WalletViewHeader
                             fullScreenHeader={{
@@ -283,7 +299,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                         <div className="gw-px-4 gw-h-full gw-flex gw-flex-col gw-justify-start">
                             {/* From Token */}
                             <div
-                                className="gw-flex gw-flex-col gw-cursor-text gw-border-b gw-border-muted gw-pb-4 gw-relative"
+                                className="gw-flex gw-flex-col gw-cursor-text gw-border-b gw-border-muted gw-pb-6 gw-relative"
                                 onClick={(e) => {
                                     const input = e.currentTarget.querySelector("input");
                                     if (input) {
@@ -357,6 +373,15 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                                         fromCurrency: t
                                                     });
 
+                                                    // If source token is changed and user entered the source amount manually, reset the sell amount and buy amount and amount.
+                                                    if (tradeType === "EXACT_INPUT") {
+                                                        setSellAmount("");
+                                                        setBuyAmount("");
+                                                        update({
+                                                            amount: ""
+                                                        });
+                                                    }
+
                                                     // Sell token and buy token cannot be same - unset buy token if it is same
                                                     if (
                                                         toCurrency &&
@@ -377,9 +402,9 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                 </div>
 
                                 {/* Value in USD and tokens available */}
-                                <div className="gw-flex gw-justify-between gw-items-center gw-w-full gw-text-brand-gray-500">
+                                <div className="gw-flex gw-justify-between gw-items-center gw-w-full gw-text-brand-gray-500 gw-min-h-5">
                                     {currencyInUsd === undefined ? (
-                                        <div className="gw-h-4 gw-w-1" />
+                                        <div className="gw-h-5 gw-w-1" />
                                     ) : (
                                         <div className="gw-typography-caption">
                                             {currencyInUsd < 0.01
@@ -390,69 +415,79 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                     <>
                                         {sellTokenBalanceLoading ? (
                                             <div className="gw-typography-caption gw-flex gw-items-center gw-mr-4">
-                                                <Skeleton className="gw-h-4 gw-w-10 gw-inline-block gw-ml-0.5" />
+                                                <Skeleton className="gw-h-5 gw-w-10 gw-inline-block gw-ml-0.5" />
                                             </div>
-                                        ) : sellTokenBalance !== undefined && fromCurrency?.decimals ? (
+                                        ) : !!sellTokenBalance && fromCurrency?.decimals ? (
                                             <div className="gw-typography-caption gw-flex gw-items-center gw-mr-4 gw-gap-1">
-                                                {/* Max button */}
-                                                <Button
-                                                    variant="link"
-                                                    size="xs"
-                                                    disabled={
-                                                        !sellTokenBalance ||
-                                                        sellTokenBalance === "0" ||
-                                                        sellTokenBalanceLoading ||
-                                                        !fromCurrency ||
-                                                        transferMaxLoading ||
-                                                        !toCurrency
-                                                    }
-                                                    className="gw-py-0.5 gw-px-0.5 gw-h-auto gw-underline hover:gw-no-underline gw-underline-offset-2 gw-gap-1"
-                                                    onClick={async () => {
-                                                        setTransferMaxLoading(true);
-                                                        try {
-                                                            if (!fromCurrency) {
-                                                                console.debug("No fromCurrency to set max sell amount");
-                                                                return;
-                                                            }
-                                                            const isNativeToken =
-                                                                fromCurrency?.address ===
-                                                                (chainIdToRelayChain(fromCurrency.chainId!)!.currency
-                                                                    ?.address ?? zeroAddress); // if native token
-                                                            const feeGasBuffer = await getFeeBufferAmount(
-                                                                fromCurrency?.chainId as number,
-                                                                BigInt(sellTokenBalance)
-                                                            );
-                                                            const valueToSet = isNativeToken
-                                                                ? maxSellAmount(feeGasBuffer)
-                                                                : maxSellAmount(0n);
-                                                            // If the max sell amount is 0, throw an error as we don't have enough balance to cover the gas fee
-                                                            if (valueToSet === "0") {
-                                                                throw new Error(SWAP_ERROR_MESSAGES.INSUFFICENT_GAS);
-                                                            }
+                                                {/* Max button - only show if the sell token balance is greater than 0 */}
+                                                {BigInt(sellTokenBalance) > 0n && (
+                                                    <>
+                                                        <Button
+                                                            disabled={transferMaxLoading || !toCurrency}
+                                                            className="gw-w-fit !gw-gap-1 !gw-px-2 !gw-py-0.5 !gw-bg-brand-success !gw-text-foreground !gw-h-5"
+                                                            onClick={async () => {
+                                                                setTransferMaxLoading(true);
+                                                                try {
+                                                                    if (!fromCurrency) {
+                                                                        console.debug(
+                                                                            "No fromCurrency to set max sell amount"
+                                                                        );
+                                                                        return;
+                                                                    }
+                                                                    const feeGasBuffer = await getFeeBufferAmount(
+                                                                        fromCurrency?.chainId as number,
+                                                                        BigInt(sellTokenBalance)
+                                                                    );
+                                                                    const valueToSet = isFromTokenNative
+                                                                        ? maxSellAmount(feeGasBuffer)
+                                                                        : maxSellAmount(0n);
+                                                                    // If the max sell amount is 0, throw an error as we don't have enough balance to cover the gas fee
+                                                                    if (valueToSet === "0") {
+                                                                        throw new Error(
+                                                                            SWAP_ERROR_MESSAGES.INSUFFICENT_GAS
+                                                                        );
+                                                                    }
 
-                                                            const newWeiValueForQuote = isNativeToken
-                                                                ? BigInt(sellTokenBalance) - feeGasBuffer
-                                                                : BigInt(sellTokenBalance);
+                                                                    const newWeiValueForQuote = isFromTokenNative
+                                                                        ? BigInt(sellTokenBalance) - feeGasBuffer
+                                                                        : BigInt(sellTokenBalance);
 
-                                                            if (newWeiValueForQuote.toString() !== amount) {
-                                                                setLastFeeBuffer(feeGasBuffer);
-                                                                setSellAmount(valueToSet);
-                                                                setBuyAmount("");
-                                                                debouncedAmountFunc(newWeiValueForQuote, "EXACT_INPUT");
-                                                            } else {
-                                                                setTransferMaxLoading(false);
-                                                            }
-                                                        } catch (_e: any) {
-                                                            setExecuteError(_e?.message);
-                                                            setTransferMaxLoading(false);
-                                                        }
-                                                    }}
-                                                >
-                                                    {transferMaxLoading && (
-                                                        <Loader2 className="gw-size-3 gw-animate-spin" />
-                                                    )}
-                                                    <span className="gw-typography-caption">Max</span>
-                                                </Button>
+                                                                    if (newWeiValueForQuote.toString() !== amount) {
+                                                                        setLastFeeBuffer(feeGasBuffer);
+                                                                        setSellAmount(valueToSet);
+                                                                        setBuyAmount("");
+                                                                        debouncedAmountFunc(
+                                                                            newWeiValueForQuote,
+                                                                            "EXACT_INPUT"
+                                                                        );
+                                                                    } else {
+                                                                        setTransferMaxLoading(false);
+                                                                    }
+                                                                } catch (_e: any) {
+                                                                    setExecuteError(_e?.message);
+                                                                    setTransferMaxLoading(false);
+                                                                }
+                                                            }}
+                                                        >
+                                                            {transferMaxLoading && (
+                                                                <Loader2 className="!gw-size-3 gw-animate-spin" />
+                                                            )}
+                                                            <span className="gw-typography-caption">Max</span>
+                                                        </Button>
+                                                        {(!toCurrency || isFromTokenNative) && (
+                                                            <TooltipElement
+                                                                description={
+                                                                    !toCurrency
+                                                                        ? "Please select destination token to continue"
+                                                                        : "Since you’re using a native token, a small portion of your balance will be set aside to pay for gas fees."
+                                                                }
+                                                                stopPropagation
+                                                                side="bottom"
+                                                                align="center"
+                                                            />
+                                                        )}
+                                                    </>
+                                                )}
                                                 {displayNumberPrecision(
                                                     parseFloat(
                                                         formatUnits(BigInt(sellTokenBalance), fromCurrency?.decimals)
@@ -490,7 +525,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
 
                             {/* To Token */}
                             <div
-                                className="gw-flex gw-flex-col gw-cursor-text gw-pt-4 gw-pb-2 gw-relative"
+                                className="gw-flex gw-flex-col gw-cursor-text gw-pt-4 gw-pb-4 gw-relative"
                                 onClick={(e) => {
                                     const input = e.currentTarget.querySelector("input");
                                     if (input) {
@@ -563,6 +598,27 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                                     update({
                                                         toCurrency: t
                                                     });
+
+                                                    // If destination token is changed and user entered the destination amount manually, reset the sell amount and buy amount and amount.
+                                                    if (tradeType === "EXACT_OUTPUT") {
+                                                        setBuyAmount("");
+
+                                                        // If the buy amount is not empty and the from currency is not undefined, set the amount to the sell amount and trade type to exact input for better user experience
+                                                        if (buyAmount && fromCurrency) {
+                                                            update({
+                                                                amount: parseUnits(
+                                                                    sellAmount,
+                                                                    fromCurrency?.decimals || 18
+                                                                ).toString(),
+                                                                tradeType: "EXACT_INPUT"
+                                                            });
+                                                        } else {
+                                                            update({
+                                                                amount: ""
+                                                            });
+                                                        }
+                                                    }
+
                                                     // Buy token and sell token cannot be same - unset sell token if it is same
                                                     if (
                                                         fromCurrency &&
@@ -570,6 +626,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                                         fromCurrency.chainId === t.chainId
                                                     ) {
                                                         setSellAmount("");
+                                                        setBuyAmount("");
                                                         update({
                                                             amount: "",
                                                             fromCurrency: undefined
@@ -622,7 +679,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                 {/* Reserve height for the gas top up button */}
                                 <div className="gw-h-5 gw-mt-1 gw-flex gw-items-center">
                                     {/* Only show if the current buy token is not the native token */}
-                                    {toCurrency?.address !== zeroAddress ? (
+                                    {!isToTokenNative && destinationChainNativeAddress ? (
                                         <WalletSwapTopUpGas
                                             destinationChainId={toCurrency?.chainId}
                                             topUpGas={topupGas}
@@ -633,6 +690,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                             }}
                                             topUpDetails={quote?.details?.currencyGasTopup}
                                             quoteReady={!!quote}
+                                            tokenAddress={destinationChainNativeAddress}
                                         />
                                     ) : null}
                                 </div>
@@ -640,7 +698,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
 
                             {/* Tx data */}
                             {quoteEnabled && (
-                                <div className="gw-typography-body2 gw-pt-4 gw-border-t gw-border-muted">
+                                <div className="gw-typography-body2 gw-pt-3 gw-border-t gw-border-muted">
                                     <div className="gw-flex gw-justify-between gw-items-center">
                                         <span>Max Slippage</span>
                                         <span className="gw-text-brand-gray-500 gw-flex gw-items-center gw-gap-2">
@@ -659,14 +717,14 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                         </span>
                                     </div>
 
-                                    <div className="gw-flex gw-justify-between gw-items-center gw-mt-1">
+                                    <div className="gw-flex gw-justify-between gw-items-center gw-mt-0.5">
                                         <span>Transaction Time</span>
                                         <span className="gw-text-brand-gray-500">
                                             {quote ? (quote?.details?.timeEstimate || "<15") + "s" : "-"}
                                         </span>
                                     </div>
 
-                                    <div className="gw-flex gw-justify-between gw-items-center gw-mt-1">
+                                    <div className="gw-flex gw-justify-between gw-items-center gw-mt-0.5">
                                         <span>Fees {appFeesWaived ? "" : `(${RELAY_APP_FEE_BPS / 100}%)`}</span>
                                         <div className="gw-text-brand-gray-500">
                                             {quote ? (
@@ -685,7 +743,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                         </div>
                                     </div>
 
-                                    <div className="gw-flex gw-justify-between gw-items-center gw-mt-1">
+                                    <div className="gw-flex gw-justify-between gw-items-center gw-mt-0.5">
                                         <span>Network Fees</span>
                                         <div className="gw-text-brand-gray-500">
                                             {quote ? (
@@ -702,7 +760,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                         </div>
                                     </div>
 
-                                    <div className="gw-flex gw-justify-between gw-items-center gw-mt-1">
+                                    <div className="gw-flex gw-justify-between gw-items-center gw-mt-0.5">
                                         <span>Total</span>
                                         <div className="gw-text-foreground gw-font-medium">
                                             {quote && currencyInUsd ? (

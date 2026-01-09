@@ -43,7 +43,7 @@ export function WalletNFTsTab() {
     const nftsURL = new URL("/nfts", glyphUrl).toString();
 
     return (
-        <div className="gw-pl-4 gw-pt-4 gw-flex gw-flex-col gw-h-full">
+        <div className="gw-pl-4 gw-pt-4 gw-flex gw-flex-col gw-h-full gw-min-h-0">
             {/* Fixed header */}
             <div className="gw-flex gw-mb-2 gw-flex-row gw-justify-between gw-items-center gw-w-full gw-flex-shrink-0 gw-pr-4">
                 <h6>My NFTs</h6>
