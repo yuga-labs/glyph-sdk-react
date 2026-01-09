@@ -43,6 +43,8 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
     const [intentRequestId, setIntentRequestId] = useState<string | null>(null);
     const [swapTxnId, setSwapTxnId] = useState<string | null>(null);
 
+    const [isTxApproved, setIsTxApproved] = useState<boolean>(false);
+
     // Swap hooks
     const { update, reportSwapFailed, fromCurrency, toCurrency, tradeType, amount, topupGas } = useGlyphSwap();
     const { mutateAsync: executeSwap, isPending: executePending } = useRelayExecute();
@@ -818,8 +820,10 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                                 // If everything goes well, set the transaction status to pending and show the wait view
                                                 setTxStatus("PENDING");
                                                 setView(SwapView.WAIT);
+                                                setIsTxApproved(false);
                                             }
                                         });
+                                        setIsTxApproved(true);
                                         const requestId = execResult?.requestId;
                                         const txnId = execResult?.txnId ?? null;
 
@@ -868,6 +872,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                     txDetails={{ ...txDetails, estimatedTime: quote?.details?.timeEstimate }}
                     sellAmount={Number(sellAmount)}
                     buyAmount={Number(buyAmount)}
+                    isTxApproved={isTxApproved}
                 />
             )}
 

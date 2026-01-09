@@ -19,13 +19,15 @@ interface WalletTradePendingViewProps {
     };
     sellAmount: number;
     buyAmount: number;
+    isTxApproved: boolean;
 }
 
 const WalletTradePendingView: React.FC<WalletTradePendingViewProps> = ({
     onBack,
     txDetails,
     sellAmount,
-    buyAmount
+    buyAmount,
+    isTxApproved
 }) => {
     const { fromCurrency, toCurrency } = useGlyphSwap();
 
@@ -38,6 +40,10 @@ const WalletTradePendingView: React.FC<WalletTradePendingViewProps> = ({
         [toCurrency?.chainId]
     );
 
+    const isGlyphDashboard = useMemo(() => {
+        return ["useglyph.io", "staging.useglyph.io"].includes(window.location.hostname);
+    }, []);
+
     return (
         <WalletViewTemplate
             header={
@@ -48,9 +54,10 @@ const WalletTradePendingView: React.FC<WalletTradePendingViewProps> = ({
                     }}
                 />
             }
+            footerClassName="!gw-pt-2"
             content={
                 <div className="gw-p-4 gw-h-full">
-                    <h6>Finalizing Transaction</h6>
+                    <h6>{!isGlyphDashboard && !isTxApproved ? "Waiting For Approval" : "Finalizing Transaction"}</h6>
                     <div className="gw-mt-4 gw-typography-caption gw-flex gw-justify-between gw-items-center">
                         <span>Estimated wait time:</span>
                         <span className="gw-text-brand-gray-500">
@@ -130,7 +137,7 @@ const WalletTradePendingView: React.FC<WalletTradePendingViewProps> = ({
             }
             footer={
                 <>
-                    <span className="gw-inline-flex gw-items-center gw-space-x-2 gw-typography-caption gw-text-brand-gray-500">
+                    <span className="gw-inline-flex gw-items-center gw-space-x-2 gw-typography-caption gw-text-brand-gray-500 gw-text-center">
                         {txDetails?.hash && txDetails?.blockExplorerUrl ? (
                             <LinkWithIcon
                                 key={txDetails?.hash}
@@ -138,7 +145,16 @@ const WalletTradePendingView: React.FC<WalletTradePendingViewProps> = ({
                                 url={txDetails?.blockExplorerUrl}
                             />
                         ) : (
-                            <span>*Please do not close this tab.*</span>
+                            <span>
+                                {!isGlyphDashboard && !isTxApproved ? (
+                                    <span className="gw-text-foreground">
+                                        *Approvals open in a new window for your safety. Please approve each and return
+                                        here.*
+                                    </span>
+                                ) : (
+                                    "*Please do not close this tab.*"
+                                )}
+                            </span>
                         )}
                     </span>
                     <Button variant="outline" className="gw-w-full gw-mt-4" onClick={onBack}>
