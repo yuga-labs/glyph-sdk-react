@@ -41,9 +41,9 @@ export const generateNonce = () => {
     // Convert to number, ensuring it's within safe range
     const number = Number(
         "0x" +
-            Array.from(array)
-                .map((b) => b.toString(16).padStart(2, "0"))
-                .join("")
+        Array.from(array)
+            .map((b) => b.toString(16).padStart(2, "0"))
+            .join("")
     );
     return number % Number.MAX_SAFE_INTEGER;
 };

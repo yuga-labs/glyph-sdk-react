@@ -46,9 +46,11 @@ function App() {
           primary: ["google", "twitter"],
         },
         embeddedWallets: {
-          createOnLogin: "users-without-wallets", // 'users-without-wallets' | 'all-users' | 'off'
           showWalletUIs: true,
           extendedCalldataDecoding: true,
+          ethereum:{
+            createOnLogin: "off" // 'users-without-wallets' | 'all-users' | 'off'
+          }
         },
         supportedChains: wagmiConfig.chains,
         defaultChain: wagmiConfig.chains[0],

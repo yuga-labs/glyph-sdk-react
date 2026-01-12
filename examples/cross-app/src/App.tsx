@@ -9,9 +9,11 @@ function App() {
             clientId={import.meta.env.VITE_DEMO_PRIVY_CLIENT_ID} // or process.env.VITE_DEMO_PRIVY_CLIENT_ID (if using next.js)
             config={{
                 embeddedWallets: {
-                    createOnLogin: "off", // 'users-without-wallets' | 'all-users' | 'off'
                     showWalletUIs: true,
-                    extendedCalldataDecoding: true
+                    extendedCalldataDecoding: true,
+                    ethereum:{
+                        createOnLogin: "off" // 'users-without-wallets' | 'all-users' | 'off'
+                    }
                 }
             }}
         >
