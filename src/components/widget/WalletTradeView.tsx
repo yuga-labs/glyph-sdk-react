@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { debounce } from "throttle-debounce";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
 import { useChainId } from "wagmi";
-import { GlyphSwapContextData, useGlyphSwap } from "../../context/GlyphSwapContext";
+import { GlyphSwapContextData, RelayAPIToken, useGlyphSwap } from "../../context/GlyphSwapContext";
 import { useGlyph } from "../../hooks/useGlyph";
 import { buildErrorPayloadWithCode, PRECHECK_FAILURE_CODE, useRelayExecute } from "../../hooks/useRelayExecute";
 import { useRelayIntentStatus } from "../../hooks/useRelayIntentStatus";
@@ -21,6 +21,7 @@ import { WalletViewTemplate } from "../shared/WalletViewTemplate";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import TooltipElement from "../ui/tooltip-element";
+import AddGasToSourceChainButton from "./internal/AddGasToSourceChainButton";
 import SwapChainAndTokenSelector from "./internal/SwapChainAndTokenSelector";
 import { WalletSwapTopUpGas } from "./internal/WalletSwapTopUpGas";
 import WalletTradeFailedView from "./internal/WalletTradeFailedView";
@@ -222,7 +223,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
     const insufficientBalanceError =
         fromCurrency?.decimals && sellAmount && sellTokenBalance !== undefined
             ? BigInt(sellTokenBalance) < BigInt(sellAmountInWeiToUse)
-                ? SWAP_ERROR_MESSAGES.INSUFFICENT_BALANCE
+                ? SWAP_ERROR_MESSAGES.INSUFFICIENT_BALANCE
                 : null
             : null;
 
@@ -241,7 +242,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
         !hasSourceGas &&
         !transferMaxLoading &&
         buyAmount !== ""
-            ? SWAP_ERROR_MESSAGES.INSUFFICENT_GAS
+            ? SWAP_ERROR_MESSAGES.INSUFFICIENT_GAS
             : null;
 
     const blockingError =
@@ -268,20 +269,45 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
         ? Number(quote?.details?.currencyOut?.amountUsd)
         : undefined;
 
-    const isFromTokenNative = useMemo(
-        () =>
-            fromCurrency?.address && fromCurrency?.chainId
-                ? fromCurrency.address ===
-                  (chainIdToRelayChain(fromCurrency.chainId!)!.currency?.address ?? zeroAddress)
-                : undefined,
-        [fromCurrency?.address, fromCurrency?.chainId]
-    ); // if from token is native token
+    const [isFromTokenNative, sourceChainNativeSymbol, sourceChainName] = useMemo(() => {
+        if (!fromCurrency?.address || !fromCurrency?.chainId) return [false, undefined, undefined];
+        const sourceChain = chainIdToRelayChain(fromCurrency.chainId!);
+        const nativeAddress = sourceChain?.currency?.address ?? zeroAddress;
+        return [
+            fromCurrency.address.toLowerCase() === nativeAddress.toLowerCase(),
+            // nativeAddress,
+            sourceChain?.currency?.symbol ?? undefined,
+            sourceChain?.displayName ?? undefined
+        ];
+    }, [fromCurrency?.address, fromCurrency?.chainId]); // if from token is native token, source chain native symbol and source chain name
 
     const [isToTokenNative, destinationChainNativeAddress] = useMemo(() => {
         if (!toCurrency?.address || !toCurrency?.chainId) return [false, undefined];
         const nativeAddress = chainIdToRelayChain(toCurrency.chainId!)!.currency?.address ?? zeroAddress;
-        return [toCurrency.address === nativeAddress, nativeAddress];
+        return [toCurrency.address.toLowerCase() === nativeAddress.toLowerCase(), nativeAddress];
     }, [toCurrency?.address, toCurrency?.chainId]); // if to token is native token and destination chain native address
+
+    const addGasToSourceChain = useCallback(
+        (fromCurrency: RelayAPIToken | undefined) => {
+            if (!quoteGas) return;
+
+            // Set the output currency to the gas currency needed and amount to 2x the gas amount needed
+            const gasFromLastQuote = BigInt(quoteGas?.amount || "0");
+            const gasToAdd = gasFromLastQuote * 2n;
+            setSellAmount(""); // Reset sell amount to 0
+            setBuyAmount(formatUnits(gasToAdd, quoteGas?.currency?.decimals || 18));
+            if (!fromCurrency) {
+                toast.info("Please select the source token to proceed!");
+            }
+            update({
+                fromCurrency: fromCurrency,
+                toCurrency: quoteGas?.currency,
+                amount: gasToAdd.toString(),
+                tradeType: "EXACT_OUTPUT"
+            });
+        },
+        [quoteGas]
+    );
 
     return (
         <>
@@ -446,7 +472,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                                                     // If the max sell amount is 0, throw an error as we don't have enough balance to cover the gas fee
                                                                     if (valueToSet === "0") {
                                                                         throw new Error(
-                                                                            SWAP_ERROR_MESSAGES.INSUFFICENT_GAS
+                                                                            SWAP_ERROR_MESSAGES.FAILED_TO_MAX_LOW_GAS
                                                                         );
                                                                     }
 
@@ -787,7 +813,34 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                             <span
                                 className={`gw-inline-flex gw-items-center gw-text-center gw-space-x-2 gw-mb-2 gw-typography-caption first-letter:gw-uppercase ${blockingError ? "gw-text-destructive" : "gw-text-brand-gray-500"}`}
                             >
-                                {blockingError ? reformatSwapError(blockingError) : null}
+                                {(() => {
+                                    if (blockingError) {
+                                        const error = reformatSwapError(blockingError);
+                                        if (error === SWAP_ERROR_MESSAGES.INSUFFICIENT_GAS) {
+                                            return (
+                                                <div className="gw-flex gw-items-center gw-gap-1">
+                                                    <span>{SWAP_ERROR_MESSAGES.INSUFFICIENT_GAS}</span>
+                                                    <TooltipElement
+                                                        description={`You need to add some ${sourceChainNativeSymbol ?? "gas"} on the ${sourceChainName ?? "source"} chain to proceed with this transaction.`}
+                                                        stopPropagation
+                                                        side="bottom"
+                                                        align="center"
+                                                        triggerClassName="gw-text-destructive gw-size-4"
+                                                    />
+                                                    {quoteGas ? (
+                                                        <AddGasToSourceChainButton
+                                                            sourceChainNativeSymbol={sourceChainNativeSymbol}
+                                                            sourceChainName={sourceChainName}
+                                                            addGasToSourceChain={addGasToSourceChain}
+                                                        />
+                                                    ) : null}
+                                                </div>
+                                            );
+                                        }
+                                        return error;
+                                    }
+                                    return null;
+                                })()}
                             </span>
                             <Button
                                 variant={"tertiary"}
@@ -813,7 +866,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                                 if (!sourceGasBalanceLoading && !hasEnoughGas) {
                                                     throw buildErrorPayloadWithCode(
                                                         PRECHECK_FAILURE_CODE,
-                                                        SWAP_ERROR_MESSAGES.INSUFFICENT_GAS
+                                                        SWAP_ERROR_MESSAGES.INSUFFICIENT_GAS
                                                     );
                                                 }
 

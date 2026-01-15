@@ -7,7 +7,7 @@ export type GlyphSwapContextData = {
     fromCurrency: RelayAPIToken | undefined;
     toCurrency: RelayAPIToken | undefined;
     tradeType: "EXACT_INPUT" | "EXACT_OUTPUT";
-    amount: string;
+    amount: string; // amount in wei
     topupGas: boolean;
     topupGasAmount: string;
 };

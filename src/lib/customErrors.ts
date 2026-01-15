@@ -1,6 +1,8 @@
 export const SWAP_ERROR_MESSAGES = {
-    INSUFFICENT_BALANCE: "Insufficient balance",
-    INSUFFICENT_GAS: "Insufficient gas to execute transaction",
+    INSUFFICIENT_BALANCE: "Insufficient balance",
+    INSUFFICIENT_GAS: "Insufficient gas to execute tx",
+    FAILED_TO_MAX_LOW_GAS:
+        "Unable to set max amount. Balance too low for gas fees. Try entering a smaller amount manually.",
     NO_ROUTES_FOUND:
         "No swap routes available for this pair or amount. Try a different token or amount, or try again later.",
     STATUS_CHECK_FAILED: "Couldn't fetch swap status, check blockchain directly or contact support",
@@ -16,10 +18,11 @@ export const reformatSwapError = (error: string) => {
     try {
         // raw error sent by relay or blockchain
         if (
+            error === SWAP_ERROR_MESSAGES.INSUFFICIENT_GAS ||
             error?.toLowerCase()?.includes("estimategas") ||
             (error?.toLowerCase()?.includes?.("gas") && error?.toLowerCase()?.includes?.("exceeds"))
         ) {
-            return SWAP_ERROR_MESSAGES.INSUFFICENT_GAS;
+            return SWAP_ERROR_MESSAGES.INSUFFICIENT_GAS;
         }
 
         // Sent by relay

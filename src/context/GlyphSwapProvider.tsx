@@ -9,7 +9,7 @@ export function GlyphSwapProvider({ children }: { children: React.ReactNode }) {
         fromCurrency: undefined,
         toCurrency: undefined,
         tradeType: "EXACT_INPUT",
-        amount: "",
+        amount: "", // amount in wei
         topupGas: false,
         topupGasAmount: "2000000" // $2
     });
