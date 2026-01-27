@@ -104,6 +104,7 @@ export type GlyphWidgetBalances = {
 };
 
 export type GlyphWidgetButtonProps = {
+    hide?: boolean;
     showAvatar?: boolean;
     showBalance?: boolean;
     showUsername?: boolean;
@@ -111,6 +112,8 @@ export type GlyphWidgetButtonProps = {
 
 export type GlyphWidgetProps = {
     buttonProps?: GlyphWidgetButtonProps;
+    minWidth?: number; // Minimum width in pixels for desktop breakpoint (default: 768)
+    alwaysOpen?: boolean; // If true, permanently shows Wallet and hides GlyphWidgetButton (default: false)
 };
 
 export type GlyphWidgetUser = {

@@ -3,6 +3,8 @@ import { LoginButton } from "./components/LoginButton";
 import { LogoutButton } from "./components/LogoutButton";
 import { SignUpButton } from "./components/SignUpButton";
 import { GlyphProvider } from "./context/GlyphProvider";
+import { Wallet } from "./components/widget/Wallet";
+import ChainSelector from "./components/shared/ChainSelector";
 
 export { useGlyphConfigureDynamicChains } from "./hooks/useGlyphConfigureDynamicChains";
 export { configureRelayChains } from "./lib/relay";
@@ -28,7 +30,8 @@ export { useGlyphView } from "./hooks/useGlyphView";
 
 export { glyphConnectorDetails } from "./lib/constants";
 export { GlyphViewType as GlyphView, StrategyType, WalletClientType } from "./types";
-export { GlyphProvider, GlyphWidget, LoginButton, LogoutButton, SignUpButton };
+export type { GlyphWidgetUser } from "./types";
+export { GlyphProvider, GlyphWidget, LoginButton, LogoutButton, SignUpButton, Wallet, ChainSelector };
 
 // EIP1193 Exports
 export { NativeGlyphConnectButton } from "./components/NativeGlyphConnectButton";
