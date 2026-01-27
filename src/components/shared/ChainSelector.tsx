@@ -1,5 +1,5 @@
 import { ChevronDown, Globe } from "lucide-react";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Chain } from "viem";
 import { useChainId, useChains, useSwitchChain } from "wagmi";
 import { useGlyph } from "../../hooks/useGlyph";
@@ -11,7 +11,7 @@ const AllNetworkIcon = ({ className }: { className?: string }) => (
     <Globe className={cn("gw-size-6 gw-text-brand-gray-700", className)} />
 );
 
-const ChainSelector = memo(() => {
+export default function ChainSelector() {
     const { setFetchForAllNetworks, fetchForAllNetworks } = useGlyph();
     const { iconMap: chainIcons } = getRelayChainsAndIcons();
 
@@ -22,11 +22,9 @@ const ChainSelector = memo(() => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    const ChainIcon = useMemo(() => {
-        if (!fetchForAllNetworks)
-            return <img src={chainIcons.get(chainId)} className="gw-size-6 gw-rounded-full gw-object-cover" />;
-        return <AllNetworkIcon />;
-    }, [chainIcons, chainId, fetchForAllNetworks]);
+    const ChainIcon = fetchForAllNetworks ?
+        <AllNetworkIcon /> :
+        <img src={chainIcons.get(chainId)} className="gw-size-6 gw-rounded-full gw-object-cover" />;
 
     useEffect(() => {
         setSortedChains(chains.slice().sort((a, b) => (a.id === chainId ? -1 : 1) - (b.id === chainId ? -1 : 1)));
@@ -119,8 +117,4 @@ const ChainSelector = memo(() => {
             )}
         </div>
     );
-});
-
-ChainSelector.displayName = "ChainSelector";
-
-export default ChainSelector;
+};
