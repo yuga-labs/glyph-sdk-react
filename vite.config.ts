@@ -64,17 +64,29 @@ export default ({ mode }: { mode: string }) => {
                     "react/jsx-dev-runtime"
                 ],
                 output: {
-                    globals: {
-                        react: "React",
-                        "react-dom": "ReactDOM",
-                        "react/jsx-runtime": "React",
-                        "react/jsx-dev-runtime": "React",
-                        wagmi: "Wagmi",
-                        "@privy-io/react-auth": "PrivyAuth",
-                        viem: "Viem",
-                        "@privy-io/cross-app-connect": "PrivyCrossAppConnector",
-                        "@privy-io/wagmi": "PrivyWagmi",
-                        "@tanstack/react-query": "TanstackReactQuery"
+                    globals: (id) => {
+                        // Only peer deps that are actually imported; subpaths mapped via fallback below
+                        const baseGlobals: Record<string, string> = {
+                            react: "React",
+                            "react-dom": "ReactDOM",
+                            "react/jsx-runtime": "React",
+                            "react/jsx-dev-runtime": "React",
+                            wagmi: "Wagmi",
+                            viem: "Viem",
+                            "@privy-io/react-auth": "PrivyAuth",
+                            "@privy-io/wagmi": "PrivyWagmi",
+                            "@privy-io/cross-app-connect": "PrivyCrossAppConnector",
+                            "@rainbow-me/rainbowkit": "RainbowKit",
+                            "@tanstack/react-query": "TanstackReactQuery"
+                        };
+                        if (baseGlobals[id]) return baseGlobals[id];
+                        // Map subpaths (e.g. viem/chains) to parent package's global
+                        const sorted = Object.entries(baseGlobals).sort(([a], [b]) => b.length - a.length);
+                        for (const [pkg, globalName] of sorted) {
+                            if (id.startsWith(pkg + "/")) return globalName;
+                        }
+                        // Fallback: valid identifier for unknown externals
+                        return id.replace(/[^a-zA-Z0-9_]/g, "_");
                     },
                     assetFileNames: "assets/[name].[ext]",
                     chunkFileNames: "[name].js",
