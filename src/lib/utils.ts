@@ -1,8 +1,15 @@
 import { clsx, type ClassValue } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
-import { EIP1193Provider, parseUnits } from "viem";
+import { Chain, EIP1193Provider, formatUnits, parseUnits, zeroAddress } from "viem";
 import { injected } from "wagmi";
-import { GLYPH_PRIVY_APP_ID, glyphConnectorDetails, STAGING_GLYPH_PRIVY_APP_ID } from "./constants";
+import { RelayAPIToken } from "../context/GlyphSwapContext";
+import {
+    GLYPH_PRIVY_APP_ID,
+    glyphConnectorDetails,
+    MAX_DECIMALS_FOR_CRYPTO,
+    STAGING_GLYPH_PRIVY_APP_ID
+} from "./constants";
+import { relayClient } from "./relay";
 
 const addressRegex = /^0x[a-fA-F0-9]{40}$/;
 
@@ -34,9 +41,9 @@ export const generateNonce = () => {
     // Convert to number, ensuring it's within safe range
     const number = Number(
         "0x" +
-            Array.from(array)
-                .map((b) => b.toString(16).padStart(2, "0"))
-                .join("")
+        Array.from(array)
+            .map((b) => b.toString(16).padStart(2, "0"))
+            .join("")
     );
     return number % Number.MAX_SAFE_INTEGER;
 };
@@ -72,7 +79,7 @@ export const createLogger = (namespace: string) => {
     };
 };
 
-export function tokenToBigIntWei(balance: number, decimals: number) {
+export function tokenToBigIntWei(balance: number | string, decimals: number) {
     return BigInt(parseUnits(balance.toString(), decimals));
 }
 
@@ -80,11 +87,20 @@ export const displayNumberPrecision = (value: number | null | undefined, precisi
     return Number(
         value
             ?.toLocaleString?.("en-US", {
-                minimumFractionDigits: 0,
+                minimumFractionDigits: 2,
                 maximumFractionDigits: precision
             })
             ?.replace(/,/g, "") || "0"
     );
+};
+
+export const formatTokenCount = (valueInWei: bigint | number | string, decimals: number, displayDecimals?: number) => {
+    const resolvedDisplayDecimals = displayDecimals ?? MAX_DECIMALS_FOR_CRYPTO;
+    const resolvedValue = displayNumberPrecision(
+        parseFloat(formatUnits(BigInt(valueInWei), decimals)),
+        Math.min(resolvedDisplayDecimals, MAX_DECIMALS_FOR_CRYPTO)
+    );
+    return resolvedValue === 0 && BigInt(valueInWei) > 0n ? `< ${10 ** -resolvedDisplayDecimals}` : resolvedValue;
 };
 
 export const wagmiCrossAppConnector = (provider: EIP1193Provider, useStagingTenant?: boolean) =>
@@ -96,3 +112,89 @@ export const wagmiCrossAppConnector = (provider: EIP1193Provider, useStagingTena
             icon: glyphConnectorDetails.iconUrl
         }
     });
+
+export function assertHasValue<T>(item: T, message?: string): asserts item is NonNullable<T> {
+    if (item === undefined || item === null) {
+        throw new Error(message || `Expected item to have a value, got: ${item}`);
+    }
+}
+
+export function assertAndReturn<T>(item: T, message?: string): NonNullable<T> {
+    assertHasValue(item, message);
+    return item;
+}
+
+export const getRPCErrorString = (error: any) => {
+    return typeof error === "string" ? error : typeof error === "object" ? (error as any)?.message : undefined;
+};
+
+export function getBlockExplorerURL(chainId: number, chains?: readonly Chain[]) {
+    const chain = chains?.find((chain) => chain.id === chainId);
+    if (!chain) {
+        throw new Error("Not a supported chain");
+    }
+    return chain.blockExplorers!.default.url || null;
+}
+
+export function getBlockExplorerName(chainId: number, chains?: readonly Chain[]) {
+    const chain = chains?.find((chain) => chain.id === chainId);
+    if (!chain) {
+        throw new Error("Not a supported chain");
+    }
+    return chain.blockExplorers!.default.name;
+}
+
+export function getRelayChainsAndIcons() {
+    const chains = relayClient?.chains;
+
+    // Create a map of chainId -> iconUrl and cache it
+    const iconMap = new Map<number, string>();
+    chains.forEach((chain) => {
+        if (chain.id && chain.iconUrl) iconMap.set(chain.id, chain.iconUrl);
+    });
+
+    return { chains, iconMap };
+}
+
+export const chainIdToRelayChain = (chainId: number) => {
+    return relayClient?.chains?.find((chain) => chain.id === chainId) || null;
+};
+
+export const isNativeAndWrappedPair = (
+    fromCurrency: RelayAPIToken | undefined,
+    toCurrency: RelayAPIToken | undefined
+) => {
+    const fromChainNativeAddress = fromCurrency?.chainId
+        ? (chainIdToRelayChain(fromCurrency?.chainId)?.currency?.address ?? zeroAddress)
+        : zeroAddress;
+    const toChainNativeAddress = toCurrency?.chainId
+        ? (chainIdToRelayChain(toCurrency?.chainId)?.currency?.address ?? zeroAddress)
+        : zeroAddress;
+
+    // If any of them is undefined return false
+    if (!fromCurrency || !toCurrency) return false;
+
+    // Have to be on same network
+    if (fromCurrency?.chainId !== toCurrency?.chainId) return false;
+
+    // One of them has to be the native token
+    if (
+        !(fromCurrency?.address?.toLowerCase?.() === fromChainNativeAddress?.toLowerCase()) &&
+        !(toCurrency?.address?.toLowerCase?.() === toChainNativeAddress?.toLowerCase())
+    )
+        return false;
+
+    const chains = relayClient?.chains || [];
+    // We inject wrappedTokenAddress from the Glyph Backend while fetching `supported_chains`
+    const wrappedTokenAddress = (chains.find((chain) => chain.id === fromCurrency.chainId) as any)?.wrappedTokenAddress;
+
+    // One of them has to be the wrapped token
+    if (
+        ![fromCurrency?.address?.toLowerCase?.(), toCurrency?.address?.toLowerCase?.()].includes(
+            wrappedTokenAddress?.toLowerCase?.()
+        )
+    )
+        return false;
+
+    return true;
+};

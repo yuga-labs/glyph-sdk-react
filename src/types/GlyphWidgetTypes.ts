@@ -1,6 +1,7 @@
 import { Hex } from "viem";
 import { WalletView } from "../lib/constants";
 import { WalletMainViewTab } from "../lib/constants";
+import { PropsWithChildren } from "react";
 
 export enum StrategyType {
     PRIVY = "privy",
@@ -23,12 +24,11 @@ export const GlyphViewType = {
 } as const;
 export type GlyphViewType = (typeof GlyphViewType)[keyof typeof GlyphViewType];
 
-export interface BaseGlyphProviderOptions {
+export interface BaseGlyphProviderOptions extends PropsWithChildren {
     glyphUrl?: string;
     useStagingTenant?: boolean;
     onLogin?: () => void;
     onLogout?: () => void;
-    children: React.ReactNode;
 }
 
 export interface EIP1193GlyphProviderOptionsWithSignature extends BaseGlyphProviderOptions {
@@ -48,9 +48,11 @@ export interface BaseGlyphProviderOptionsWithSignature extends BaseGlyphProvider
 }
 
 export type GlyphWidgetTokenBalancesItem = {
+    chainId: number;
     name: string;
     symbol: string;
     value: string;
+    logo: string | null;
     valueInWei: string;
     amount: string;
     currency: string;
@@ -93,9 +95,16 @@ export type GlyphWidgetNFTBalancesItem = {
 export type GlyphWidgetBalances = {
     tokens: GlyphWidgetTokenBalancesItem[];
     nfts: GlyphWidgetNFTBalancesItem[];
+    wallet_value: {
+        currency: string;
+        nfts: number;
+        tokens: number;
+        total: number;
+    };
 };
 
 export type GlyphWidgetButtonProps = {
+    hide?: boolean;
     showAvatar?: boolean;
     showBalance?: boolean;
     showUsername?: boolean;
@@ -103,6 +112,8 @@ export type GlyphWidgetButtonProps = {
 
 export type GlyphWidgetProps = {
     buttonProps?: GlyphWidgetButtonProps;
+    minWidth?: number; // Minimum width in pixels for desktop breakpoint (default: 768)
+    alwaysOpen?: boolean; // If true, permanently shows Wallet and hides GlyphWidgetButton (default: false)
 };
 
 export type GlyphWidgetUser = {
@@ -117,7 +128,9 @@ export type GlyphWidgetUser = {
         address: string;
         walletClientType?: string;
     }[];
+    isVerified: boolean;
     currency: string;
+    usd2CurrencyRate: number;
     minFundingAmount: number;
     maxFundingAmount: number;
     country: string;

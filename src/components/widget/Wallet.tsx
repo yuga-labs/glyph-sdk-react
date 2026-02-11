@@ -6,6 +6,7 @@ import { WalletMainView } from "./WalletMainView";
 import { WalletProfileView } from "./WalletProfileView";
 import { WalletReceiveView } from "./WalletReceiveView";
 import { WalletSendFundView } from "./WalletSendFundView";
+import { WalletTradeView } from "./WalletTradeView";
 
 export const Wallet = memo(
     ({
@@ -17,6 +18,7 @@ export const Wallet = memo(
         if (!viewCtx) throw new Error("GlyphWidgetWallet must be used within a GlyphViewProvider");
 
         const { walletMainViewTab, setWalletMainViewTab, walletView, setWalletView } = viewCtx;
+
         const [expandFirstActivityRow, setExpandFirstActivityRow] = useState<boolean>(false);
 
         // reset `expandFirstActivityRow` only when Activity tab is closed
@@ -33,10 +35,7 @@ export const Wallet = memo(
                         setGradientType={setGradientType}
                         activeMainViewScreen={walletMainViewTab}
                         setActiveMainViewScreen={setWalletMainViewTab}
-                        onProfileClick={() => setWalletView(WalletView.PROFILE)}
-                        onAddFunds={() => setWalletView(WalletView.FUND)}
-                        onSendFunds={() => setWalletView(WalletView.SEND)}
-                        onReceive={() => setWalletView(WalletView.RECEIVE)}
+                        setWalletView={setWalletView}
                         expandFirstActivityRow={expandFirstActivityRow}
                     />
                 )}
@@ -72,6 +71,19 @@ export const Wallet = memo(
 
                 {walletView === WalletView.PROFILE && (
                     <WalletProfileView onBack={() => setWalletView(WalletView.MAIN)} />
+                )}
+
+                {walletView === WalletView.SWAP && (
+                    <WalletTradeView
+                        onBack={() => setWalletView(WalletView.MAIN)}
+                        onEnd={() => setWalletView(WalletView.MAIN)}
+                        onShowActivity={() => {
+                            setWalletView(WalletView.MAIN);
+                            setWalletMainViewTab(WalletMainViewTab.ACTIVITY);
+                            setExpandFirstActivityRow(true);
+                        }}
+                        setGradientType={setGradientType}
+                    />
                 )}
             </>
         );

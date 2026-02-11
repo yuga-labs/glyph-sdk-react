@@ -1,27 +1,45 @@
-import { Loader2, ChevronDown } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { Loader2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { debounce } from "throttle-debounce";
 import truncateEthAddress from "truncate-eth-address";
-import { erc20Abi, formatUnits, Hex, parseEther, zeroAddress, createPublicClient, http, encodeFunctionData } from "viem";
-import { useChainId, useAccount } from "wagmi";
+import {
+    createPublicClient,
+    encodeFunctionData,
+    erc20Abi,
+    formatUnits,
+    Hex,
+    http,
+    parseEther,
+    zeroAddress
+} from "viem";
+import { useChainId, useChains } from "wagmi";
 import { CaretDownIcon } from "../../assets/svg/CaretDownIcon";
 import NoTokenIcon from "../../assets/svg/NoTokenIcon";
 import { useGlyph } from "../../hooks/useGlyph";
 import { useGlyphApi } from "../../hooks/useGlyphApi";
-import { INTERNAL_GRADIENT_TYPE, SendView, IS_TESTNET_CHAIN, TESTNET_CSS_CLASS, TOKEN_LOGOS } from "../../lib/constants";
+import { INTERNAL_GRADIENT_TYPE, MAX_DECIMALS_FOR_CRYPTO, SendView } from "../../lib/constants";
 import { formatCurrency } from "../../lib/intl";
 import { formatInputNumber } from "../../lib/numericInputs";
-import { cn, createLogger, displayNumberPrecision, ethereumAvatar, tokenToBigIntWei } from "../../lib/utils";
+import {
+    cn,
+    createLogger,
+    displayNumberPrecision,
+    ethereumAvatar,
+    formatTokenCount,
+    tokenToBigIntWei
+} from "../../lib/utils";
+import { GlyphWidgetTokenBalancesItem } from "../../types";
 import UserAvatar from "../shared/UserAvatar";
 import WalletViewHeader from "../shared/WalletViewHeader";
 import { WalletViewTemplate } from "../shared/WalletViewTemplate";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
-import WalletSendFundEnterAddressView from "./WalletSendFundEnterAddressView";
-import WalletSendFundFailedView from "./WalletSendFundFailedView";
-import WalletSendFundPendingView from "./WalletSendFundPendingView";
-import WalletSendFundSuccessView from "./WalletSendFundSuccessView";
+import SendFundChainAndTokenSelector from "./internal/SendFundChainAndTokenSelector";
+import WalletSendFundEnterAddressView from "./internal/WalletSendFundEnterAddressView";
+import WalletSendFundFailedView from "./internal/WalletSendFundFailedView";
+import WalletSendFundPendingView from "./internal/WalletSendFundPendingView";
+import WalletSendFundSuccessView from "./internal/WalletSendFundSuccessView";
 
 export type WalletSendFundProps = {
     onBack: () => void;
@@ -34,43 +52,48 @@ export type SendFundQuote = {
     tokenAddress: Hex;
     receivable_amount: bigint;
     receivable_amount_in_token: number;
-    receivable_amount_in_currency: number;
+    receivable_amount_in_currency: string;
     estimated_fees_amount: string;
-    estimated_fees_amount_in_currency: number | undefined;
+    estimated_fees_amount_in_currency: string | undefined;
     currency: string;
     in_amount: string;
     receiver_address: Hex;
-    maxPriorityFeePerGas: bigint;
-    maxFeePerGas: bigint;
+    maxPriorityFeePerGas?: bigint;
+    maxFeePerGas?: bigint;
+    gasPrice?: bigint;
     gasLimit: bigint;
 };
 
-const DEFAULT_TOKEN_MAX_DECIMALS = 6; // useful for ETH
 const SEND_STATUS_REFRESH_INTERNAL_MS = 10 * 1000; // 10 seconds
 const MAX_BALANCE_ERROR = "Not enough balance";
+const NO_TOKENS_ERROR = "Balance not enough to transfer";
 
 export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientType }: WalletSendFundProps) {
     const { user, sendTransaction, refreshBalances, hasBalances, balances } = useGlyph();
     const { glyphApiFetch } = useGlyphApi();
     const chainId = useChainId();
-    const { chain } = useAccount();
+    const chains = useChains();
+
+    const chain = useMemo(() => chains.find((c) => c.id === chainId), [chainId, chains]);
 
     const [recipientAddress, setRecipientAddress] = useState<string>("");
     const [recipientAddressError, setRecipientAddressError] = useState<string | null>(null);
 
-    const publicClient = useMemo(() => createPublicClient({ chain: chain, transport: http() }), [chain]);
-
     const [view, setView] = useState<SendView>(SendView.ENTER_ADDRESS);
 
-    const [tokenAddress, setTokenAddress] = useState<Hex>(zeroAddress);
     const nativeToken = useMemo(
-        () => balances?.tokens?.find((token) => token.address === zeroAddress),
-        [balances?.tokens]
+        () => balances?.tokens?.find((token) => token.native && token.chainId === chainId),
+        [balances?.tokens, chainId]
     );
-    const token = useMemo(
-        () => balances?.tokens?.find((token) => token.address === tokenAddress),
-        [tokenAddress, balances?.tokens]
-    );
+    const [token, setToken] = useState<GlyphWidgetTokenBalancesItem | undefined>();
+
+    const publicClient = useMemo(() => createPublicClient({ chain: chain, transport: http() }), [chain]);
+
+    useEffect(() => {
+        if (!token) {
+            setToken(nativeToken);
+        }
+    }, [nativeToken]);
 
     const [sendAmount, setSendAmount] = useState<string>("");
     const [debouncedSendAmount, setDebouncedSendAmount] = useState<number>(Number(sendAmount));
@@ -86,60 +109,63 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
     const [maxValueError, setMaxValueError] = useState<boolean>(false);
     const [txHash, setTxHash] = useState<string>();
 
-    // Token dropdown state
-    const [isTokenDropdownOpen, setIsTokenDropdownOpen] = useState<boolean>(false);
-    const tokenDropdownRef = useRef<HTMLDivElement>(null);
-
-    // Close token dropdown when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (tokenDropdownRef.current && !tokenDropdownRef.current.contains(event.target as Node)) {
-                setIsTokenDropdownOpen(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
     const [txBlockExplorerUrl, setTxBlockExplorerUrl] = useState<string>();
     const [txBlockExplorerName, setTxBlockExplorerName] = useState<string>();
     const [txStatus, setTxStatus] = useState<"SUCCESS" | "FAILED" | "PENDING">("PENDING");
 
     const logger = createLogger("SendFundView");
 
-    const isTestnet = IS_TESTNET_CHAIN.get(chainId) || false;
-
     useEffect(() => {
-        if (!Number(token?.value || "0")) {
+        // Only set if no balance and no other error is set
+        if (!Number(token?.value || "0") && !error) {
             setQuoteLoading(false);
-            return setError("No tokens to send");
+            setError(NO_TOKENS_ERROR);
+        } else if (token?.value && Number(token?.value) > 0 && error === NO_TOKENS_ERROR) {
+            // Only unset the error if balance is there and error is set to NO_TOKENS_ERROR
+            setQuoteLoading(false);
+            setError(null);
         }
-    }, [token, setError, setQuoteLoading]);
+    }, [token?.value, error, setError, setQuoteLoading]);
 
     useEffect(() => {
         const fetchQuote = async () => {
             // If on any other screen or signature is pending, don't fetch quote
-            if (view !== SendView.ENTER_AMOUNT || isSignaturePending || maxValueError) return;
+            if (view !== SendView.ENTER_AMOUNT || isSignaturePending || maxValueError || !publicClient) return;
 
             if (
                 token &&
                 debouncedSendAmount &&
                 recipientAddress &&
-                tokenAddress &&
+                token?.address &&
                 (transferMax || debouncedSendAmount <= Number(token?.value || 0))
             ) {
                 setQuote(null);
                 setQuoteLoading(true);
                 setError(null);
-                const { maxFeePerGas } = await publicClient.estimateFeesPerGas();
+                let maxFeePerGas: bigint | undefined;
+                let maxPriorityFeePerGas: bigint | undefined;
+                let gasPrice: bigint | undefined;
+
+                try {
+                    const fees = await publicClient.estimateFeesPerGas();
+                    maxFeePerGas = fees.maxFeePerGas;
+                    maxPriorityFeePerGas = fees.maxPriorityFeePerGas ?? fees.maxFeePerGas / 2n;
+                } catch {
+                    gasPrice = await publicClient.getGasPrice();
+                }
 
                 let gasUnits;
+
+                console.debug("Send  - reached checkpoint 1");
                 try {
                     const valueToSend =
                         (transferMax || debouncedSendAmount === Number(token.value || 0)) && token.valueInWei
                             ? BigInt(token.valueInWei || 0)
-                            : parseEther(`${debouncedSendAmount}`);
-                    if (tokenAddress === zeroAddress) {
+                            : token?.address === zeroAddress
+                              ? parseEther(`${debouncedSendAmount}`)
+                              : tokenToBigIntWei(debouncedSendAmount, token.decimals || 18);
+
+                    if (token?.address === zeroAddress) {
                         gasUnits = await publicClient.estimateGas({
                             account: user?.evmWallet as Hex,
                             to: recipientAddress as Hex,
@@ -151,23 +177,29 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                             functionName: "transfer",
                             args: [recipientAddress as Hex, valueToSend],
                             account: user?.evmWallet as Hex,
-                            address: tokenAddress as Hex,
-                            maxFeePerGas,
-                            maxPriorityFeePerGas: maxFeePerGas / 2n
+                            address: token?.address as Hex
                         });
                     }
                 } catch (error: any) {
+                    console.debug(error);
                     setError(error?.shortMessage || "Failed to estimate gas");
                     setQuoteLoading(false);
                     return;
                 }
+                console.debug("Send - reached checkpoint 2");
 
-                const gasCost = maxFeePerGas * gasUnits;
+                const feePerGas = maxFeePerGas ?? gasPrice;
+                if (!feePerGas) {
+                    setError("Failed to estimate fees");
+                    setQuoteLoading(false);
+                    return;
+                }
+                const gasCost = feePerGas * gasUnits;
 
                 let valueToReturn: bigint;
                 // If user is sending native token and has selected max amount, we need to subtract the gas cost from the total balance
                 if (
-                    tokenAddress === zeroAddress &&
+                    token?.address === zeroAddress &&
                     (transferMax || debouncedSendAmount === Number(token.value || 0))
                 ) {
                     valueToReturn = BigInt(token.valueInWei || 0) - gasCost;
@@ -178,10 +210,12 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                         setQuoteLoading(false);
                         return;
                     }
-                    valueToReturn = transferMax ? BigInt(token.valueInWei || 0) : tokenToBigIntWei(debouncedSendAmount, token.decimals || 18);
+                    valueToReturn =
+                        transferMax || debouncedSendAmount === Number(token.value || 0)
+                            ? BigInt(token.valueInWei || 0)
+                            : tokenToBigIntWei(debouncedSendAmount, token.decimals || 18);
                 }
-
-                const maxPriorityFeePerGas = maxFeePerGas / 2n;
+                console.debug("Send - reached checkpoint 3");
 
                 const receivableAmountInToken = displayNumberPrecision(
                     +formatUnits(valueToReturn, token.decimals || 18),
@@ -189,18 +223,23 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                 );
 
                 setQuote({
-                    tokenAddress,
+                    tokenAddress: token?.address,
                     receiver_address: recipientAddress as Hex,
                     maxPriorityFeePerGas,
                     maxFeePerGas,
+                    gasPrice,
                     receivable_amount: valueToReturn,
                     receivable_amount_in_token: receivableAmountInToken,
-                    receivable_amount_in_currency: displayNumberPrecision(
-                        receivableAmountInToken * +(token.rateInCurrency || 0)
+                    receivable_amount_in_currency: formatCurrency(
+                        receivableAmountInToken * +(token.rateInCurrency || 0),
+                        user?.currency || "USD",
+                        valueToReturn !== 0n
                     ),
                     estimated_fees_amount: formatUnits(gasCost, nativeToken?.decimals || 18),
-                    estimated_fees_amount_in_currency: displayNumberPrecision(
-                        +formatUnits(gasCost, nativeToken?.decimals || 18) * +(nativeToken?.rateInCurrency || 0)
+                    estimated_fees_amount_in_currency: formatCurrency(
+                        +formatUnits(gasCost, nativeToken?.decimals || 18) * +(nativeToken?.rateInCurrency || 0),
+                        user?.currency || "USD",
+                        gasCost !== 0n
                     ),
                     currency: nativeToken?.currency || "",
                     in_amount: debouncedSendAmount.toString(),
@@ -226,7 +265,6 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
         nativeToken,
         publicClient,
         recipientAddress,
-        tokenAddress,
         token,
         transferMax,
         user,
@@ -297,7 +335,25 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
 
     const validAmountEntered = debouncedSendAmount > 0 && debouncedSendAmount <= Number(token?.value || "0");
 
-    const TokenIcon = token?.symbol ? (TOKEN_LOGOS[token.symbol as keyof typeof TOKEN_LOGOS] || NoTokenIcon) : NoTokenIcon;
+    const TokenIcon = token?.logo ? (
+        <img src={token.logo} alt={token.symbol} className="gw-w-6 gw-h-6 gw-mr-1 gw-rounded-full" />
+    ) : (
+        <NoTokenIcon />
+    );
+
+    const selectedTokenBalanceFormatted = token
+        ? formatTokenCount(token?.valueInWei, token?.decimals, token?.displayDecimals)
+        : undefined;
+    const selectedTokenValueFormatted = token
+        ? token?.rateInCurrency
+            ? formatCurrency(
+                  parseFloat(formatUnits(BigInt(token?.valueInWei || 0), token?.decimals ?? 18)) *
+                      parseFloat(token?.rateInCurrency),
+                  token?.currency,
+                  BigInt(token?.valueInWei || 0) > 0n
+              )
+            : formatCurrency(token?.amount || 0, token?.currency, BigInt(token?.valueInWei || 0) !== 0n)
+        : undefined;
 
     return (
         <>
@@ -333,75 +389,31 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                             <div className="gw-w-full">
                                 <div className="gw-flex gw-justify-between gw-items-center gw-w-full">
                                     <h6>{!validAmountEntered ? "Enter Amount" : "Sending"}</h6>
-                                    <div className="gw-relative" ref={tokenDropdownRef}>
-                                        <button
-                                            onClick={() => setIsTokenDropdownOpen(!isTokenDropdownOpen)}
-                                            disabled={!hasBalances}
-                                            className="gw-shadow-buttonMd gw-rounded-full gw-h-auto gw-p-1 gw-flex gw-items-center gw-space-x-1"
-                                        >
-                                            <TokenIcon className={cn("gw-w-6 gw-h-6 gw-mr-2", isTestnet && TESTNET_CSS_CLASS)} />
-                                            <ChevronDown className="gw-size-4 gw-text-gray-500" />
-                                        </button>
 
-                                        {isTokenDropdownOpen && (
-                                            <div className="gw-absolute gw-top-full gw-right-0 gw-mt-1 gw-bg-white gw-rounded-xl gw-shadow-md gw-z-50 gw-min-w-[16rem] gw-max-h-[320px] gw-overflow-y-auto">
-                                                {balances?.tokens?.map?.((t, index) => {
-                                                    if (t?.hide) return null;
-                                                    const TokenIcon = TOKEN_LOGOS[t.symbol] || NoTokenIcon;
+                                    <SendFundChainAndTokenSelector
+                                        selectedToken={token}
+                                        onTokenSelect={(token) => {
+                                            // Reset amounts if token changes
+                                            setSendAmount("");
+                                            setTransferMax(false);
+                                            // Directly reset debounced amount to 0 (without delay)
+                                            setDebouncedSendAmount(0);
+                                            setError(null);
+                                            setQuote(null);
 
-                                                    return (
-                                                        <div key={t.address}>
-                                                            <button
-                                                                onClick={() => {
-                                                                    // Reset amounts if token changes
-                                                                    setSendAmount("");
-                                                                    setTransferMax(false);
-                                                                    // Directly reset debounced amount to 0 (without delay)
-                                                                    setDebouncedSendAmount(0);
-                                                                    setError(null);
-                                                                    setQuote(null);
-                                                                    setTokenAddress(t.address);
-                                                                    setIsTokenDropdownOpen(false);
-                                                                }}
-                                                                className="gw-w-full gw-flex gw-justify-between gw-items-center gw-p-3 hover:gw-bg-gray-50"
-                                                            >
-                                                                <div className="gw-flex gw-items-center gw-space-x-3 gw-text-[12px]">
-                                                                    <TokenIcon className={cn("gw-w-8 gw-h-8", isTestnet && TESTNET_CSS_CLASS)} />
-                                                                    <div className="gw-flex gw-flex-col gw-items-start">
-                                                                        <span className="gw-font-medium">
-                                                                            {t.name}
-                                                                        </span>
-                                                                        <span className="gw-text-brand-gray-500">
-                                                                            {t.symbol}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="gw-flex gw-flex-col gw-items-end gw-text-[12px]">
-                                                                    <span className="gw-font-medium">
-                                                                        {formatCurrency(t.amount, t.currency)}
-                                                                    </span>
-                                                                    <span className="gw-text-brand-gray-500">
-                                                                        {t.value}
-                                                                    </span>
-                                                                </div>
-                                                            </button>
-                                                            {index < (balances?.tokens?.length || 0) - 1 && (
-                                                                <div className="gw-mx-3 gw-my-1 gw-h-px gw-bg-gray-200" />
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </div>
+                                            setToken(token);
+                                        }}
+                                    />
                                 </div>
                                 {/* Balance */}
                                 <div className="gw-flex gw-justify-between gw-items-center gw-w-full gw-typography-body2 gw-mt-2">
                                     <div>Balance</div>
-                                    <div className="gw-text-brand-gray-600">
-                                        {token?.value} ({formatCurrency(token?.amount || 0, token?.currency || "")})
-                                    </div>
+                                    {token && (
+                                        <div className="gw-text-brand-gray-600">
+                                            {selectedTokenBalanceFormatted} {token?.symbol} (
+                                            {selectedTokenValueFormatted})
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -463,7 +475,10 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                                             // Reset transfer max if amount is changed
                                                             const value = formatInputNumber(
                                                                 e.target.value,
-                                                                token?.displayDecimals || DEFAULT_TOKEN_MAX_DECIMALS
+                                                                Math.min(
+                                                                    token?.displayDecimals ?? MAX_DECIMALS_FOR_CRYPTO,
+                                                                    MAX_DECIMALS_FOR_CRYPTO
+                                                                )
                                                             );
 
                                                             // check if input exceeds balance
@@ -487,7 +502,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                                         className={cn(
                                                             "gw-text-foreground gw-bg-transparent focus:gw-outline-none placeholder:gw-text-foreground gw-absolute gw-inset-0 gw-w-full gw-max-w-44",
                                                             !Number(token?.value || "0") &&
-                                                            "gw-opacity-50 gw-cursor-not-allowed"
+                                                                "gw-opacity-50 gw-cursor-not-allowed"
                                                         )}
                                                     />
                                                 </div>
@@ -501,7 +516,11 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                     <div className="gw-flex gw-justify-center gw-items-center gw-mt-4 gw-gap-4">
                                         {token?.rateInCurrency && (
                                             <div className="gw-text-brand-gray-600">
-                                                {formatCurrency(+token?.rateInCurrency * +sendAmount, token?.currency)}
+                                                {formatCurrency(
+                                                    +token?.rateInCurrency * +sendAmount,
+                                                    token?.currency,
+                                                    Number(sendAmount) !== 0
+                                                )}
                                             </div>
                                         )}
                                         <Button
@@ -541,7 +560,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                             {quoteLoading || !quote ? (
                                                 <Skeleton className="gw-w-20 gw-h-4" />
                                             ) : (
-                                                `${displayNumberPrecision(quote?.estimated_fees_amount_in_currency, nativeToken?.displayDecimals)} ${nativeToken?.symbol} (${formatCurrency(quote?.estimated_fees_amount_in_currency, quote?.currency)})`
+                                                `${formatTokenCount(tokenToBigIntWei(quote?.estimated_fees_amount || 0, nativeToken?.decimals || 18), nativeToken?.decimals || 18, nativeToken?.displayDecimals)} ${nativeToken?.symbol} (${quote?.estimated_fees_amount_in_currency})`
                                             )}
                                         </div>
                                     </div>
@@ -590,7 +609,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                     </div>
                                 </div>
                             </div>
-                            <div className="gw-text-destructive gw-typography-caption gw-text-center gw-mt-1 gw-h-3">
+                            <div className="gw-text-destructive gw-typography-caption gw-text-center gw-mt-1 gw-min-h-4">
                                 {error ? error : null}
                             </div>
                             <Button
@@ -614,48 +633,58 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                         if (!quote?.receivable_amount) {
                                             throw new Error("No receivable amount");
                                         }
+                                        if (!publicClient) {
+                                            throw new Error("Missing publicClient");
+                                        }
 
                                         let hash_: string | undefined;
-                                        if (tokenAddress === zeroAddress) {
+                                        if (token?.address === zeroAddress) {
                                             receipt = await sendTransaction({
                                                 transaction: {
                                                     to: recipientAddress,
                                                     value: quote?.receivable_amount,
-                                                    maxFeePerGas: quote?.maxFeePerGas,
-                                                    maxPriorityFeePerGas: quote?.maxPriorityFeePerGas
+                                                    ...(quote?.gasPrice
+                                                        ? { type: 0, gasPrice: quote.gasPrice }
+                                                        : {
+                                                              maxFeePerGas: quote?.maxFeePerGas,
+                                                              maxPriorityFeePerGas: quote?.maxPriorityFeePerGas
+                                                          })
                                                 }
                                             });
-                                            hash_ = typeof receipt === "object" ? receipt.hash : receipt;
+                                            hash_ = receipt;
                                         } else {
                                             const txData = await publicClient.simulateContract({
                                                 abi: erc20Abi,
                                                 functionName: "transfer",
                                                 account: user?.evmWallet as Hex,
-                                                address: tokenAddress as Hex,
+                                                address: token?.address as Hex,
                                                 args: [recipientAddress as Hex, quote?.receivable_amount],
                                                 chain,
-                                                gas: quote?.gasLimit,
-                                                maxFeePerGas: quote?.maxFeePerGas,
-                                                maxPriorityFeePerGas: quote?.maxPriorityFeePerGas
+                                                gas: quote?.gasLimit
                                             });
                                             try {
                                                 const data = encodeFunctionData({
                                                     abi: erc20Abi,
                                                     functionName: "transfer",
-                                                    args: [recipientAddress as Hex, quote?.receivable_amount],
+                                                    args: [recipientAddress as Hex, quote?.receivable_amount]
                                                 });
 
                                                 receipt = await sendTransaction({
                                                     transaction: {
-                                                        to: tokenAddress,
+                                                        to: token?.address,
                                                         data,
-                                                        maxFeePerGas: txData?.request?.maxFeePerGas,
-                                                        maxPriorityFeePerGas: txData?.request?.maxPriorityFeePerGas
+                                                        ...(quote?.gasPrice
+                                                            ? { type: 0, gasPrice: quote.gasPrice }
+                                                            : {
+                                                                  maxFeePerGas: txData?.request?.maxFeePerGas,
+                                                                  maxPriorityFeePerGas:
+                                                                      txData?.request?.maxPriorityFeePerGas
+                                                              })
                                                     }
                                                 });
-                                                hash_ = typeof receipt === "object" ? receipt.hash : receipt;
+                                                hash_ = receipt;
                                             } catch (error) {
-                                                logger.error("error sending txn", error);
+                                                logger.error("error sending txn - send tx failed", error);
                                                 throw error;
                                             }
                                         }

@@ -29,7 +29,7 @@ const buttonVariantsClasses = cva(
                 lg: "gw-h-14 gw-px-8 gw-typography-body1",
                 icon: "gw-h-12 gw-w-10 gw-typography-body1",
                 login: "gw-h-12 gw-p-2.5 gw-pr-6 gw-typography-body1 !gw-font-normal",
-                cube: "gw-p-2 gw-h-20 gw-aspect-square !gw-rounded-2xl gw-typography-caption [&_svg]:!gw-size-5"
+                cube: "gw-p-2 gw-h-16 gw-aspect-square !gw-rounded-xl gw-typography-body2 [&_svg]:!gw-size-5"
             },
             shadow: {
                 true: "gw-drop-shadow-buttonLg hover:gw-drop-shadow-lg active:gw-drop-shadow-md"

@@ -1,9 +1,9 @@
 import { X } from "lucide-react";
 import { memo } from "react";
-import { FailureIcon } from "../../assets/svg/FailureIcon";
-import CopyButton from "../shared/CopyButton";
-import { WalletViewTemplate } from "../shared/WalletViewTemplate";
-import { Button } from "../ui/button";
+import { FailureIcon } from "../../../assets/svg/FailureIcon";
+import CopyButton from "../../shared/CopyButton";
+import { WalletViewTemplate } from "../../shared/WalletViewTemplate";
+import { Button } from "../../ui/button";
 
 interface WalletFundFailedViewProps {
     onEnd: () => void;

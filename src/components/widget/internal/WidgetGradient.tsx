@@ -1,6 +1,6 @@
-import failedGradient from "../../assets/images/failed-gradient.png";
-import successGradient from "../../assets/images/success-gradient.png";
-import { INTERNAL_GRADIENT_TYPE } from "../../lib/constants";
+import { INTERNAL_GRADIENT_TYPE } from "../../../lib/constants";
+import failedGradient from "../../../assets/images/failed-gradient.png";
+import successGradient from "../../../assets/images/success-gradient.png";
 
 export const WidgetGradient = ({ gradientType }: { gradientType: INTERNAL_GRADIENT_TYPE | undefined }) => {
     return gradientType === INTERNAL_GRADIENT_TYPE.PRIMARY ? (
