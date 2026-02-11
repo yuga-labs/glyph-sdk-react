@@ -11,11 +11,11 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerHandle, DrawerTitle, Dr
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Toaster } from "./ui/sonner";
 import { Wallet } from "./widget/Wallet";
-import { WidgetGradient } from "./widget/internal/WidgetGradient";
+import { WidgetGradient } from "./widget/WidgetGradient";
 
-export const GlyphWidget = ({ buttonProps, minWidth = 768, alwaysOpen = false }: GlyphWidgetProps) => {
+export const GlyphWidget = ({ buttonProps }: GlyphWidgetProps) => {
     const theme = "light";
-    const isDesktop = useMediaQuery(`(min-width: ${minWidth}px)`);
+    const isDesktop = useMediaQuery("(min-width: 768px)");
 
     const viewCtx = useContext(GlyphViewContext);
     if (!viewCtx) throw new Error("GlyphWidget must be used within a GlyphViewProvider");
@@ -24,12 +24,8 @@ export const GlyphWidget = ({ buttonProps, minWidth = 768, alwaysOpen = false }:
     const { ready, authenticated, user, hideWidget } = useGlyph();
 
     // hide tab when not ready, not authenticated, or no user
-    // show if showWalletPermanently is true
     useEffect(() => {
-        if (alwaysOpen)
-            setGlyphView(GlyphViewType.OPEN);
-        else if (!ready || !authenticated) 
-            setGlyphView(GlyphViewType.CLOSED);
+        if (!ready || !authenticated) setGlyphView(GlyphViewType.CLOSED);
     }, [ready, authenticated, setGlyphView]);
 
     const [gradientType, setGradientType] = useState<INTERNAL_GRADIENT_TYPE>();
@@ -44,13 +40,11 @@ export const GlyphWidget = ({ buttonProps, minWidth = 768, alwaysOpen = false }:
                     {/* Popover on Desktop */}
                     {isDesktop ? (
                         <Popover
-                            open={alwaysOpen ? true : glyphView !== GlyphViewType.CLOSED}
-                            onOpenChange={alwaysOpen ? () => setGlyphView(GlyphViewType.OPEN) : (v: boolean) => setGlyphView(v ? GlyphViewType.OPEN : GlyphViewType.CLOSED)}
+                            open={glyphView !== GlyphViewType.CLOSED}
+                            onOpenChange={(v: boolean) => setGlyphView(v ? GlyphViewType.OPEN : GlyphViewType.CLOSED)}
                         >
                             <PopoverTrigger>
-                                {alwaysOpen ? null : (
-                                    <GlyphWidgetButton {...(buttonProps || {})} />
-                                )}
+                                <GlyphWidgetButton {...(buttonProps || {})} />
                             </PopoverTrigger>
 
                             {/* "glyph-widget" class is required, since it applies the font style to the popover, which is mounted outside the parent div of this component */}
@@ -63,13 +57,11 @@ export const GlyphWidget = ({ buttonProps, minWidth = 768, alwaysOpen = false }:
                     ) : (
                         // Drawer on Mobile
                         <Drawer
-                            open={alwaysOpen ? true : glyphView !== GlyphViewType.CLOSED}
-                            onOpenChange={alwaysOpen ? () => setGlyphView(GlyphViewType.OPEN) : (v: boolean) => setGlyphView(v ? GlyphViewType.OPEN : GlyphViewType.CLOSED)}
+                            open={glyphView !== GlyphViewType.CLOSED}
+                            onOpenChange={(v: boolean) => setGlyphView(v ? GlyphViewType.OPEN : GlyphViewType.CLOSED)}
                         >
                             <DrawerTrigger>
-                                {alwaysOpen ? null : (
-                                    <GlyphWidgetButton {...(buttonProps || {})} />
-                                )}
+                                <GlyphWidgetButton {...(buttonProps || {})} />
                             </DrawerTrigger>
 
                             {/* "glyph-widget" class is required, since it applies the font style to the popover, which is mounted outside the parent div of this component */}

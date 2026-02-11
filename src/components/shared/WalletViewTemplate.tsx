@@ -1,5 +1,3 @@
-import { cn } from "../../lib/utils";
-
 export type SelectedView = "main" | "add-funds";
 
 export type WalletScreenProps = {
@@ -9,15 +7,13 @@ export type WalletScreenProps = {
     footerCols?: boolean;
     mainFooter?: boolean;
     setView?: (view: SelectedView) => void;
-    headerClassName?: string;
-    footerClassName?: string;
 };
 
 export function WalletViewTemplate({ mainFooter = true, ...props }: WalletScreenProps) {
     return (
         <div className="gw-wallet-view">
             {/* Header */}
-            {props.header && <div className={cn("gw-wallet-header", props.headerClassName)}>{props.header}</div>}
+            {props.header && <div className="gw-wallet-header">{props.header}</div>}
 
             {/* Content */}
             <div className="gw-wallet-content">{props.content}</div>
@@ -25,10 +21,7 @@ export function WalletViewTemplate({ mainFooter = true, ...props }: WalletScreen
             {/* Footer */}
             {props.footer && (
                 <div
-                    className={cn(
-                        `${mainFooter ? "gw-wallet-footer-nav" : "gw-wallet-footer"} ${props.footerCols ? "gw-flex-col gw-flex-nowrap gw-items-center" : "gw-flex-row gw-flex-nowrap"}`,
-                        props.footerClassName
-                    )}
+                    className={`${mainFooter ? "gw-wallet-footer-nav" : "gw-wallet-footer"} ${props.footerCols ? "gw-flex-col gw-flex-nowrap gw-items-center" : "gw-flex-row gw-flex-nowrap"}`}
                 >
                     {props.footer}
                 </div>

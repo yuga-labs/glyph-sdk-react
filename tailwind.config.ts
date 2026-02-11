@@ -66,8 +66,8 @@ export default {
                         black: "hsl(var(--gw-brand-gray-black))"
                     },
                     success: "hsl(var(--gw-brand-success))",
-                    swapsuccess: "hsl(var(--gw-brand-swapsuccess))",
                     warning: "hsl(var(--gw-brand-warning))",
+
                     failure: "hsl(var(--gw-brand-failure))"
                 },
                 background: "hsl(var(--gw-background))",

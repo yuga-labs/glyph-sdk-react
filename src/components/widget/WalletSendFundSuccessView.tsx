@@ -1,14 +1,14 @@
 import { X } from "lucide-react";
 import { memo } from "react";
 import truncateEthAddress from "truncate-eth-address";
-import { CaretDownIcon } from "../../../assets/svg/CaretDownIcon";
-import { SuccessIcon } from "../../../assets/svg/SuccessIcon";
-import { useGlyph } from "../../../hooks/useGlyph";
-import { ethereumAvatar } from "../../../lib/utils";
-import UserAvatar from "../../shared/UserAvatar";
-import { WalletViewTemplate } from "../../shared/WalletViewTemplate";
-import { Button } from "../../ui/button";
-import { SendFundQuote } from "../WalletSendFundView";
+import { CaretDownIcon } from "../../assets/svg/CaretDownIcon";
+import { SuccessIcon } from "../../assets/svg/SuccessIcon";
+import { useGlyph } from "../../hooks/useGlyph";
+import { ethereumAvatar } from "../../lib/utils";
+import UserAvatar from "../shared/UserAvatar";
+import { WalletViewTemplate } from "../shared/WalletViewTemplate";
+import { Button } from "../ui/button";
+import { SendFundQuote } from "./WalletSendFundView";
 
 interface WalletSendFundSuccessViewProps {
     onEnd: () => void;

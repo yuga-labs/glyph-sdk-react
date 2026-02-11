@@ -1,9 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { http, type Transport } from "viem";
+import { type Chain, http, type Transport } from "viem";
 import { createConfig, WagmiProvider } from "wagmi";
 import { GlyphProvider } from "../../context/GlyphProvider";
-import { useGlyphConfigureDynamicChains } from "../../hooks/useGlyphConfigureDynamicChains";
 import { BaseGlyphProviderOptionsWithSignature, StrategyType, WalletClientType } from "../../types";
 import { glyphWalletConnector } from "./glyphWalletConnector";
 
@@ -12,11 +11,16 @@ const defaultQueryClient = new QueryClient();
 /**
  * Configuration options for the GlyphWalletProvider.
  * @interface GlyphWalletProviderProps
+ * @property {[Chain, ...Chain[]]} chains - The chains to use, defaults to apeChain.
+ * @property {Record<number, Transport>} transports - Optional transports to use, defaults to standard http.
  * @property {QueryClient} queryClient - Optional query client to use, defaults to a standard query client.
  * @property {React.ReactNode} children - The children to render.
  */
 interface GlyphWalletProviderProps extends BaseGlyphProviderOptionsWithSignature {
+    chains: [Chain, ...Chain[]];
+    transports?: Record<number, Transport>;
     queryClient?: QueryClient;
+    children: React.ReactNode;
     ssr?: boolean;
 }
 
@@ -30,7 +34,7 @@ interface GlyphWalletProviderProps extends BaseGlyphProviderOptionsWithSignature
  * const App = () => {
  *   const queryClient = new QueryClient()
  *   return (
- *     <GlyphWalletProvider queryClient={queryClient}>
+ *     <GlyphWalletProvider chains={[apeChain]} queryClient={queryClient}>
  *       <Component {...pageProps} />
  *     </GlyphWalletProvider>
  *   );
@@ -40,35 +44,36 @@ interface GlyphWalletProviderProps extends BaseGlyphProviderOptionsWithSignature
  * See more at: {@link https://docs.useglyph.io/reference/components/GlyphWalletProvider/}
  */
 export const GlyphWalletProvider = ({
+    chains,
+    transports,
     queryClient = defaultQueryClient,
     children,
     ssr,
     ...glyphProviderOptions
 }: GlyphWalletProviderProps) => {
-    const { chains } = useGlyphConfigureDynamicChains(glyphProviderOptions.glyphUrl);
+    const defaultTransports = useMemo(
+        () =>
+            chains.reduce(
+                (acc, chain) => {
+                    acc[chain.id] = http();
+                    return acc;
+                },
+                {} as Record<number, Transport>
+            ),
+        [chains]
+    );
 
-    const wagmiConfig = useMemo(() => {
-        if (chains && chains.length > 0) {
-            return createConfig({
+    const wagmiConfig = useMemo(
+        () =>
+            createConfig({
                 chains,
                 ssr,
                 connectors: [glyphWalletConnector({ useStagingTenant: glyphProviderOptions.useStagingTenant })],
-                transports: chains.reduce(
-                    (acc, chain) => {
-                        acc[chain.id] = http();
-                        return acc;
-                    },
-                    {} as Record<number, Transport>
-                ),
+                transports: transports ?? defaultTransports,
                 multiInjectedProviderDiscovery: false
-            });
-        }
-        return null;
-    }, [chains, glyphProviderOptions.useStagingTenant, ssr]);
-
-    if (!wagmiConfig) {
-        return null;
-    }
+            }),
+        [chains, transports, defaultTransports, glyphProviderOptions.useStagingTenant, ssr]
+    );
 
     return (
         <WagmiProvider config={wagmiConfig}>

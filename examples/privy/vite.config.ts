@@ -28,14 +28,14 @@ export default defineConfig(({ command }) => {
 		// Dev server config only used in development
 		...(isDev
 			? {
-				server: {
-					port: 3003,
-					hmr: {
-						overlay: true,
+					server: {
+						port: 3003,
+						hmr: {
+							overlay: true,
+						},
+						allowedHosts: true,
 					},
-					allowedHosts: true,
-				},
-			}
+				}
 			: {}),
 		resolve: {
 			alias: {

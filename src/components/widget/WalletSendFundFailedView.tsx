@@ -1,22 +1,25 @@
 import { X } from "lucide-react";
 import { memo } from "react";
-import { FailureIcon } from "../../../assets/svg/FailureIcon";
-import { LinkWithIcon } from "../../shared/LinkWithIcon";
-import { WalletViewTemplate } from "../../shared/WalletViewTemplate";
-import { Button } from "../../ui/button";
+import { FailureIcon } from "../../assets/svg/FailureIcon";
+import { LinkWithIcon } from "../shared/LinkWithIcon";
+import { WalletViewTemplate } from "../shared/WalletViewTemplate";
+import { Button } from "../ui/button";
 
-interface WalletTradeFailedViewProps {
+interface WalletSendFundFailedViewProps {
     onEnd: () => void;
     onShowActivity: () => void;
-    txDetails?: {
-        hash?: string;
-        blockExplorerUrl?: string;
-        blockExplorerName?: string;
-    };
-    reason?: string | null;
+    txHash: string | undefined;
+    txBlockExplorerUrl: string | undefined;
+    txBlockExplorerName: string | undefined;
 }
 
-const WalletTradeFailedView: React.FC<WalletTradeFailedViewProps> = ({ onEnd, onShowActivity, txDetails, reason }) => {
+const WalletSendFundFailedView: React.FC<WalletSendFundFailedViewProps> = ({
+    onEnd,
+    onShowActivity,
+    txHash,
+    txBlockExplorerUrl,
+    txBlockExplorerName
+}) => {
     return (
         <WalletViewTemplate
             content={
@@ -44,18 +47,12 @@ const WalletTradeFailedView: React.FC<WalletTradeFailedViewProps> = ({ onEnd, on
                                 {`Your transaction failed.\nPlease try again.`}
                             </span>
 
-                            {reason ? (
-                                <span className="gw-mt-3 gw-min-h-8 gw-typography-caption gw-text-center gw-whitespace-pre-wrap !gw-leading-tight">
-                                    Reason - <span className="first-letter:gw-uppercase">{reason}</span>
-                                </span>
-                            ) : null}
-
-                            <div className="gw-my-6 gw-flex gw-p-4 gw-items-center gw-w-full gw-justify-center gw-space-x-2 gw-typography-caption">
-                                {txDetails?.hash && txDetails?.blockExplorerUrl ? (
+                            <div className="gw-my-10 gw-flex gw-p-4 gw-items-center gw-w-full gw-justify-center gw-space-x-2 gw-typography-caption">
+                                {txHash && txBlockExplorerUrl ? (
                                     <LinkWithIcon
-                                        key={txDetails?.hash}
-                                        text={`View on ${txDetails?.blockExplorerName || "block explorer"}`}
-                                        url={txDetails?.blockExplorerUrl}
+                                        key={txHash}
+                                        text={`View on ${txBlockExplorerName || "block explorer"}`}
+                                        url={txBlockExplorerUrl}
                                     />
                                 ) : null}
                             </div>
@@ -71,4 +68,4 @@ const WalletTradeFailedView: React.FC<WalletTradeFailedViewProps> = ({ onEnd, on
     );
 };
 
-export default memo(WalletTradeFailedView);
+export default memo(WalletSendFundFailedView);

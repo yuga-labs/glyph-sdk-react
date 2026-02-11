@@ -1,13 +1,7 @@
-import { SignTypedDataParams, UnsignedTransactionRequest } from "@privy-io/react-auth";
-import react, { useCallback, useEffect, useState } from "react";
-import {
-    useAccount,
-    useAccountEffect,
-    useDisconnect,
-    useSendTransaction,
-    useSignMessage,
-    useSignTypedData,
-} from "wagmi";
+import { UnsignedTransactionRequest } from "@privy-io/react-auth";
+import { FC, useCallback, useEffect, useState } from "react";
+import { apeChain } from "viem/chains";
+import { useAccount, useAccountEffect, useDisconnect, useSendTransaction, useSignMessage } from "wagmi";
 import { WIDGET_API_BASE_URL } from "../../lib/constants";
 import { createLogger } from "../../lib/utils";
 import { BaseGlyphProviderOptionsWithSignature } from "../../types";
@@ -20,7 +14,7 @@ const TOKEN_KEY = "__glyph-widget-token__";
 const NONCE_KEY = "__glyph-widget-nonce__";
 const logger = createLogger("EIP1193Strategy");
 
-const EIP1193Strategy: react.FC<BaseGlyphProviderOptionsWithSignature> = ({
+const EIP1193Strategy: FC<BaseGlyphProviderOptionsWithSignature> = ({
     children,
     glyphUrl,
     onLogin,
@@ -32,7 +26,6 @@ const EIP1193Strategy: react.FC<BaseGlyphProviderOptionsWithSignature> = ({
     const { address, isConnected, chainId } = useAccount(); // detect wallet connection
     const { disconnectAsync } = useDisconnect(); // disconnect the wallet
     const { signMessageAsync } = useSignMessage(); // signing messages with the wallet
-    const { signTypedDataAsync } = useSignTypedData(); // signing typed data with the wallet
     const { sendTransactionAsync } = useSendTransaction(); // sending transactions with the wallet
 
     logger.log({ address, isConnected });
@@ -199,24 +192,11 @@ const EIP1193Strategy: react.FC<BaseGlyphProviderOptionsWithSignature> = ({
         [address, isConnected, signMessageAsync]
     );
 
-    const signTypedData = useCallback(
-        async ({ data }: { data: SignTypedDataParams }) => {
-            if (!address || !isConnected) {
-                throw new Error("Wallet not connected");
-            }
-            const types = data.types;
-            const primaryType = data.primaryType as string;
-            const message = data.message;
-            return signTypedDataAsync({ types, primaryType, message });
-        },
-        [address, isConnected, signTypedDataAsync]
-    );
-
     const sendTransaction = useCallback(
-        async ({ transaction }: { transaction: UnsignedTransactionRequest }) => {
+        async ({ transaction }: { transaction: Omit<UnsignedTransactionRequest, "chainId"> }) => {
             if (!address || !isConnected) throw new Error("Wallet not connected");
 
-            return sendTransactionAsync({ ...transaction, chainId: transaction.chainId || chainId } as any);
+            return sendTransactionAsync({ ...transaction, chainId: chainId || apeChain.id } as any);
         },
         [address, isConnected, sendTransactionAsync, chainId]
     );
@@ -252,7 +232,6 @@ const EIP1193Strategy: react.FC<BaseGlyphProviderOptionsWithSignature> = ({
                 login: authenticate,
                 logout: disconnect, // on disconnect, logoutSideEffect is called and clears states
                 signMessage,
-                signTypedData,
                 sendTransaction,
                 apiFetch: apiFetch!
             }}

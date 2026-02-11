@@ -1,6 +1,6 @@
-import { SignTypedDataParams, UnsignedTransactionRequest } from "@privy-io/react-auth";
+import { UnsignedTransactionRequest } from "@privy-io/react-auth";
 import { useContext, useEffect, useState } from "react";
-import { useChainId } from "wagmi";
+import { Hex } from "viem";
 import { GlyphContext } from "../context/GlyphContext";
 import { GlyphUserDataContext } from "../context/GlyphUserDataContext";
 import { DASHBOARD_BASE_URL } from "../lib/constants";
@@ -26,9 +26,10 @@ export interface GlyphInterface {
      */
     hideWidget?: boolean;
 
-    signMessage: (params: { message: string }) => Promise<string>;
-    signTypedData: (params: { data: SignTypedDataParams }) => Promise<string>;
-    sendTransaction: (params: { transaction: UnsignedTransactionRequest }) => Promise<string>;
+    signMessage: (params: { message: string }) => Promise<unknown>;
+    sendTransaction: (params: {
+        transaction: Omit<UnsignedTransactionRequest, "chainId">;
+    }) => Promise<string | { hash: Hex }>;
 
     login: () => void;
 
@@ -63,12 +64,7 @@ export interface GlyphHook extends GlyphInterface {
      */
     hasBalances: boolean;
 
-    isBalancesLoading: boolean;
-
     refreshBalances: (force?: boolean, cbs?: Record<string, (diffAmount: number) => void>) => Promise<void>;
-
-    setFetchForAllNetworks: (value: boolean) => void;
-    fetchForAllNetworks: boolean;
 }
 
 export const useGlyph = (): GlyphHook => {
@@ -78,30 +74,17 @@ export const useGlyph = (): GlyphHook => {
     const userCtx = useContext(GlyphUserDataContext);
     if (!userCtx) throw new Error("useGlyph must be used within GlyphUserDataProvider");
 
-    const { ready, authenticated, login, logout, signMessage, signTypedData, sendTransaction, glyphUrl, hideWidget } =
-        context;
-    const {
-        user,
-        refreshUser,
-        balances,
-        hasBalances,
-        isBalancesLoading,
-        refreshBalances,
-        setFetchForAllNetworks,
-        fetchForAllNetworks
-    } = userCtx;
+    const { ready, authenticated, login, logout, signMessage, sendTransaction, glyphUrl, hideWidget } = context;
+    const { user, refreshUser, balances, hasBalances, refreshBalances } = userCtx;
 
     const [nativeSymbol, setNativeSymbol] = useState<string>("");
 
-    const chainId = useChainId();
-
     useEffect(() => {
         if (!hasBalances || !ready || !authenticated) return;
-        const nativeToken = balances?.tokens?.find?.((token) => token.native && token.chainId === chainId);
-        if (nativeToken) {
-            setNativeSymbol(nativeToken?.symbol || "APE");
+        if (balances?.tokens?.find?.((token) => token.native)) {
+            setNativeSymbol(balances?.tokens?.find?.((token) => token.native)?.symbol || "APE");
         }
-    }, [balances, hasBalances, ready, authenticated, chainId]);
+    }, [balances, hasBalances, ready, authenticated]);
 
     return {
         ready,
@@ -110,17 +93,13 @@ export const useGlyph = (): GlyphHook => {
         refreshUser,
         balances,
         hasBalances,
-        isBalancesLoading,
         refreshBalances,
         login,
         logout,
         signMessage,
-        signTypedData,
-        sendTransaction,
         nativeSymbol,
+        sendTransaction,
         glyphUrl: glyphUrl || DASHBOARD_BASE_URL, // Return the glyphUrl if it is overridden, otherwise return the default dashboard URL from envs
-        hideWidget,
-        fetchForAllNetworks,
-        setFetchForAllNetworks
+        hideWidget
     };
 };

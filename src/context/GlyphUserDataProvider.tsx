@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import react, { PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { deepEqual, useChainId } from "wagmi";
 import { useGlyphApi } from "../hooks/useGlyphApi";
@@ -10,17 +10,23 @@ import { GlyphContext } from "./GlyphContext";
 import { GlyphUserDataContext } from "./GlyphUserDataContext";
 
 const logger = createLogger("GlyphData");
-let controller: AbortController | null = null;
 
-export const GlyphUserDataProvider: react.FC<PropsWithChildren> = ({ children }) => {
+interface GlyphUserDataProviderProps {
+    children: React.ReactNode;
+}
+
+export const GlyphUserDataProvider = ({ children }: GlyphUserDataProviderProps) => {
     const context = useContext(GlyphContext);
     if (!context) throw new Error("GlyphUserDataProvider must be used within GlyphProvider");
 
     const { ready, authenticated } = context;
     const { glyphApiFetch } = useGlyphApi();
     const chainId = useChainId();
-    const [fetchForAllNetworks, setFetchForAllNetworks] = useState(false);
-    const resolvedChainId = fetchForAllNetworks ? "all" : chainId;
+    const chainIdRef = useRef(chainId);
+    const [balances, setBalances] = useState<GlyphWidgetBalances | null>(null);
+    const [balancesLoading, setBalancesLoading] = useState<boolean>(false);
+    const [balancesLastRefreshed, setBalancesLastRefreshed] = useState<number>(0);
+    const [hasBalances, setHasBalances] = useState<boolean>(false);
 
     const {
         data: user,
@@ -65,88 +71,45 @@ export const GlyphUserDataProvider: react.FC<PropsWithChildren> = ({ children })
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000) // Exponential backoff
     });
 
-    const {
-        data: balancesData,
-        refetch: refetchBalancesQuery,
-        isFetching: isBalancesLoading
-    } = useQuery<GlyphWidgetBalances | null>({
-        queryKey: ["glyphWidgetBalances", resolvedChainId],
-        enabled: ready && authenticated && !!glyphApiFetch && !!user,
-        refetchInterval: TOKEN_REFRESH_INTERVAL_MS,
-        queryFn: async () => {
-            controller?.abort?.(); // Cancel last api call
+    const refreshBalances = useCallback(
+        async (force: boolean = false, cbs?: Record<string, (diffAmount: number) => void>) => {
+            if (!ready) return;
+            if (!authenticated) return;
+            if (!glyphApiFetch) return;
+            if (!user) return;
+            if (balancesLoading) return;
 
-            if (!glyphApiFetch) {
-                logger.warn("widget balances fetch not available");
-                return null;
-            }
-
-            controller = new AbortController();
-            const signal = controller.signal;
+            const now = Date.now();
+            if (!force && now - balancesLastRefreshed < TOKEN_REFRESH_INTERVAL_MS) return;
 
             try {
-                const resp = await glyphApiFetch(`/api/widget/balances?chainId=${resolvedChainId}`, {
-                    signal
-                });
-                if (!resp.ok) {
-                    // Try to parse error message, otherwise use status text
-                    let errorMsg = `Failed to fetch balances: ${resp.status} ${resp.statusText}`;
-                    try {
-                        const errorBody = await resp.json();
-                        errorMsg = errorBody.message || errorBody.error || errorMsg;
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    } catch (e) {
-                        logger.warn("Balance data API error response", resp.status, errorMsg);
-                        throw new Error(errorMsg);
-                    }
+                setBalancesLoading(true);
+                const res = await glyphApiFetch(`/api/widget/balances?chainId=${chainId}`);
+                if (res.ok) {
+                    const balanceData: GlyphWidgetBalances = await res.json();
+                    if (deepEqual(balances, balanceData)) return setHasBalances(true);
+
+                    // iterate over all cbs and call them if the balance has changed
+                    Object.entries(cbs || {}).forEach(([symbol, cb]) => {
+                        const newValue = balanceData?.tokens?.find?.((token) => token.symbol === symbol)?.value || "0";
+                        const oldValue = balances?.tokens?.find?.((token) => token.symbol === symbol)?.value || "0";
+                        if (newValue && newValue !== oldValue) cb(Number(newValue) - Number(oldValue));
+                    });
+                    // update the whole object
+                    setBalances(balanceData);
+                    setBalancesLastRefreshed(now);
+                    setHasBalances(true);
+                } else {
+                    throw new Error("Failed to refresh balances");
                 }
-                const balanceData: GlyphWidgetBalances = await resp.json();
-                return balanceData;
             } catch (err) {
-                logger.warn("balances fetch exception in useQuery", err);
-                throw err; // throw error for react-query (triggers retry)
+                logger.warn("balances error", err);
+                toast.error("Failed to refresh balances");
+            } finally {
+                setBalancesLoading(false);
             }
         },
-        retry: (failureCount, err) => {
-            // handle and don't retry if aborted
-            if (err?.name?.includes("AbortError")) {
-                return false;
-            }
-            const shouldRetry = failureCount < 3;
-            if (shouldRetry) {
-                logger.debug(`Retrying balances fetch (attempt ${failureCount + 1})...`);
-                console.log("Failed to fetch balances... retrying...");
-            } else {
-                toast.error("Failed to fetch balances");
-            }
-            return shouldRetry;
-        },
-        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000) // Exponential backoff
-    });
-
-    // Wrapper function to match the existing context type for refreshBalances
-    // Calling refetch() ignores staleTime, effectively acting like force=true
-    const refreshBalances = useCallback(
-        async (force: boolean = false, cbs?: Record<string, (diffAmount: number) => void>): Promise<void> => {
-            logger.debug(`Triggering balances data refresh (force=${force})...`);
-
-            const res = await refetchBalancesQuery();
-            if (res.data && cbs) {
-                if (deepEqual(balancesData, res.data)) return;
-
-                // iterate over all cbs and call them if the balance has changed
-                Object.entries(cbs).forEach(([symbol, cb]) => {
-                    const newValue =
-                        res.data?.tokens?.find?.((token) => `${token.chainId}:${token.address}` === symbol)?.value ||
-                        "0";
-                    const oldValue =
-                        balancesData?.tokens?.find?.((token) => `${token.chainId}:${token.address}` === symbol)
-                            ?.value || "0";
-                    if (newValue && newValue !== oldValue) cb(Number(newValue) - Number(oldValue));
-                });
-            }
-        },
-        [refetchBalancesQuery, balancesData]
+        [authenticated, balances, balancesLastRefreshed, balancesLoading, chainId, ready, user, glyphApiFetch]
     );
 
     // Log user fetch errors from useQuery
@@ -169,19 +132,43 @@ export const GlyphUserDataProvider: react.FC<PropsWithChildren> = ({ children })
         [refetchUserQuery]
     );
 
-    const hasBalances = !!balancesData;
+    // initially load balances
+    useEffect(() => {
+        if (ready && authenticated && glyphApiFetch && !balances) refreshBalances();
+    }, [ready, authenticated, chainId, glyphApiFetch, refreshBalances, balances]);
+
+    // reset balances when the user logs out
+    useEffect(() => {
+        if (ready && !authenticated && balances) {
+            setBalances(null);
+            setBalancesLastRefreshed(0);
+            setHasBalances(false);
+        }
+    }, [ready, authenticated, balances]);
+
+    // automatically refresh balances every 1 minute
+    useEffect(() => {
+        const interval = setInterval(() => refreshBalances(), TOKEN_REFRESH_INTERVAL_MS);
+        return () => clearInterval(interval);
+    }, [refreshBalances]);
+
+    // force refresh balances when chainId changes
+    useEffect(() => {
+        if (chainIdRef.current !== chainId) {
+            setHasBalances(false);
+            refreshBalances(true); // force balances reload
+            chainIdRef.current = chainId;
+        }
+    }, [chainId, refreshBalances]);
 
     return (
         <GlyphUserDataContext.Provider
             value={{
                 user: user ?? null, // Provide user data from query, default to null
-                balances: balancesData ?? null,
+                balances,
                 hasBalances,
-                isBalancesLoading,
                 refreshUser, // Provide the wrapped refetch function
-                refreshBalances,
-                setFetchForAllNetworks,
-                fetchForAllNetworks
+                refreshBalances
             }}
         >
             {children}

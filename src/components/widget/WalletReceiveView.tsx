@@ -5,13 +5,12 @@ import truncateEthAddress from "truncate-eth-address";
 import Icon from "../../assets/images/icon.png";
 import { useBalances } from "../../hooks/useBalances";
 import { useGlyph } from "../../hooks/useGlyph";
-import { chainIdToRelayChain } from "../../lib/utils";
 import CopyButton from "../shared/CopyButton";
 import WalletViewHeader from "../shared/WalletViewHeader";
 import { WalletViewTemplate } from "../shared/WalletViewTemplate";
 import { buttonVariants } from "../ui/button";
 
-const BALANCE_REFRESH_INTERVAL_MS = 5000;
+const BALANCE_REFRESH_INTERVAL_MS = 30 * 1000;
 
 export type WalletReceiveProps = {
     onBack: () => void;
@@ -31,10 +30,7 @@ export function WalletReceiveView({ onBack }: WalletReceiveProps) {
                     balances?.tokens.reduce(
                         (acc, token) => ({
                             ...acc,
-                            [`${token.chainId}:${token.address}`]: (amount: number) =>
-                                toast.success(
-                                    `Received ${amount} ${token.symbol} on ${chainIdToRelayChain(token.chainId)?.displayName || token?.chainId}`
-                                )
+                            [token.symbol]: (amount: number) => toast.success(`Received ${amount} ${token.symbol}`)
                         }),
                         {}
                     )

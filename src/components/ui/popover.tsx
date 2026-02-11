@@ -1,5 +1,5 @@
 import * as PopoverPrimitive from "@radix-ui/react-popover";
-import { ComponentPropsWithoutRef, ComponentRef, forwardRef } from "react";
+import { ComponentPropsWithoutRef, ElementRef, forwardRef } from "react";
 import { cn } from "../../lib/utils";
 
 const Popover = PopoverPrimitive.Root;
@@ -7,7 +7,7 @@ const Popover = PopoverPrimitive.Root;
 const PopoverTrigger = PopoverPrimitive.Trigger;
 
 const PopoverContent = forwardRef<
-    ComponentRef<typeof PopoverPrimitive.Content>,
+    ElementRef<typeof PopoverPrimitive.Content>,
     ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
 >(({ className, align = "center", sideOffset = 4, ...props }, ref) => (
     <PopoverPrimitive.Portal>
@@ -25,3 +25,4 @@ const PopoverContent = forwardRef<
 ));
 
 export { Popover, PopoverContent, PopoverTrigger };
+

@@ -1,16 +1,16 @@
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
-import { ComponentPropsWithoutRef, ComponentRef, forwardRef } from "react";
+import { ComponentPropsWithoutRef, ElementRef, forwardRef } from "react";
 import { cn } from "../../lib/utils";
 
 const Accordion = AccordionPrimitive.Root;
 
 const AccordionItem = forwardRef<
-    ComponentRef<typeof AccordionPrimitive.Item>,
+    ElementRef<typeof AccordionPrimitive.Item>,
     ComponentPropsWithoutRef<typeof AccordionPrimitive.Item>
 >(({ className, ...props }, ref) => <AccordionPrimitive.Item ref={ref} className={cn(className)} {...props} />);
 
 const AccordionTrigger = forwardRef<
-    ComponentRef<typeof AccordionPrimitive.Trigger>,
+    ElementRef<typeof AccordionPrimitive.Trigger>,
     ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger>
 >(({ className, children, ...props }, ref) => (
     <AccordionPrimitive.Header className="gw-flex">
@@ -25,7 +25,7 @@ const AccordionTrigger = forwardRef<
 ));
 
 const AccordionContent = forwardRef<
-    ComponentRef<typeof AccordionPrimitive.Content>,
+    ElementRef<typeof AccordionPrimitive.Content>,
     ComponentPropsWithoutRef<typeof AccordionPrimitive.Content>
 >(({ className, children, ...props }, ref) => (
     <AccordionPrimitive.Content

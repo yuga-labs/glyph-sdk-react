@@ -2,8 +2,6 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useGlyphApi } from "./useGlyphApi";
 import { useChainId } from "wagmi";
-import { useGlyph } from "./useGlyph";
-import { relayClient } from "../lib/relay";
 
 export type ActivityBlockExplorerItem = {
     url: string;
@@ -40,7 +38,6 @@ export type ActivityItem = {
     allowIdCopy: boolean;
     detail_rows: string[];
     blockExplorerTxns?: ActivityBlockExplorerItem[];
-    chain_id: number;
 };
 
 export type ActivityGroup = {
@@ -54,8 +51,6 @@ export function useActivity(
         types: ActivityType[];
     }
 ) {
-    const chains = relayClient?.chains || [];
-    const { fetchForAllNetworks } = useGlyph();
     const { glyphApiFetch } = useGlyphApi();
     const chainId = useChainId();
     const [offset, setOffset] = useState(0);
@@ -73,7 +68,7 @@ export function useActivity(
 
                 if (!glyphApiFetch) return null;
                 const res = await glyphApiFetch(
-                    `/api/widget/activity?chainId=${fetchForAllNetworks ? chains.map((c) => c.id).join(",") : chainId}&offset=${currentOffset}&size=${pageSize}&type=${filter?.types?.join(",") ?? ""}`
+                    `/api/widget/activity?chainId=${chainId}&offset=${currentOffset}&size=${pageSize}&type=${filter?.types?.join(",")}`
                 );
                 if (!res.ok) throw new Error("Failed to fetch transactions");
 
@@ -113,7 +108,7 @@ export function useActivity(
                 setIsLoading(false);
             }
         },
-        [glyphApiFetch, chainId, pageSize, offset, transactionGroups, fetchForAllNetworks]
+        [glyphApiFetch, chainId, pageSize, offset, transactionGroups]
     );
 
     const loadMore = async (): Promise<boolean> => {

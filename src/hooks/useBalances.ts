@@ -5,8 +5,7 @@ export function useBalances() {
     const context = useContext(GlyphUserDataContext);
     if (!context) throw new Error("useBalances must be used within GlyphProvider");
 
-    const { balances, hasBalances, refreshBalances, fetchForAllNetworks, setFetchForAllNetworks, isBalancesLoading } =
-        context;
+    const { balances, hasBalances, refreshBalances } = context;
 
-    return { balances, hasBalances, refreshBalances, fetchForAllNetworks, setFetchForAllNetworks, isBalancesLoading };
+    return { balances, hasBalances, refreshBalances };
 }

@@ -1,7 +1,6 @@
-import react, { PropsWithChildren } from "react";
 import { EmptyGlyphContext, GlyphContext } from "../GlyphContext";
 
-const LoadingStrategy: react.FC<PropsWithChildren> = ({ children }) => {
+const LoadingStrategy = ({ children }: { children: React.ReactNode }) => {
     return <GlyphContext.Provider value={EmptyGlyphContext} children={children} />;
 };
 

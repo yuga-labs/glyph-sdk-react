@@ -191,8 +191,9 @@ export const usePrivyCrossAppProvider = ({ chains, useStagingTenant }: UsePrivyC
             // Get the current chainId from the request or use the stored chainId
             const currentChainId = (params?.chainId || params?.[0]?.chainId || +chainId!) as number;
 
+            const publicClient = publicClients[currentChainId];
+
             if (passthrough(method as EIP1474MethodNames)) {
-                const publicClient = publicClients[currentChainId];
                 return publicClient.request(request as any);
             }
 
@@ -258,6 +259,7 @@ export const usePrivyCrossAppProvider = ({ chains, useStagingTenant }: UsePrivyC
                     handleChainChanged(currentChainId.toString());
                     return await signMessage(fromHex(params[0], "string"), {
                         address: params[1],
+                        //address: "0x46E59553CC3be71d9Aa37E36C351DF12ED458ff5",
                         chainId: currentChainId
                     });
                 }

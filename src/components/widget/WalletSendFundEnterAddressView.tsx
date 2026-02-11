@@ -1,14 +1,14 @@
 import { memo, useEffect } from "react";
 import truncateEthAddress from "truncate-eth-address";
 import { checksumAddress, Hex, isAddress } from "viem";
-import { CaretDownIcon } from "../../../assets/svg/CaretDownIcon";
-import { useGlyph } from "../../../hooks/useGlyph";
-import { SendView } from "../../../lib/constants";
-import UserAvatar from "../../shared/UserAvatar";
-import WalletViewHeader from "../../shared/WalletViewHeader";
-import { WalletViewTemplate } from "../../shared/WalletViewTemplate";
-import { Button } from "../../ui/button";
-import { Input } from "../../ui/input";
+import { CaretDownIcon } from "../../assets/svg/CaretDownIcon";
+import { useGlyph } from "../../hooks/useGlyph";
+import { SendView } from "../../lib/constants";
+import UserAvatar from "../shared/UserAvatar";
+import WalletViewHeader from "../shared/WalletViewHeader";
+import { WalletViewTemplate } from "../shared/WalletViewTemplate";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 
 interface WalletSendFundEnterAddressViewProps {
     onBack: () => void;

@@ -1,4 +1,4 @@
-import react, { useContext, useEffect, useState, PropsWithChildren } from "react";
+import { ReactNode, useContext, useEffect, useState } from "react";
 import { WalletMainViewTab, WalletView } from "../lib/constants";
 import { createLogger } from "../lib/utils";
 import { GlyphViewType } from "../types";
@@ -10,7 +10,7 @@ const INITIAL_WALLET_MAIN_VIEW_TAB = WalletMainViewTab.HOME;
 
 const logger = createLogger("GlyphViewProvider");
 
-export const GlyphViewProvider: react.FC<PropsWithChildren> = ({ children }) => {
+export const GlyphViewProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const context = useContext(GlyphUserDataContext);
     if (!context) throw new Error("GlyphViewProvider must be used within GlyphProvider");
 
@@ -33,9 +33,6 @@ export const GlyphViewProvider: react.FC<PropsWithChildren> = ({ children }) => 
             // non main views
             case GlyphViewType.FUND:
                 setWalletView(WalletView.FUND);
-                break;
-            case GlyphViewType.SWAP:
-                setWalletView(WalletView.SWAP);
                 break;
             case GlyphViewType.SEND:
                 setWalletView(WalletView.SEND);
@@ -68,7 +65,6 @@ export const GlyphViewProvider: react.FC<PropsWithChildren> = ({ children }) => 
             case GlyphViewType.HOME:
             case GlyphViewType.ACTIVITY:
             case GlyphViewType.TOKENS:
-            case GlyphViewType.NFTS:
                 setWalletView(WalletView.MAIN);
                 setWalletMainViewTab(glyphView);
                 break;

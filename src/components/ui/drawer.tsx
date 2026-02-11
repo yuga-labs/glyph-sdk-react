@@ -1,11 +1,4 @@
-import react, {
-    ComponentProps,
-    ComponentPropsWithoutRef,
-    ComponentRef,
-    forwardRef,
-    HTMLAttributes,
-    PropsWithChildren
-} from "react";
+import { ComponentProps, ComponentPropsWithoutRef, ElementRef, FC, forwardRef, HTMLAttributes } from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 import { cn } from "../../lib/utils";
 
@@ -23,14 +16,14 @@ const Drawer = ({
 
 const DrawerTrigger = DrawerPrimitive.Trigger;
 
-const DrawerPortal: react.FC<PropsWithChildren> = DrawerPrimitive.Portal;
+const DrawerPortal: FC<{ children: React.ReactNode }> = DrawerPrimitive.Portal;
 
 const DrawerClose = DrawerPrimitive.Close;
 
 const DrawerHandle = DrawerPrimitive.Handle;
 
 const DrawerOverlay = forwardRef<
-    ComponentRef<typeof DrawerPrimitive.Overlay>,
+    ElementRef<typeof DrawerPrimitive.Overlay>,
     ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
     <DrawerPrimitive.Overlay
@@ -41,7 +34,7 @@ const DrawerOverlay = forwardRef<
 ));
 
 const DrawerContent = forwardRef<
-    ComponentRef<typeof DrawerPrimitive.Content>,
+    ElementRef<typeof DrawerPrimitive.Content>,
     ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> & {
         childrenWrapperClassName?: string;
     }
@@ -77,7 +70,7 @@ const DrawerFooter = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) =
 );
 
 const DrawerTitle = forwardRef<
-    ComponentRef<typeof DrawerPrimitive.Title>,
+    ElementRef<typeof DrawerPrimitive.Title>,
     ComponentPropsWithoutRef<typeof DrawerPrimitive.Title>
 >(({ className, ...props }, ref) => (
     <DrawerPrimitive.Title
@@ -88,7 +81,7 @@ const DrawerTitle = forwardRef<
 ));
 
 const DrawerDescription = forwardRef<
-    ComponentRef<typeof DrawerPrimitive.Description>,
+    ElementRef<typeof DrawerPrimitive.Description>,
     ComponentPropsWithoutRef<typeof DrawerPrimitive.Description>
 >(({ className, ...props }, ref) => (
     <DrawerPrimitive.Description

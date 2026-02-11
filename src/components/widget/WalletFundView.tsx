@@ -7,15 +7,15 @@ import { useGlyphFunding } from "../../hooks/useGlyphFunding";
 import { FundView, INTERNAL_GRADIENT_TYPE } from "../../lib/constants";
 import { currencyToSymbol, formatCurrency } from "../../lib/intl";
 import { formatInputNumber } from "../../lib/numericInputs";
-import NativeTokenIcon from "../shared/NativeTokenIcon";
 import WalletViewHeader from "../shared/WalletViewHeader";
 import { WalletViewTemplate } from "../shared/WalletViewTemplate";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import TooltipElement from "../ui/tooltip-element";
-import WalletFundFailedView from "./internal/WalletFundFailedView";
-import WalletFundPendingView from "./internal/WalletFundPendingView";
-import WalletFundSuccessView from "./internal/WalletFundSuccessView";
+import WalletFundFailedView from "./WalletFundFailedView";
+import WalletFundPendingView from "./WalletFundPendingView";
+import WalletFundSuccessView from "./WalletFundSuccessView";
+import { NativeTokenIcon } from "../shared/ChainIcon";
 
 export type WalletFundProps = {
     onBack: () => void;
@@ -168,30 +168,21 @@ export function WalletFundView({ onBack, onEnd, onShowActivity, setGradientType 
                                 <div className="gw-typography-caption">
                                     <div className="gw-mt-2 gw-text-brand-gray-500 gw-text-center">
                                         {fundAmountError ||
-                                            (isOnrampEnabled &&
-                                                `${formatCurrency(fundMinAmount ?? 0, userCurrency)} min - ${formatCurrency(fundMaxAmount ?? 999999, userCurrency)} max`)}
+                                            (isOnrampEnabled && `${formatCurrency(fundMinAmount ?? 0, userCurrency)} min - ${formatCurrency(fundMaxAmount ?? 999999, userCurrency)} max`)}
                                     </div>
 
-                                    {!validAmountEntered &&
-                                        (isOnrampEnabled ? (
+                                    {!validAmountEntered && (
+                                        isOnrampEnabled ? (
                                             <div className="gw-mt-4 gw-flex gw-space-x-2 gw-text-brand-gray-500 gw-items-center gw-justify-center">
                                                 <span>You will receive {fundSymbol}</span>
-                                                <NativeTokenIcon />
+                                                <NativeTokenIcon className="gw-size-6" />
                                             </div>
                                         ) : (
-                                            <div
-                                                className="gw-mt-8 gw-text-brand-gray-600 gw-text-center gw-text-xs gw-px-4 gw-py-3 gw-rounded-xl gw-border"
-                                                style={{
-                                                    borderColor: "#FFBD42",
-                                                    backgroundColor: "rgba(253, 215, 53, 0.08)"
-                                                }}
-                                            >
-                                                To fund your wallet, switch your network to{" "}
-                                                <b className="gw-text-brand-gray-700">ApeChain</b>. From Home, choose
-                                                ApeChain in the top right. Remember, funds remain on{" "}
-                                                <b className="gw-text-brand-gray-700">ApeChain</b>.
+                                            <div className="gw-mt-8 gw-text-brand-gray-600 gw-text-center gw-text-xs gw-px-4 gw-py-3 gw-rounded-xl gw-border" style={{ borderColor: '#FFBD42', backgroundColor: 'rgba(253, 215, 53, 0.08)' }}>
+                                                To fund your wallet, switch your network to <b className="gw-text-brand-gray-700">ApeChain</b>. From Home, choose ApeChain in the top right. Remember, funds remain on <b className="gw-text-brand-gray-700">ApeChain</b>.
                                             </div>
-                                        ))}
+                                        )
+                                    )}
                                 </div>
                             </div>
 
@@ -240,11 +231,8 @@ export function WalletFundView({ onBack, onEnd, onShowActivity, setGradientType 
                                                                 1
                                                             </div>
                                                             <p className="gw-typography-caption">
-                                                                <span className="gw-font-medium">
-                                                                    Buy {fundIntermediaryToken}:
-                                                                </span>{" "}
-                                                                Your {userCurrency} is converted to{" "}
-                                                                {fundIntermediaryToken}
+                                                                <span className="gw-font-medium">Buy {fundIntermediaryToken}:</span> Your{" "}
+                                                                {userCurrency} is converted to {fundIntermediaryToken}
                                                             </p>
                                                         </div>
                                                         <div className="gw-flex gw-items-center gw-space-x-3">
@@ -252,11 +240,8 @@ export function WalletFundView({ onBack, onEnd, onShowActivity, setGradientType 
                                                                 2
                                                             </div>
                                                             <p className="gw-typography-caption">
-                                                                <span className="gw-font-medium">
-                                                                    Swap to {fundSymbol}:
-                                                                </span>{" "}
-                                                                {fundIntermediaryToken} is exchanged for {fundSymbol} on
-                                                                current chain
+                                                                <span className="gw-font-medium">Swap to {fundSymbol}:</span>{" "}
+                                                                {fundIntermediaryToken} is exchanged for {fundSymbol} on current chain
                                                             </p>
                                                         </div>
                                                         <div className="gw-flex gw-items-center gw-space-x-3">
@@ -315,8 +300,8 @@ export function WalletFundView({ onBack, onEnd, onShowActivity, setGradientType 
                                 variant={"tertiary"}
                                 className="gw-w-full gw-mb-3"
                                 style={{
-                                    backgroundColor: isOnrampEnabled ? undefined : "#EAEAEA",
-                                    color: isOnrampEnabled ? undefined : "#808080"
+                                    backgroundColor: isOnrampEnabled ? undefined : '#EAEAEA',
+                                    color: isOnrampEnabled ? undefined : '#808080'
                                 }}
                                 disabled={
                                     quoteLoading ||
@@ -352,8 +337,8 @@ export function WalletFundView({ onBack, onEnd, onShowActivity, setGradientType 
                                     {fundError
                                         ? fundError
                                         : !validAmountEntered
-                                          ? `You pay in ${currencyToSymbol(userCurrency)} (${userCurrency})`
-                                          : "Your order will be fulfilled via Coinbase"}
+                                            ? `You pay in ${currencyToSymbol(userCurrency)} (${userCurrency})`
+                                            : "Your order will be fulfilled via Coinbase"}
                                 </span>
                             </span>
                         </>

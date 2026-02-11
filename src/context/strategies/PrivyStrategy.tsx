@@ -1,26 +1,20 @@
 import {
-    SignTypedDataParams,
     UnsignedTransactionRequest,
     useCrossAppAccounts,
     usePrivy,
+    useWallets,
     WalletWithMetadata
 } from "@privy-io/react-auth";
-import react, { memo, useCallback, useEffect, useState } from "react";
-import { useChainId } from "wagmi";
+import { FC, memo, useCallback, useEffect, useState } from "react";
 import { GLYPH_PRIVY_APP_ID, STAGING_GLYPH_PRIVY_APP_ID, WIDGET_API_BASE_URL } from "../../lib/constants";
 import { createLogger, isEthereumAddress } from "../../lib/utils";
 import { BaseGlyphProviderOptions } from "../../types";
 import { createApiFetch, GlyphApiFetch, GlyphContext } from "../GlyphContext";
+import { useChainId } from "wagmi";
 
 const logger = createLogger("PrivyStrategy");
 
-const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
-    children,
-    glyphUrl,
-    onLogin,
-    onLogout,
-    useStagingTenant
-}) => {
+const PrivyStrategy: FC<BaseGlyphProviderOptions> = ({ children, glyphUrl, onLogin, onLogout, useStagingTenant }) => {
     const [loading, setLoading] = useState<boolean>(true);
     const [apiFetch, setApiFetch] = useState<GlyphApiFetch | null>(null);
     const [walletAddress, setWalletAddress] = useState<string | null>(null);
@@ -35,17 +29,12 @@ const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
         login: privyLogin,
         logout: privyLogout,
         signMessage: privySignMessage,
-        signTypedData: privySignTypedData,
         sendTransaction: privySendTransaction
     } = usePrivy();
-
-    const {
-        signMessage: crossAppSignMessage,
-        signTypedData: crossAppSignTypedData,
-        sendTransaction: crossAppSendTransaction
-    } = useCrossAppAccounts();
+    const { signMessage: crossAppSignMessage, sendTransaction: crossAppSendTransaction } = useCrossAppAccounts();
 
     logger.debug(privyReady, privyAuthenticated, !!privyUser);
+    const { wallets } = useWallets();
 
     useEffect(() => {
         // If Privy is not ready, reset widget state (loading: true)
@@ -138,6 +127,7 @@ const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
         privyUser,
         useStagingTenant,
         usesCrossapp,
+        wallets,
         walletAddress,
         getPrivyAccessToken,
         privyLogout
@@ -159,29 +149,19 @@ const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
 
             return usesCrossapp
                 ? crossAppSignMessage(message, { address: walletAddress })
-                : (await privySignMessage({ message })).signature;
+                : privySignMessage({ message });
         },
         [walletAddress, usesCrossapp, crossAppSignMessage, privySignMessage]
     );
 
-    const signTypedData = useCallback(
-        async ({ data }: { data: SignTypedDataParams }) => {
-            if (!walletAddress) throw new Error("No wallet address found");
-            return usesCrossapp
-                ? crossAppSignTypedData(data, { address: walletAddress })
-                : (await privySignTypedData(data)).signature;
-        },
-        [walletAddress, usesCrossapp, crossAppSignTypedData, privySignTypedData]
-    );
-
     const sendTransaction = useCallback(
-        async ({ transaction }: { transaction: UnsignedTransactionRequest }) => {
+        async ({ transaction }: { transaction: Omit<UnsignedTransactionRequest, "chainId"> }) => {
             if (!walletAddress) throw new Error("No wallet address found");
-            const tx = { ...transaction, chainId: transaction.chainId || chainId };
+            const tx = { ...transaction, chainId };
 
             return usesCrossapp
                 ? crossAppSendTransaction(tx, { address: walletAddress })
-                : (await privySendTransaction(tx, { address: walletAddress })).hash;
+                : privySendTransaction(tx, { address: walletAddress });
         },
         [chainId, usesCrossapp, walletAddress, crossAppSendTransaction, privySendTransaction]
     );
@@ -195,7 +175,6 @@ const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
                 login: authenticate,
                 logout,
                 signMessage,
-                signTypedData,
                 sendTransaction,
                 apiFetch: apiFetch!
             }}

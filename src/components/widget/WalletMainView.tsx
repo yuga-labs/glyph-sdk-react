@@ -1,17 +1,19 @@
 import { useEffect } from "react";
-import { INTERNAL_GRADIENT_TYPE, WalletMainViewTab, WalletView } from "../../lib/constants";
+import { INTERNAL_GRADIENT_TYPE, WalletMainViewTab } from "../../lib/constants";
 import WalletViewFooterNav from "../shared/WalletViewFooterNav";
 import WalletViewHeader from "../shared/WalletViewHeader";
 import { WalletViewTemplate } from "../shared/WalletViewTemplate";
 import { WalletActivityTab } from "./WalletActivityTab";
 import { WalletHomeTab } from "./WalletHomeTab";
 import { WalletLinkedAccountsTab } from "./WalletLinkedAccountsTab";
-import { WalletNFTsTab } from "./WalletNFTsTab";
 import { WalletTokensTab } from "./WalletTokensTab";
-import { WalletTokenVSNftSwitcher } from "./internal/WalletTokenVsNftSwitcher";
+import { WalletNFTsTab } from "./WalletNFTsTab";
 
 export type WalletMainProps = {
-    setWalletView: (view: WalletView) => void;
+    onProfileClick: () => void;
+    onAddFunds: () => void;
+    onSendFunds: () => void;
+    onReceive: () => void;
     activeMainViewScreen: WalletMainViewTab;
     setActiveMainViewScreen: (screen: WalletMainViewTab) => void;
     expandFirstActivityRow?: boolean;
@@ -19,7 +21,10 @@ export type WalletMainProps = {
 };
 
 export function WalletMainView({
-    setWalletView,
+    onAddFunds,
+    onSendFunds,
+    onReceive,
+    onProfileClick,
     activeMainViewScreen,
     setActiveMainViewScreen,
     expandFirstActivityRow = false,
@@ -37,32 +42,21 @@ export function WalletMainView({
 
     return (
         <WalletViewTemplate
-            header={<WalletViewHeader onProfileClick={() => setWalletView(WalletView.PROFILE)} />}
+            header={<WalletViewHeader onProfileClick={onProfileClick} />}
             content={
                 <>
                     {/* Home Tab */}
-                    {activeMainViewScreen === WalletMainViewTab.HOME && <WalletHomeTab setWalletView={setWalletView} />}
-
-                    {[WalletMainViewTab.TOKENS, WalletMainViewTab.NFTS].includes(activeMainViewScreen) && (
-                        <div className="gw-flex gw-flex-col gw-h-full">
-                            {/* Token vs NFT Switcher */}
-                            <WalletTokenVSNftSwitcher
-                                activeTab={activeMainViewScreen}
-                                setActiveTab={setActiveMainViewScreen}
-                            />
-                            {/* Tokens Tab */}
-                            {activeMainViewScreen === WalletMainViewTab.TOKENS && <WalletTokensTab />}
-                            {/* NFTs Tab */}
-                            {activeMainViewScreen === WalletMainViewTab.NFTS && <WalletNFTsTab />}
-                        </div>
+                    {activeMainViewScreen === WalletMainViewTab.HOME && (
+                        <WalletHomeTab onAddFunds={onAddFunds} onReceive={onReceive} onSend={onSendFunds} />
                     )}
-
+                    {/* Tokens Tab */}
+                    {activeMainViewScreen === WalletMainViewTab.TOKENS && <WalletTokensTab />}
+                    {/* NFTs Tab */}
+                    {activeMainViewScreen === WalletMainViewTab.NFTS && <WalletNFTsTab />}
                     {/* Linked Accounts Tab */}
                     {activeMainViewScreen === WalletMainViewTab.LINKED_ACCOUNTS && <WalletLinkedAccountsTab />}
                     {/* Activity Tab */}
-                    {activeMainViewScreen === WalletMainViewTab.ACTIVITY && (
-                        <WalletActivityTab expandFirst={expandFirstActivityRow} />
-                    )}
+                    {activeMainViewScreen === WalletMainViewTab.ACTIVITY && (<WalletActivityTab expandFirst={expandFirstActivityRow} />)}
                 </>
             }
             footer={<WalletViewFooterNav tab={activeMainViewScreen} setTab={setActiveMainViewScreen} />}

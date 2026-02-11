@@ -1,11 +1,11 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@radix-ui/react-accordion";
 import { useState } from "react";
 import ExpandItemIcon from "../../assets/svg/ExpandItemIcon";
-import LinkedNFTChip from "../../assets/svg/LinkedNFTChip";
-import { NFTImgFail } from "../../assets/svg/NFTImgFail";
 import { useGlyph } from "../../hooks/useGlyph";
-import { cn } from "../../lib/utils";
 import { buttonVariants } from "../ui/button";
+import { NFTImgFail } from "../../assets/svg/NFTImgFail";
+import LinkedNFTChip from "../../assets/svg/LinkedNFTChip";
+import { cn } from "../../lib/utils";
 
 type NFTImageProps = React.SVGProps<SVGSVGElement> & {
     alt: string;
@@ -38,22 +38,14 @@ export function WalletNFTsTab() {
     const { glyphUrl, balances, hasBalances } = useGlyph();
     const [expandedItemId, setExpandedItemId] = useState<string>("");
     const nfts = balances?.nfts || [];
-    // const totalValue = balances?.wallet_value?.nfts;
 
     const nftsURL = new URL("/nfts", glyphUrl).toString();
 
     return (
-        <div className="gw-pl-4 gw-pt-4 gw-flex gw-flex-col gw-h-full gw-min-h-0">
+        <div className="gw-pl-4 gw-pt-4 gw-flex gw-flex-col gw-h-full">
             {/* Fixed header */}
-            <div className="gw-flex gw-mb-2 gw-flex-row gw-justify-between gw-items-center gw-w-full gw-flex-shrink-0 gw-pr-4">
+            <div className="gw-flex gw-mb-2 gw-flex-row gw-justify-between gw-items-center gw-w-full gw-flex-shrink-0">
                 <h6>My NFTs</h6>
-                {/* {totalValue ? (
-                    <div className="gw-typography-body2">
-                        <span className="amount">
-                            {formatCurrency(totalValue, balances?.wallet_value?.currency, nfts.length > 0)}
-                        </span>
-                    </div>
-                ) : null} */}
             </div>
 
             {hasBalances && nfts?.length ? (
@@ -147,15 +139,8 @@ export function WalletNFTsTab() {
                     </div>
                 </div>
             ) : (
-                <div
-                    className={cn(
-                        "gw-flex gw-justify-center gw-items-center gw-flex-1 gw-text-brand-gray-500 gw-typography-body2 gw-pr-2 gw-whitespace-pre-wrap gw-text-center",
-                        hasBalances ? "!gw-text-[13px]" : ""
-                    )}
-                >
-                    {hasBalances
-                        ? `No NFTs found.\nIf you own NFTs, they may be on a different network.\nCheck your network selection.`
-                        : "Loading..."}
+                <div className="gw-flex gw-justify-center gw-items-center gw-flex-1 gw-text-brand-gray-500 gw-typography-body2 gw-pr-4">
+                    {hasBalances ? "No NFTs found" : "Loading..."}
                 </div>
             )}
         </div>

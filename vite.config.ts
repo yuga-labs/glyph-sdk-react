@@ -57,7 +57,9 @@ export default ({ mode }: { mode: string }) => {
             sourcemap: true,
             rollupOptions: {
                 external: [
-                    ...Object.keys(peerDependencies),
+                    ...Object.keys(peerDependencies).map(
+                        (dep) => new RegExp(`^${dep.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(/.*)?$`)
+                    ),
                     "react/jsx-runtime",
                     "react/jsx-dev-runtime"
                 ],
