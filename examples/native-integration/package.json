@@ -11,8 +11,10 @@
     "preview": "vite preview --port 3006 --host 0.0.0.0"
   },
   "dependencies": {
+    "@privy-io/react-auth": "3.13.1",
+    "@privy-io/wagmi": "^4.0.1",
     "@tanstack/react-query": "^5.85.5",
-    "@use-glyph/sdk-react": "^2.0.17-rc.5",
+    "@use-glyph/sdk-react": "^2.0.17-rc.6",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "viem": "^2.45.3",
