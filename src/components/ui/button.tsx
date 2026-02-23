@@ -9,17 +9,35 @@ const buttonVariantsClasses = cva(
         variants: {
             variant: {
                 default:
-                    "gw-bg-secondary hover:gw-bg-secondary-light active:gw-bg-secondary-dark gw-text-secondary-foreground",
-                destructive: "gw-bg-destructive gw-text-destructive-foreground",
-                secondary: "gw-bg-foreground hover:gw-bg-foreground/90 active:gw-bg-foreground gw-text-background",
-                outline: "gw-border gw-border-muted gw-bg-background gw-text-foreground active:gw-bg-brand-clay",
+                    "gw-bg-secondary/90 hover:gw-bg-secondary-light/90 active:gw-bg-secondary-dark/90 gw-text-secondary-foreground" +
+                    " " +
+                    "gw-backdrop-blur-sm gw-border gw-border-border/10 gw-shadow-liquidSmButton",
+                destructive:
+                    "gw-bg-destructive/90 gw-text-destructive-foreground" +
+                    " " +
+                    "gw-backdrop-blur-sm gw-border gw-border-border/10 gw-shadow-liquidSmButton",
+                secondary:
+                    "gw-bg-foreground/80 hover:gw-bg-foreground/90 active:gw-bg-foreground/80 gw-text-background" +
+                    " " +
+                    "gw-backdrop-blur-sm gw-border gw-border-border/10 gw-shadow-liquidSmButton",
+                outline:
+                    "gw-border gw-border-muted gw-bg-background/90 gw-text-foreground active:gw-bg-brand-clay" +
+                    " " +
+                    "gw-backdrop-blur-sm gw-border gw-border-border/10 gw-shadow-liquidSmButton",
                 tertiary:
-                    "gw-bg-brand-deep-moss hover:gw-bg-brand-deep-moss-light active:gw-bg-brand-deep-moss-dark gw-text-background",
-                ghost: "gw-text-primary hover:gw-bg-accent hover:gw-text-accent-foreground",
+                    "gw-bg-brand-deep-moss/90 hover:gw-bg-brand-deep-moss-light/90 active:gw-bg-brand-deep-moss-dark/90 gw-text-background" +
+                    " " +
+                    "gw-backdrop-blur-sm gw-border gw-border-border/10 gw-shadow-liquidSmButton",
+                ghost:
+                    "gw-text-primary hover:gw-bg-accent/90 hover:gw-text-accent-foreground" +
+                    " " +
+                    "hover:gw-backdrop-blur-sm gw-border gw-border-transparent hover:gw-border-border/10 hover:gw-shadow-liquidSmButton",
                 link: "gw-text-secondary hover:gw-text-secondary-light active:gw-text-secondary-dark gw-underline-offset-4 hover:gw-underline",
                 "link-inline":
                     "gw-text-secondary hover:gw-text-secondary-light active:gw-text-secondary-dark gw-underline-offset-4 gw-underline",
-                cube: "gw-bg-brand-white gw-text-brand-gray-black [&_svg]:gw-text-secondary [&_svg]:hover:gw-text-secondary-light [&_svg]:active:gw-text-secondary-dark"
+                cube: "gw-bg-brand-white gw-text-brand-gray-black [&_svg]:gw-text-secondary [&_svg]:hover:gw-text-secondary-light [&_svg]:active:gw-text-secondary-dark",
+                liquidGlass:
+                    "gw-bg-brand-white/40 gw-backdrop-blur-sm gw-border gw-border-border/10 gw-shadow-liquidSmButton"
             },
             size: {
                 default: "gw-h-12 gw-px-4 gw-py-3 gw-typography-body1",
@@ -48,8 +66,7 @@ const buttonVariantsClasses = cva(
 );
 
 export interface ButtonProps
-    extends ButtonHTMLAttributes<HTMLButtonElement>,
-        VariantProps<typeof buttonVariantsClasses> {
+    extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariantsClasses> {
     asChild?: boolean;
     shadow?: boolean;
     scale?: boolean;

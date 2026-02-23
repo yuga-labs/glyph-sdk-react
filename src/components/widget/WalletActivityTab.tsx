@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useChainId } from "wagmi";
 import { useActivity } from "../../hooks/useActivity";
 import { useGlyph } from "../../hooks/useGlyph";
+import { chainIdToRelayChain, cn } from "../../lib/utils";
 import { ActivityRow } from "../shared/ActivityRow";
 import CopyButton from "../shared/CopyButton";
 import { LinkWithIcon } from "../shared/LinkWithIcon";
@@ -17,9 +18,12 @@ export type WalletActivityTabProps = {
 export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProps) {
     const { user, fetchForAllNetworks } = useGlyph();
     const chainId = useChainId();
+    const currentBlockExplorerUrl = fetchForAllNetworks ? null : chainIdToRelayChain(chainId)?.explorerUrl;
     const { transactionGroups, fetchTransactions, loadMore, hasMore, isLoading } = useActivity();
 
     const observerTarget = useRef<HTMLDivElement>(null);
+    const sentinelRef = useRef<HTMLDivElement>(null);
+    const [isStuck, setIsStuck] = useState(false);
     const [expandedItemId, setExpandedItemId] = useState<string>("");
 
     const totalTransactions = transactionGroups.reduce((count, group) => count + group.transactions.length, 0);
@@ -66,19 +70,55 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
         };
     }, [handleScroll]);
 
-    return (
-        <div className="gw-pl-4 gw-pt-4 gw-flex gw-flex-col gw-h-full">
-            <div className="gw-flex gw-items-center gw-justify-between gw-pr-4">
-                <a
-                    href={user?.blockExplorerUrl || `https://apescan.io/address/${user?.evmWallet}`}
-                    target="_blank"
-                    rel="noreferrer"
-                >
-                    <h6 className="gw-flex gw-items-center gw-space-x-2">
-                        Activity <ArrowUpRight className="gw-text-primary gw-size-6" />
-                    </h6>
-                </a>
+    // Detect when sticky element is stuck using a sentinel element
+    useEffect(() => {
+        const sentinel = sentinelRef.current;
+        if (!sentinel) return;
 
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                // When sentinel is not intersecting (scrolled past), sticky element is stuck
+                setIsStuck(!entry.isIntersecting);
+            },
+            {
+                root: null,
+                rootMargin: "0px",
+                threshold: 0
+            }
+        );
+
+        observer.observe(sentinel);
+
+        return () => {
+            observer.disconnect();
+        };
+    }, []);
+
+    return (
+        <div className="gw-pl-4 gw-pt-4 gw-flex gw-flex-col gw-h-full gw-relative">
+            {/* Sentinel element to detect when sticky is stuck */}
+            <div ref={sentinelRef} className="gw-absolute gw-top-4" />
+            <a
+                href={
+                    currentBlockExplorerUrl
+                        ? `${currentBlockExplorerUrl}/address/${user?.evmWallet}`
+                        : `https://blockscan.com/address/${user?.evmWallet}`
+                }
+                target="_blank"
+                rel="noreferrer"
+                className={cn(
+                    "gw-sticky gw-z-10 gw-top-4 gw-self-start gw-transition-all gw-duration-300",
+                    isStuck
+                        ? "gw-px-2 gw-py-1 gw-bg-white/20 gw-backdrop-blur-sm gw-border gw-border-brand-white/20 gw-shadow-liquid gw-rounded-full gw-typography-body2 gw-left-1/2 -gw-translate-x-1/2"
+                        : "gw-typography-body1 gw-left-0 gw-translate-x-0 gw-border-transparent gw-shadow-none"
+                )}
+            >
+                <span className="gw-flex gw-items-center gw-space-x-2">
+                    My Activity <ArrowUpRight className={cn("gw-text-primary", isStuck ? "gw-size-4" : "gw-size-5")} />
+                </span>
+            </a>
+
+            <div className="gw-absolute gw-top-4 gw-right-4">
                 <TooltipElement
                     description="Activity keeps track of your transactions and their status. Click any transaction to see details."
                     stopPropagation
@@ -87,7 +127,7 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
                 />
             </div>
 
-            <div className="gw-grid gw-grid-cols-1 gw-mt-2 gw-overflow-auto gw-pr-4 gw-min-h-0">
+            <div className="gw-grid gw-grid-cols-1 gw-overflow-auto gw-pr-4 gw-min-h-0">
                 {isLoading && totalTransactions === 0 ? (
                     // initial loading state
                     new Array(3).fill(null).map((_, index) => {
@@ -187,7 +227,7 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
 
                         {/* loading indicator w/ observer target */}
                         {hasMore && (
-                            <div className="gw-py-2 gw-flex gw-justify-center">
+                            <div className="gw-py-2 gw-mb-4 gw-flex gw-justify-center">
                                 {isLoading ? (
                                     <div className="gw-animate-pulse gw-flex gw-space-x-2 gw-items-center">
                                         <div className="gw-h-2 gw-w-2 gw-bg-primary gw-rounded-full"></div>

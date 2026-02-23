@@ -48,6 +48,9 @@ export type ActivityGroup = {
     transactions: ActivityItem[];
 };
 
+// The abort controller is at module level right now... but if we want to use it in multiple places, we need to move it to the hook.
+let abortController: AbortController | null = null;
+
 export function useActivity(
     pageSize = 10,
     filter?: {
@@ -67,13 +70,20 @@ export function useActivity(
         async (reset = false): Promise<ActivityGroup[] | null> => {
             try {
                 setIsLoading(true);
+
                 // start from beginning if reset
                 const currentOffset = reset ? 0 : offset;
                 if (reset) setTransactionGroups([]);
 
                 if (!glyphApiFetch) return null;
+
+                abortController?.abort?.(); // Cancel last api call
+                abortController = new AbortController();
+                const signal = abortController.signal;
+
                 const res = await glyphApiFetch(
-                    `/api/widget/activity?chainId=${fetchForAllNetworks ? chains.map((c) => c.id).join(",") : chainId}&offset=${currentOffset}&size=${pageSize}&type=${filter?.types?.join(",") ?? ""}`
+                    `/api/widget/activity?chainId=${fetchForAllNetworks ? chains.map((c) => c.id).join(",") : chainId}&offset=${currentOffset}&size=${pageSize}&type=${filter?.types?.join(",") ?? ""}`,
+                    { signal }
                 );
                 if (!res.ok) throw new Error("Failed to fetch transactions");
 
@@ -104,13 +114,17 @@ export function useActivity(
                 // check if we have more to load
                 const totalNewTransactions = newGroups.reduce((count, group) => count + group.transactions.length, 0);
                 setHasMore(totalNewTransactions === pageSize);
+                setIsLoading(false);
 
                 return newGroups;
-            } catch (e) {
+            } catch (e: any) {
+                // handle and don't retry if aborted
+                if (e?.name?.includes?.("AbortError")) {
+                    return null;
+                }
+                setIsLoading(false);
                 toast.error("Failed to fetch transactions");
                 return null;
-            } finally {
-                setIsLoading(false);
             }
         },
         [glyphApiFetch, chainId, pageSize, offset, transactionGroups, fetchForAllNetworks]

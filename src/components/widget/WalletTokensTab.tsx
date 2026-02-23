@@ -11,12 +11,12 @@ export function WalletTokensTab() {
     const totalValue = balances?.wallet_value?.tokens;
 
     return (
-        <div className="gw-pl-4 gw-pt-4 gw-flex gw-flex-col gw-h-full gw-min-h-0">
+        <div className="gw-pl-4 gw-py-4 gw-flex gw-flex-col gw-h-full gw-min-h-0">
             {/* Balance */}
             <div className="gw-flex gw-justify-between gw-items-center gw-w-full gw-pr-4">
-                <h6>Tokens</h6>
-                <div className="gw-typography-body2">
-                    <span className="amount">
+                <span>My Tokens</span>
+                <div className="gw-typography-body1">
+                    <span className="amount gw-font-medium gw-text-brand-gray-600">
                         {/* If tokens are present and any of the token has valueInWei > 0, show <0.01 */}
                         {formatCurrency(
                             totalValue,

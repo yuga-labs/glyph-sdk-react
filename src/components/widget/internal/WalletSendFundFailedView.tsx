@@ -22,8 +22,9 @@ const WalletSendFundFailedView: React.FC<WalletSendFundFailedViewProps> = ({
 }) => {
     return (
         <WalletViewTemplate
+            isStickyHeader={false}
             content={
-                <div className="gw-w-full gw-min-h-full gw-flex gw-flex-col gw-items-center gw-rounded-3xl gw-relative">
+                <div className="gw-w-full gw-min-h-full gw-flex gw-flex-col gw-items-center gw-rounded-6xl gw-relative">
                     <div className="gw-flex gw-justify-end gw-w-full gw-p-4 gw-relative gw-z-10">
                         <div className="gw-size-12">
                             <button

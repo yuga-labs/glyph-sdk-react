@@ -37,7 +37,10 @@ export function WalletMainView({
 
     return (
         <WalletViewTemplate
-            header={<WalletViewHeader onProfileClick={() => setWalletView(WalletView.PROFILE)} />}
+            isStickyHeader={false}
+            header={
+                <WalletViewHeader isStickyHeader={false} onProfileClick={() => setWalletView(WalletView.PROFILE)} />
+            }
             content={
                 <>
                     {/* Home Tab */}

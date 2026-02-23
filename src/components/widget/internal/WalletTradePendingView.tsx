@@ -46,8 +46,10 @@ const WalletTradePendingView: React.FC<WalletTradePendingViewProps> = ({
 
     return (
         <WalletViewTemplate
+            isStickyHeader={true}
             header={
                 <WalletViewHeader
+                    isStickyHeader={true}
                     fullScreenHeader={{
                         title: "Transaction Status",
                         onCloseClick: onBack
@@ -56,7 +58,7 @@ const WalletTradePendingView: React.FC<WalletTradePendingViewProps> = ({
             }
             footerClassName="!gw-pt-2"
             content={
-                <div className="gw-p-4 gw-h-full">
+                <div className="gw-p-4 gw-pt-0 gw-h-full">
                     <h6>{!isGlyphDashboard && !isTxApproved ? "Waiting For Approval" : "Finalizing Transaction"}</h6>
                     <div className="gw-mt-4 gw-typography-caption gw-flex gw-justify-between gw-items-center">
                         <span>Estimated wait time:</span>
@@ -67,10 +69,10 @@ const WalletTradePendingView: React.FC<WalletTradePendingViewProps> = ({
                     </div>
 
                     <div className="gw-mt-4 gw-flex gw-justify-center gw-items-center">
-                        <div className="gw-rounded-full gw-flex gw-flex-col gw-items-center gw-justify-center gw-p-10 gw-relative gw-size-64 gw-overflow-hidden gw-bg-white dark:gw-bg-black">
+                        <div className="gw-rounded-full gw-flex gw-flex-col gw-items-center gw-justify-center gw-p-10 gw-relative gw-size-64 gw-overflow-hidden gw-bg-brand-white">
                             <LoadingCircleIcon className="gw-absolute gw-inset-0 gw-animate-spin gw-size-64 gw-z-0" />
 
-                            <div className="gw-flex gw-items-center gw-justify-between gw-relative gw-z-10">
+                            <div className="gw-flex gw-items-center gw-justify-between gw-relative gw-z-[1]">
                                 <TokenAndChainIcon
                                     token={{
                                         name: fromCurrency?.name,
@@ -98,14 +100,14 @@ const WalletTradePendingView: React.FC<WalletTradePendingViewProps> = ({
                             </div>
 
                             <div className="gw-flex gw-gap-3 gw-items-center">
-                                <div className="gw-my-5 gw-flex gw-flex-col gw-items-center gw-justify-center gw-text-brand-success gw-relative gw-z-10">
+                                <div className="gw-my-5 gw-flex gw-flex-col gw-items-center gw-justify-center gw-text-brand-success gw-relative gw-z-[1]">
                                     <CaretDownIcon className="gw-animate-pulse gw-w-4" />
                                     <CaretDownIcon className="gw-animate-pulse gw-delay-300 gw-w-4" />
                                     <CaretDownIcon className="gw-animate-pulse gw-delay-600 gw-w-4" />
                                 </div>
                             </div>
 
-                            <div className="gw-flex gw-items-center gw-justify-between gw-relative gw-z-10">
+                            <div className="gw-flex gw-items-center gw-justify-between gw-relative gw-z-[1]">
                                 <TokenAndChainIcon
                                     token={{
                                         name: toCurrency?.name,
@@ -157,7 +159,7 @@ const WalletTradePendingView: React.FC<WalletTradePendingViewProps> = ({
                             </span>
                         )}
                     </span>
-                    <Button variant="outline" className="gw-w-full gw-mt-4" onClick={onBack}>
+                    <Button variant="tertiary" className="gw-w-full gw-mt-4" onClick={onBack}>
                         Back to Home
                     </Button>
                 </>

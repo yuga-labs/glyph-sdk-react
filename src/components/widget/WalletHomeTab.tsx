@@ -34,7 +34,7 @@ export function WalletHomeTab({ setWalletView }: WalletHomeTabProps) {
             >
                 {!fetchForAllNetworks ? (
                     <>
-                        <h6>My Balance</h6>
+                        <span>My Balance</span>
                         <div className="gw-flex gw-font-medium gw-items-center gw-gap-1">
                             {!hasBalances || nativeBalance?.value === undefined ? (
                                 <Skeleton className="gw-w-20 gw-h-6" />
@@ -89,7 +89,7 @@ export function WalletHomeTab({ setWalletView }: WalletHomeTabProps) {
             </div>
 
             {/* Actions */}
-            <div className="gw-flex gw-space-x-2 gw-w-fit gw-pb-2">
+            <div className="gw-flex gw-space-x-2 gw-w-fit gw-pb-2 gw-mb-4">
                 {/* Fund button */}
                 <Button shadow variant="cube" size="cube" onClick={() => setWalletView(WalletView.FUND)}>
                     <span className="gw-flex gw-flex-col gw-items-center gw-justify-center gw-space-y-1 gw-mt-2">

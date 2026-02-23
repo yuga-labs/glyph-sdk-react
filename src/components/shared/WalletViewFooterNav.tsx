@@ -21,9 +21,7 @@ const WalletViewFooterNav: React.FC<WalletViewFooterNavProps> = ({ tab, setTab }
             <button className="tab" onClick={() => setTab(WalletMainViewTab.HOME)}>
                 <HomeIcon
                     className={cn(
-                        tab === WalletMainViewTab.HOME
-                            ? "gw-fill-secondary gw-text-secondary"
-                            : "gw-text-brand-gray-600",
+                        tab === WalletMainViewTab.HOME ? "gw-fill-secondary gw-text-secondary" : "gw-text-primary",
                         "gw-size-5"
                     )}
                 />
@@ -33,9 +31,9 @@ const WalletViewFooterNav: React.FC<WalletViewFooterNavProps> = ({ tab, setTab }
             <button className="tab" onClick={() => setTab(WalletMainViewTab.TOKENS)}>
                 <TokensIcon
                     className={cn(
-                        tab === WalletMainViewTab.TOKENS
+                        tab === WalletMainViewTab.TOKENS || tab === WalletMainViewTab.NFTS
                             ? "gw-fill-secondary gw-text-secondary"
-                            : "gw-text-brand-gray-600",
+                            : "gw-text-primary",
                         "gw-size-5"
                     )}
                 />
@@ -52,9 +50,9 @@ const WalletViewFooterNav: React.FC<WalletViewFooterNavProps> = ({ tab, setTab }
             {user?.hasProfile && (
                 <button className="tab" onClick={() => setTab(WalletMainViewTab.LINKED_ACCOUNTS)}>
                     {tab === WalletMainViewTab.LINKED_ACCOUNTS ? (
-                        <WalletsTabFilledIcon className={"gw-text-secondary gw-h-5 gw-pb-px"} />
+                        <WalletsTabFilledIcon className={"gw-text-secondary gw-h-5"} />
                     ) : (
-                        <WalletsTabOutlinedIcon className={"gw-text-brand-gray-600 gw-h-5"} />
+                        <WalletsTabOutlinedIcon className={"gw-text-primary gw-h-5"} />
                     )}
                     <span className="gw-sr-only">Linked Accounts</span>
                 </button>
@@ -64,9 +62,7 @@ const WalletViewFooterNav: React.FC<WalletViewFooterNavProps> = ({ tab, setTab }
                 <ActivityIcon
                     isActive={tab === WalletMainViewTab.ACTIVITY}
                     className={cn(
-                        tab === WalletMainViewTab.ACTIVITY
-                            ? "gw-fill-secondary gw-text-secondary"
-                            : "gw-text-brand-gray-600",
+                        tab === WalletMainViewTab.ACTIVITY ? "gw-fill-secondary gw-text-secondary" : "gw-text-primary",
                         "gw-size-6"
                     )}
                 />

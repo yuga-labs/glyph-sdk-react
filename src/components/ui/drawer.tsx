@@ -51,17 +51,12 @@ const DrawerContent = forwardRef<
         <DrawerPrimitive.Content
             ref={ref}
             className={cn(
-                "gw-fixed gw-left-0 gw-right-0 gw-bottom-0 gw-z-50 gw-flex gw-max-h-[82vh] gw-flex-col gw-rounded-t-3xl gw-bg-popover gw-text-popover-foreground gw-shadow-md",
+                "gw-fixed gw-left-0 gw-right-0 gw-bottom-0 gw-z-50 gw-flex gw-flex-col gw-rounded-t-3xl gw-bg-popover gw-text-popover-foreground gw-shadow-md",
                 className
             )}
             {...props}
         >
-            <div
-                className={cn(
-                    "gw-w-full gw-mx-auto gw-overflow-auto gw-rounded-t-3xl gw-pt-2",
-                    childrenWrapperClassName
-                )}
-            >
+            <div className={cn("gw-w-full gw-mx-auto gw-rounded-t-3xl gw-pt-2", childrenWrapperClassName)}>
                 {children}
             </div>
         </DrawerPrimitive.Content>

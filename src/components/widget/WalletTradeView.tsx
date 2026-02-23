@@ -313,10 +313,12 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
         <>
             {view === SwapView.START && (
                 <WalletViewTemplate
+                    isStickyHeader
                     headerClassName="!gw-py-2"
-                    footerClassName="!gw-pb-3 !gw-pt-2 !gw-px-3"
+                    footerClassName="gw-sticky gw-bottom-0 gw-z-10"
                     header={
                         <WalletViewHeader
+                            isStickyHeader
                             fullScreenHeader={{
                                 title: "Swap",
                                 onBackClick: onBack
@@ -536,10 +538,10 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                 {/* Swap to and from tokens */}
                                 <Button
                                     className={cn(
-                                        "gw-absolute gw-z-10 gw-bottom-0 gw-shadow-buttonMd gw-translate-y-1/2 gw-left-1/2 -gw-translate-x-1/2 gw-h-8 gw-w-8 gw-transition-transform gw-duration-300 gw-ease-in-out",
+                                        "gw-absolute gw-z-[1] gw-bottom-0 gw-translate-y-1/2 gw-left-1/2 -gw-translate-x-1/2 gw-h-8 gw-w-8 gw-transition-transform gw-duration-300 gw-ease-in-out",
                                         swapFromAndToTokensAnimation && "gw-rotate-180"
                                     )}
-                                    variant={"outline"}
+                                    variant={"liquidGlass"}
                                     size={"icon"}
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -726,8 +728,13 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
 
                             {/* Tx data */}
                             {quoteEnabled && (
-                                <div className="gw-typography-body2 gw-pt-3 gw-border-t gw-border-muted">
-                                    <div className="gw-flex gw-justify-between gw-items-center">
+                                <div
+                                    className={cn(
+                                        "gw-typography-body2 gw-mt-2 gw-w-full gw-rounded-xl gw-p-2",
+                                        "gw-bg-brand-white/40 gw-backdrop-blur-sm gw-border gw-border-brand-white/20 gw-shadow-liquidSm"
+                                    )}
+                                >
+                                    <div className="gw-flex gw-justify-between gw-items-center gw-space-x-1">
                                         <span>Max Slippage</span>
                                         <span className="gw-text-brand-gray-500 gw-flex gw-items-center gw-gap-2">
                                             <span className="gw-text-foreground gw-bg-muted gw-rounded-full gw-px-2 gw-py-0.5 gw-typography-caption">
@@ -745,14 +752,14 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                         </span>
                                     </div>
 
-                                    <div className="gw-flex gw-justify-between gw-items-center gw-mt-0.5">
+                                    <div className="gw-flex gw-justify-between gw-items-center gw-mt-2 gw-space-x-1">
                                         <span>Transaction Time</span>
                                         <span className="gw-text-brand-gray-500">
                                             {quote ? (quote?.details?.timeEstimate || "<15") + "s" : "-"}
                                         </span>
                                     </div>
 
-                                    <div className="gw-flex gw-justify-between gw-items-center gw-mt-0.5">
+                                    <div className="gw-flex gw-justify-between gw-items-center gw-mt-2 gw-space-x-1">
                                         <span>Fees {appFeesWaived ? "" : `(${RELAY_APP_FEE_BPS / 100}%)`}</span>
                                         <div className="gw-text-brand-gray-500">
                                             {quote ? (
@@ -771,7 +778,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                         </div>
                                     </div>
 
-                                    <div className="gw-flex gw-justify-between gw-items-center gw-mt-0.5">
+                                    <div className="gw-flex gw-justify-between gw-items-center gw-mt-2 gw-space-x-1">
                                         <span>Network Fees</span>
                                         <div className="gw-text-brand-gray-500">
                                             {quote ? (
@@ -788,7 +795,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                         </div>
                                     </div>
 
-                                    <div className="gw-flex gw-justify-between gw-items-center gw-mt-0.5">
+                                    <div className="gw-flex gw-justify-between gw-items-center gw-mt-2 gw-space-x-1">
                                         <span>Total</span>
                                         <div className="gw-text-foreground gw-font-medium">
                                             {quote && currencyInUsd ? (
@@ -811,7 +818,12 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                     footer={
                         <>
                             <span
-                                className={`gw-inline-flex gw-items-center gw-text-center gw-space-x-2 gw-mb-2 gw-typography-caption first-letter:gw-uppercase ${blockingError ? "gw-text-destructive" : "gw-text-brand-gray-500"}`}
+                                className={cn(
+                                    `gw-inline-flex gw-items-center gw-text-center gw-space-x-2 gw-mb-2 gw-typography-caption first-letter:gw-uppercase ${blockingError ? "gw-text-destructive gw-bg-destructive-foreground/60" : "gw-text-brand-gray-500"}`,
+                                    blockingError
+                                        ? "gw-backdrop-blur-sm gw-border gw-border-brand-white/20 gw-shadow-liquidSm gw-px-1 gw-py-0.5 gw-rounded-full"
+                                        : ""
+                                )}
                             >
                                 {(() => {
                                     if (blockingError) {

@@ -22,9 +22,11 @@ export default function ChainSelector() {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    const ChainIcon = fetchForAllNetworks ?
-        <AllNetworkIcon /> :
-        <img src={chainIcons.get(chainId)} className="gw-size-6 gw-rounded-full gw-object-cover" />;
+    const ChainIcon = fetchForAllNetworks ? (
+        <AllNetworkIcon />
+    ) : (
+        <img src={chainIcons.get(chainId)} className="gw-size-6 gw-rounded-full gw-object-cover" />
+    );
 
     useEffect(() => {
         setSortedChains(chains.slice().sort((a, b) => (a.id === chainId ? -1 : 1) - (b.id === chainId ? -1 : 1)));
@@ -50,16 +52,16 @@ export default function ChainSelector() {
         <div className="gw-relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="gw-rounded-full gw-shadow-buttonMd gw-px-0.5 gw-py-0.5 gw-h-auto gw-w-auto gw-min-w-0 !gw-ring-0 gw-flex gw-items-center gw-space-x-1 gw-bg-white"
+                className="gw-rounded-full gw-pl-0.5 gw-pr-1 gw-py-0.5 gw-h-auto gw-w-auto gw-min-w-0 !gw-ring-0 gw-flex gw-items-center gw-space-x-0.5 gw-bg-white/20 gw-backdrop-blur-sm gw-border gw-border-brand-white/20 gw-shadow-liquidSm"
             >
-                <div className="gw-mx-1 gw-my-1">
+                <div className="gw-mx-0.5 gw-my-0.5">
                     {ChainIcon ?? <Skeleton className="gw-size-6 gw-rounded-full" />}
                 </div>
                 <ChevronDown className="gw-size-4 gw-text-gray-500" />
             </button>
 
             {isOpen && (
-                <div className="gw-absolute gw-top-full gw-right-0 gw-mt-1 gw-bg-white gw-rounded-xl gw-shadow-md gw-z-50 gw-min-w-[14rem] gw-overflow-hidden">
+                <div className="gw-absolute gw-top-full gw-right-0 gw-mt-1 gw-rounded-xl gw-z-50 gw-min-w-[14rem] gw-overflow-hidden gw-bg-popover/80 gw-backdrop-blur-sm gw-border gw-border-brand-white/20 gw-shadow-liquidSm">
                     <button
                         key={"All"}
                         onClick={() => {
@@ -68,7 +70,7 @@ export default function ChainSelector() {
                         }}
                         className={cn(
                             "gw-w-full gw-flex gw-items-center gw-space-x-2 gw-px-1 gw-py-1 gw-text-left",
-                            fetchForAllNetworks ? "gw-bg-green-500/15" : "hover:gw-bg-gray-50"
+                            fetchForAllNetworks ? "gw-bg-green-500/15" : "hover:gw-bg-gray-500/15"
                         )}
                     >
                         <div className="gw-mx-1 gw-my-1">
@@ -103,13 +105,11 @@ export default function ChainSelector() {
                                 }}
                                 className={cn(
                                     "gw-w-full gw-flex gw-items-center gw-space-x-2 gw-px-1 gw-py-1 gw-text-left",
-                                    isCurrentChain ? "gw-bg-green-500/15" : "hover:gw-bg-gray-50"
+                                    isCurrentChain ? "gw-bg-green-500/15" : "hover:gw-bg-gray-500/15"
                                 )}
                             >
                                 <div className="gw-mx-1 gw-my-1">{OptionChainIcon}</div>
-                                <span className={cn("gw-text-sm", isCurrentChain && "!gw-font-bold")}>
-                                    {chainName}
-                                </span>
+                                <span className={cn("gw-text-sm", isCurrentChain && "!gw-font-bold")}>{chainName}</span>
                             </button>
                         );
                     })}
@@ -117,4 +117,4 @@ export default function ChainSelector() {
             )}
         </div>
     );
-};
+}

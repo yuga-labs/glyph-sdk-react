@@ -1,6 +1,8 @@
+import { useEffect, useRef, useState } from "react";
 import truncateEthAddress from "truncate-eth-address";
 import { PlusSign } from "../../assets/svg/PlusSign";
 import { useGlyph } from "../../hooks/useGlyph";
+import { cn } from "../../lib/utils";
 import CopyButton from "../shared/CopyButton";
 import { Button } from "../ui/button";
 import TooltipElement from "../ui/tooltip-element";
@@ -9,11 +11,50 @@ export function WalletLinkedAccountsTab() {
     const { user, glyphUrl } = useGlyph();
     const profileUrl = new URL("/profile", glyphUrl).toString();
 
+    const sentinelRef = useRef<HTMLDivElement>(null);
+    const [isStuck, setIsStuck] = useState(false);
+
+    // Detect when sticky element is stuck using a sentinel element
+    useEffect(() => {
+        const sentinel = sentinelRef.current;
+        if (!sentinel) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                // When sentinel is not intersecting (scrolled past), sticky element is stuck
+                setIsStuck(!entry.isIntersecting);
+            },
+            {
+                root: null,
+                rootMargin: "0px",
+                threshold: 0
+            }
+        );
+
+        observer.observe(sentinel);
+
+        return () => {
+            observer.disconnect();
+        };
+    }, []);
+
     return (
-        <div className="gw-p-4 gw-flex gw-flex-col gw-justify-between gw-min-h-full">
+        <div className="gw-p-4 gw-flex gw-flex-col gw-justify-between gw-min-h-full gw-relative">
             <div>
-                <div className="gw-mb-6 gw-flex gw-items-center gw-justify-between">
-                    <h6>Wallets</h6>
+                {/* Sentinel element to detect when sticky is stuck */}
+                <div ref={sentinelRef} className="gw-absolute gw-top-4" />
+                <div
+                    className={cn(
+                        "gw-sticky gw-inline-block gw-z-10 gw-top-4 gw-transition-all gw-duration-300",
+                        isStuck
+                            ? "gw-px-2 gw-py-1 gw-bg-white/20 gw-backdrop-blur-sm gw-border gw-border-brand-white/20 gw-shadow-liquid gw-rounded-full gw-typography-body2 gw-left-1/2 -gw-translate-x-1/2"
+                            : "gw-typography-body1 gw-left-0 gw-translate-x-0 gw-border-transparent gw-shadow-none"
+                    )}
+                >
+                    My Wallets
+                </div>
+
+                <div className="gw-absolute gw-top-4 gw-right-4">
                     <TooltipElement
                         stopPropagation
                         description="Your standard crypto wallet for storing assets, sending, and receiving funds."
@@ -24,7 +65,7 @@ export function WalletLinkedAccountsTab() {
 
                 {/* Show Glyph wallet */}
                 {user?.hasProfile && (
-                    <div className="gw-flex gw-items-center gw-w-full">
+                    <div className="gw-flex gw-items-center gw-w-full gw-mt-3">
                         <div className="gw-flex gw-items-start">
                             <div className="gw-typography-body1">
                                 <div className="gw-font-medium">Main Wallet</div>

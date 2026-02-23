@@ -104,7 +104,10 @@ const SwapChainAndTokenSelector = ({
                             setOpen(true);
                             // TODO: Logic to open token selector
                         }}
-                        className="gw-rounded-full gw-shadow-buttonMd gw-p-1 gw-pr-2 gw-h-12 gw-w-auto gw-min-w-0 !gw-ring-0 gw-flex gw-items-center gw-space-x-1"
+                        className={cn(
+                            "gw-rounded-full gw-p-1 gw-pr-2 gw-h-12 gw-w-auto gw-min-w-0 !gw-ring-0 gw-flex gw-items-center gw-space-x-1",
+                            "gw-bg-brand-white/40 gw-backdrop-blur-sm gw-border gw-border-brand-white/20 gw-shadow-liquidSm"
+                        )}
                     >
                         {selectedTokenChain && selectedToken ? (
                             <div className="gw-flex gw-items-center gw-gap-1.5">
@@ -170,10 +173,10 @@ const SwapChainAndTokenSelector = ({
                             <div className="gw-flex gw-gap-2 gw-items-center gw-flex-wrap">
                                 <Button
                                     size={"icon"}
-                                    variant={"outline"}
+                                    variant={"liquidGlass"}
                                     className={cn(
                                         "gw-h-10 gw-p-0.5",
-                                        currentChainId === undefined && "gw-border-primary"
+                                        currentChainId === undefined && "gw-bg-muted/80 gw-ring-primary/50 gw-ring-1"
                                     )}
                                     shadow
                                     onClick={() => setCurrentChainId(undefined)}
@@ -184,10 +187,11 @@ const SwapChainAndTokenSelector = ({
                                     <Button
                                         key={`${chain.id}_networks`}
                                         size={"icon"}
-                                        variant={"outline"}
+                                        variant={"liquidGlass"}
                                         className={cn(
                                             "gw-h-10 gw-p-0.5",
-                                            currentChainId === chain.id && "gw-border-primary"
+                                            currentChainId === chain.id &&
+                                                "gw-bg-green-500/20 gw-ring-primary/50 gw-ring-1"
                                         )}
                                         shadow
                                         onClick={() => setCurrentChainId(chain.id)}
@@ -220,11 +224,11 @@ const SwapChainAndTokenSelector = ({
                                         return (
                                             <Button
                                                 key={`${token.address}_popular_tokens`}
-                                                variant={"outline"}
+                                                variant={"liquidGlass"}
                                                 size="sm"
                                                 className={cn(
                                                     "gw-px-1 gw-gap-1",
-                                                    isTokenSelected && "gw-border-primary"
+                                                    isTokenSelected && "gw-bg-green-500/20 gw-ring-primary/50 gw-ring-1"
                                                 )}
                                                 shadow
                                                 // Since chainId is not available in featuredTokens list, we are using currentChainId of the network selector
@@ -258,7 +262,7 @@ const SwapChainAndTokenSelector = ({
                         {!debouncedSearchTerm && !!relaySupportedTokensBalancesLength && (
                             <div className="gw-flex gw-flex-col gw-gap-2">
                                 <div className="gw-typography-body2 gw-text-brand-gray-500">Your Tokens</div>
-                                <div className="gw-grid gw-grid-cols-1 gw-min-h-0 gw-overflow-auto">
+                                <div className="gw-grid gw-grid-cols-1 gw-px-1 gw-py-2 gw-min-h-0 gw-overflow-auto">
                                     {Object.values(relaySupportedTokensBalances || {})?.map((token, index) => {
                                         const tokenChain =
                                             currentChain ?? chains.find((chain) => chain.id === token.chainId)!;
@@ -288,7 +292,7 @@ const SwapChainAndTokenSelector = ({
                             <div className="gw-typography-body2 gw-text-brand-gray-500">
                                 {debouncedSearchTerm ? "Search Results" : "Global 24H Volume"}
                             </div>
-                            <div className="gw-grid gw-grid-cols-1 gw-min-h-0 gw-overflow-auto">
+                            <div className="gw-grid gw-grid-cols-1 gw-px-1 gw-py-2 gw-min-h-0 gw-overflow-auto">
                                 {isLoading ? (
                                     new Array(12).fill(0).map((_, index) => (
                                         <div key={index} className="gw-w-full">
@@ -369,9 +373,13 @@ const TokenTile = ({
             className="gw-w-full"
         >
             <div
-                className={cn("gw-flex gw-justify-between gw-items-center gw-w-full gw-p-2 gw-rounded-xl", {
-                    "gw-bg-muted": isTokenSelected
-                })}
+                className={cn(
+                    "gw-flex gw-justify-between gw-items-center gw-w-full gw-p-2 gw-rounded-xl hover:gw-bg-gray-500/15",
+                    {
+                        "gw-bg-green-500/15 gw-shadow-liquidSm gw-backdrop-blur-sm gw-border gw-border-brand-white/20":
+                            isTokenSelected
+                    }
+                )}
             >
                 <div className="gw-flex gw-items-center gw-space-x-3">
                     <TokenAndChainIcon

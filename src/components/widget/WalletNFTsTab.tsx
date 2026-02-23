@@ -43,13 +43,13 @@ export function WalletNFTsTab() {
     const nftsURL = new URL("/nfts", glyphUrl).toString();
 
     return (
-        <div className="gw-pl-4 gw-pt-4 gw-flex gw-flex-col gw-h-full gw-min-h-0">
+        <div className="gw-pl-4 gw-py-4 gw-flex gw-flex-col gw-h-full gw-min-h-0">
             {/* Fixed header */}
             <div className="gw-flex gw-mb-2 gw-flex-row gw-justify-between gw-items-center gw-w-full gw-flex-shrink-0 gw-pr-4">
-                <h6>My NFTs</h6>
+                <span>My NFTs</span>
                 {/* {totalValue ? (
-                    <div className="gw-typography-body2">
-                        <span className="amount">
+                    <div className="gw-typography-body1">
+                    <span className="amount gw-font-medium gw-text-brand-gray-600">
                             {formatCurrency(totalValue, balances?.wallet_value?.currency, nfts.length > 0)}
                         </span>
                     </div>

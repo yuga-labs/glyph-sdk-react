@@ -21,8 +21,10 @@ const WalletFundPendingView: React.FC<WalletFundPendingViewProps> = ({ onBack, i
 
     return (
         <WalletViewTemplate
+            isStickyHeader
             header={
                 <WalletViewHeader
+                    isStickyHeader
                     fullScreenHeader={{
                         title: "Transaction Status",
                         onCloseClick: onBack
@@ -30,7 +32,7 @@ const WalletFundPendingView: React.FC<WalletFundPendingViewProps> = ({ onBack, i
                 />
             }
             content={
-                <div className="gw-p-4 gw-h-full">
+                <div className="gw-p-4 gw-pt-0 gw-h-full">
                     <h6>Finalizing Purchase</h6>
                     <div className="gw-mt-4 gw-typography-caption gw-flex gw-justify-between gw-items-center">
                         <span>Estimated wait time:</span>
@@ -38,10 +40,10 @@ const WalletFundPendingView: React.FC<WalletFundPendingViewProps> = ({ onBack, i
                     </div>
 
                     <div className="gw-mt-4 gw-flex gw-justify-center gw-items-center">
-                        <div className="gw-rounded-full gw-flex gw-flex-col gw-items-center gw-justify-center gw-p-10 gw-relative gw-size-64 gw-overflow-hidden gw-bg-white dark:gw-bg-black">
+                        <div className="gw-rounded-full gw-flex gw-flex-col gw-items-center gw-justify-center gw-p-10 gw-relative gw-size-64 gw-overflow-hidden gw-bg-brand-white">
                             <LoadingCircleIcon className="gw-absolute gw-inset-0 gw-animate-spin gw-size-64 gw-z-0" />
 
-                            <div className="gw-flex gw-items-center gw-justify-center gw-relative gw-z-10">
+                            <div className="gw-flex gw-items-center gw-justify-center gw-relative gw-z-[1]">
                                 <NativeTokenIcon className="gw-size-8" />
 
                                 <div className="gw-typography-h6 gw-ml-3">
@@ -49,13 +51,13 @@ const WalletFundPendingView: React.FC<WalletFundPendingViewProps> = ({ onBack, i
                                 </div>
                             </div>
 
-                            <div className="gw-my-4 gw-flex gw-flex-col gw-items-center gw-justify-center gw-text-brand-success gw-relative gw-z-10">
+                            <div className="gw-my-4 gw-flex gw-flex-col gw-items-center gw-justify-center gw-text-brand-success gw-relative gw-z-[1]">
                                 <CaretDownIcon className="gw-animate-pulse gw-w-4" />
                                 <CaretDownIcon className="gw-animate-pulse gw-delay-300 gw-w-4" />
                                 <CaretDownIcon className="gw-animate-pulse gw-delay-600 gw-w-4" />
                             </div>
 
-                            <div className="gw-flex gw-items-center gw-space-x-3 gw-justify-between gw-relative gw-z-10">
+                            <div className="gw-flex gw-items-center gw-space-x-3 gw-justify-between gw-relative gw-z-[1]">
                                 <UserAvatar className="gw-size-8" />
 
                                 <div className="gw-flex gw-flex-col gw-typography-body2">
@@ -73,7 +75,7 @@ const WalletFundPendingView: React.FC<WalletFundPendingViewProps> = ({ onBack, i
                         <span>Transaction ID: </span>
                         <CopyButton textToCopy={id} text={id.slice(0, 20) + "..."} />
                     </span>
-                    <Button variant="outline" className="gw-w-full gw-mt-4" onClick={onBack}>
+                    <Button variant="tertiary" className="gw-w-full gw-mt-4" onClick={onBack}>
                         Back to Home
                     </Button>
                 </>

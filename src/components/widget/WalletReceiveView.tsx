@@ -52,8 +52,10 @@ export function WalletReceiveView({ onBack }: WalletReceiveProps) {
                         title: "Receive",
                         onBackClick: onBack
                     }}
+                    isStickyHeader={true}
                 />
             }
+            isStickyHeader={true}
             content={
                 <div className="gw-w-full gw-p-4 gw-flex gw-flex-col gw-items-center gw-justify-evenly gw-space-y-6 gw-h-full">
                     <div className="gw-bg-primary gw-rounded-3xl gw-p-2 gw-shadow-lg">

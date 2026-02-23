@@ -4,7 +4,7 @@ import truncateEthAddress from "truncate-eth-address";
 import { CaretDownIcon } from "../../../assets/svg/CaretDownIcon";
 import { SuccessIcon } from "../../../assets/svg/SuccessIcon";
 import { useGlyph } from "../../../hooks/useGlyph";
-import { ethereumAvatar } from "../../../lib/utils";
+import { cn, ethereumAvatar } from "../../../lib/utils";
 import UserAvatar from "../../shared/UserAvatar";
 import { WalletViewTemplate } from "../../shared/WalletViewTemplate";
 import { Button } from "../../ui/button";
@@ -27,8 +27,9 @@ const WalletSendFundSuccessView: React.FC<WalletSendFundSuccessViewProps> = ({
 
     return (
         <WalletViewTemplate
+            isStickyHeader={false}
             content={
-                <div className="gw-w-full gw-min-h-full gw-flex gw-flex-col gw-items-center gw-rounded-3xl gw-relative">
+                <div className="gw-w-full gw-min-h-full gw-flex gw-flex-col gw-items-center gw-rounded-6xl gw-relative">
                     <div className="gw-flex gw-justify-end gw-w-full gw-p-4 gw-relative gw-z-10">
                         <div className="gw-size-12">
                             <button
@@ -48,7 +49,12 @@ const WalletSendFundSuccessView: React.FC<WalletSendFundSuccessViewProps> = ({
                                 {`${quote.receivable_amount_in_token} ${tokenSymbol} have been successfully\nsent to ${truncateEthAddress(quote.receiver_address)}`}
                             </span>
 
-                            <div className="gw-my-10 gw-rounded-2xl gw-bg-brand-white dark:gw-bg-brand-black gw-drop-shadow-buttonLg gw-flex gw-p-4 gw-items-center gw-space-x-2 gw-w-full gw-justify-between">
+                            <div
+                                className={cn(
+                                    "gw-my-10 gw-rounded-2xl gw-flex gw-p-4 gw-items-center gw-space-x-2 gw-w-full gw-justify-between",
+                                    "gw-bg-brand-white/70 gw-backdrop-blur-sm gw-border gw-border-brand-white/20 gw-shadow-liquid" // liquid glass shadow
+                                )}
+                            >
                                 <div className="gw-flex gw-gap-2 gw-items-center">
                                     <UserAvatar className="gw-size-6 gw-flex-shrink-0" />
                                     <div className="gw-flex gw-flex-col gw-typography-caption">

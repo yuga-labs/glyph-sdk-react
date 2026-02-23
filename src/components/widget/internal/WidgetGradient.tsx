@@ -9,7 +9,7 @@ export const WidgetGradient = ({ gradientType }: { gradientType: INTERNAL_GRADIE
             // fetchPriority="high"
             src={successGradient}
             alt="success-gradient"
-            className="gw-absolute gw-top-0 gw-left-0 gw-w-full gw-h-full gw-object-cover gw-object-left-bottom gw-z-0 gw-pointer-events-none gw-rounded-t-3xl md:gw-rounded-3xl gw-opacity-20"
+            className="gw-absolute gw-top-0 gw-left-0 gw-w-full gw-h-full gw-object-cover gw-object-left-bottom gw-z-0 gw-pointer-events-none gw-rounded-t-3xl md:gw-rounded-6xl gw-opacity-20"
         />
     ) : gradientType === INTERNAL_GRADIENT_TYPE.SUCCESS ? (
         <img
@@ -17,7 +17,7 @@ export const WidgetGradient = ({ gradientType }: { gradientType: INTERNAL_GRADIE
             // fetchPriority="high"
             src={successGradient}
             alt="success-gradient"
-            className="gw-absolute gw-top-0 gw-left-0 gw-w-full gw-h-full gw-object-cover gw-object-left-bottom gw-z-0 gw-pointer-events-none gw-rounded-t-3xl md:gw-rounded-3xl"
+            className="gw-absolute gw-top-0 gw-left-0 gw-w-full gw-h-full gw-object-cover gw-object-left-bottom gw-z-0 gw-pointer-events-none gw-rounded-t-3xl md:gw-rounded-6xl"
         />
     ) : gradientType === INTERNAL_GRADIENT_TYPE.ERROR ? (
         <img
@@ -25,7 +25,7 @@ export const WidgetGradient = ({ gradientType }: { gradientType: INTERNAL_GRADIE
             // fetchPriority="high"
             src={failedGradient}
             alt="failed-gradient"
-            className="gw-absolute gw-top-0 gw-left-0 gw-w-full gw-h-full gw-object-cover gw-object-left-bottom gw-z-0 gw-pointer-events-none gw-rounded-t-3xl md:gw-rounded-3xl"
+            className="gw-absolute gw-top-0 gw-left-0 gw-w-full gw-h-full gw-object-cover gw-object-left-bottom gw-z-0 gw-pointer-events-none gw-rounded-t-3xl md:gw-rounded-6xl"
         />
     ) : null;
 };

@@ -34,8 +34,10 @@ const WalletSendFundPendingView: React.FC<WalletSendFundPendingViewProps> = ({
 
     return (
         <WalletViewTemplate
+            isStickyHeader={true}
             header={
                 <WalletViewHeader
+                    isStickyHeader={true}
                     fullScreenHeader={{
                         title: "Transaction Status",
                         onCloseClick: onBack
@@ -43,7 +45,7 @@ const WalletSendFundPendingView: React.FC<WalletSendFundPendingViewProps> = ({
                 />
             }
             content={
-                <div className="gw-p-4 gw-h-full">
+                <div className="gw-p-4 gw-pt-0 gw-h-full">
                     <h6>In Progress</h6>
                     <div className="gw-mt-4 gw-typography-caption gw-flex gw-justify-between gw-items-center">
                         <span>Estimated wait time:</span>
@@ -51,10 +53,10 @@ const WalletSendFundPendingView: React.FC<WalletSendFundPendingViewProps> = ({
                     </div>
 
                     <div className="gw-mt-4 gw-flex gw-justify-center gw-items-center">
-                        <div className="gw-rounded-full gw-flex gw-flex-col gw-items-center gw-justify-center gw-p-10 gw-relative gw-size-64 gw-overflow-hidden gw-bg-white dark:gw-bg-black">
+                        <div className="gw-rounded-full gw-flex gw-flex-col gw-items-center gw-justify-center gw-p-10 gw-relative gw-size-64 gw-overflow-hidden gw-bg-brand-white">
                             <LoadingCircleIcon className="gw-absolute gw-inset-0 gw-animate-spin gw-size-64 gw-z-0" />
 
-                            <div className="gw-flex gw-items-center gw-space-x-3 gw-justify-between gw-relative gw-z-10">
+                            <div className="gw-flex gw-items-center gw-space-x-3 gw-justify-between gw-relative gw-z-[1]">
                                 <UserAvatar className="gw-size-8" />
 
                                 <div className="gw-flex gw-flex-col gw-typography-body2">
@@ -64,13 +66,13 @@ const WalletSendFundPendingView: React.FC<WalletSendFundPendingViewProps> = ({
                             </div>
 
                             <div className="gw-flex gw-gap-3 gw-items-center">
-                                <div className="gw-my-5 gw-flex gw-flex-col gw-items-center gw-justify-center gw-text-brand-success gw-relative gw-z-10">
+                                <div className="gw-my-5 gw-flex gw-flex-col gw-items-center gw-justify-center gw-text-brand-success gw-relative gw-z-[1]">
                                     <CaretDownIcon className="gw-animate-pulse gw-w-4" />
                                     <CaretDownIcon className="gw-animate-pulse gw-delay-300 gw-w-4" />
                                     <CaretDownIcon className="gw-animate-pulse gw-delay-600 gw-w-4" />
                                 </div>
 
-                                <div className="gw-flex gw-items-center gw-justify-center gw-relative gw-z-10">
+                                <div className="gw-flex gw-items-center gw-justify-center gw-relative gw-z-[1]">
                                     {TokenIcon}
                                     <div className="gw-typography-body2 gw-ml-2">
                                         <span>{quote?.receivable_amount_in_token}</span>{" "}
@@ -79,7 +81,7 @@ const WalletSendFundPendingView: React.FC<WalletSendFundPendingViewProps> = ({
                                 </div>
                             </div>
 
-                            <div className="gw-flex gw-items-center gw-space-x-3 gw-justify-between gw-relative gw-z-10">
+                            <div className="gw-flex gw-items-center gw-space-x-3 gw-justify-between gw-relative gw-z-[1]">
                                 <UserAvatar
                                     className="gw-size-8"
                                     overrideAlt="Recipient Wallet Address PFP"
@@ -106,7 +108,7 @@ const WalletSendFundPendingView: React.FC<WalletSendFundPendingViewProps> = ({
                             />
                         </span>
                     )}
-                    <Button variant="outline" className="gw-w-full gw-mt-4" onClick={onBack}>
+                    <Button variant="tertiary" className="gw-w-full gw-mt-4" onClick={onBack}>
                         Back to Home
                     </Button>
                 </>

@@ -7,6 +7,7 @@ import { useGlyphFunding } from "../../hooks/useGlyphFunding";
 import { FundView, INTERNAL_GRADIENT_TYPE } from "../../lib/constants";
 import { currencyToSymbol, formatCurrency } from "../../lib/intl";
 import { formatInputNumber } from "../../lib/numericInputs";
+import { cn } from "../../lib/utils";
 import NativeTokenIcon from "../shared/NativeTokenIcon";
 import WalletViewHeader from "../shared/WalletViewHeader";
 import { WalletViewTemplate } from "../shared/WalletViewTemplate";
@@ -87,8 +88,10 @@ export function WalletFundView({ onBack, onEnd, onShowActivity, setGradientType 
         <>
             {view === FundView.BUY && (
                 <WalletViewTemplate
+                    isStickyHeader
                     header={
                         <WalletViewHeader
+                            isStickyHeader
                             fullScreenHeader={{
                                 title: "Fund Wallet",
                                 onBackClick: onBack
@@ -311,9 +314,28 @@ export function WalletFundView({ onBack, onEnd, onShowActivity, setGradientType 
                     }
                     footer={
                         <>
+                            <span
+                                className={cn(
+                                    `gw-inline-flex gw-items-center gw-space-x-2 gw-typography-caption gw-mb-2 ${fundError ? "gw-text-destructive" : "gw-text-brand-gray-500"}`
+                                )}
+                            >
+                                <span
+                                    className={cn(
+                                        "gw-backdrop-blur-sm gw-border gw-border-brand-white/20 gw-shadow-liquidSm gw-px-1 gw-rounded-full",
+                                        fundError ? "gw-bg-destructive-foreground/60" : "gw-bg-brand-white/60"
+                                    )}
+                                >
+                                    {fundError
+                                        ? fundError
+                                        : !validAmountEntered
+                                          ? `*You pay in ${currencyToSymbol(userCurrency)} (${userCurrency})`
+                                          : "*Your order will be fulfilled via Coinbase"}
+                                </span>
+                            </span>
+
                             <Button
                                 variant={"tertiary"}
-                                className="gw-w-full gw-mb-3"
+                                className="gw-w-full"
                                 style={{
                                     backgroundColor: isOnrampEnabled ? undefined : "#EAEAEA",
                                     color: isOnrampEnabled ? undefined : "#808080"
@@ -344,20 +366,9 @@ export function WalletFundView({ onBack, onEnd, onShowActivity, setGradientType 
                                     onramppDisabledError || "Continue"
                                 )}
                             </Button>
-                            <span
-                                className={`gw-inline-flex gw-items-center gw-space-x-2 gw-typography-caption ${fundError ? "gw-text-destructive" : "gw-text-brand-gray-500"}`}
-                            >
-                                <span>
-                                    *{" "}
-                                    {fundError
-                                        ? fundError
-                                        : !validAmountEntered
-                                          ? `You pay in ${currencyToSymbol(userCurrency)} (${userCurrency})`
-                                          : "Your order will be fulfilled via Coinbase"}
-                                </span>
-                            </span>
                         </>
                     }
+                    footerClassName="gw-sticky gw-bottom-0 gw-z-10"
                     mainFooter={false}
                     footerCols={true}
                 />

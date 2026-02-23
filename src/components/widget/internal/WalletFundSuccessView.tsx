@@ -8,6 +8,7 @@ import UserAvatar from "../../shared/UserAvatar";
 import { WalletViewTemplate } from "../../shared/WalletViewTemplate";
 import { Button } from "../../ui/button";
 import NativeTokenIcon from "../../shared/NativeTokenIcon";
+import { cn } from "../../../lib/utils";
 
 interface WalletFundSuccessViewProps {
     onEnd: () => void;
@@ -20,8 +21,9 @@ const WalletFundSuccessView: React.FC<WalletFundSuccessViewProps> = ({ onEnd, on
 
     return (
         <WalletViewTemplate
+            isStickyHeader={false}
             content={
-                <div className="gw-w-full gw-min-h-full gw-flex gw-flex-col gw-items-center gw-rounded-3xl gw-relative">
+                <div className="gw-w-full gw-min-h-full gw-flex gw-flex-col gw-items-center gw-rounded-6xl gw-relative">
                     <div className="gw-flex gw-justify-end gw-w-full gw-p-4 gw-relative gw-z-10">
                         <div className="gw-size-12">
                             <button
@@ -41,7 +43,12 @@ const WalletFundSuccessView: React.FC<WalletFundSuccessViewProps> = ({ onEnd, on
                                 {`Your account has been\nsuccessfully funded!`}
                             </span>
 
-                            <div className="gw-my-10 gw-rounded-2xl gw-bg-background gw-drop-shadow-buttonLg gw-flex gw-p-4 gw-items-center gw-space-x-3 gw-w-full gw-justify-center">
+                            <div
+                                className={cn(
+                                    "gw-my-10 gw-rounded-2xl gw-flex gw-p-4 gw-items-center gw-space-x-2 gw-w-full gw-justify-between",
+                                    "gw-bg-brand-white/70 gw-backdrop-blur-sm gw-border gw-border-brand-white/20 gw-shadow-liquid" // liquid glass shadow
+                                )}
+                            >
                                 <NativeTokenIcon className="gw-size-6 gw-flex-shrink-0" />
                                 <div className="gw-typography-body2">
                                     <span>

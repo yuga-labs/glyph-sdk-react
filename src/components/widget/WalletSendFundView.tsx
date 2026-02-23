@@ -370,8 +370,10 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
 
             {view === SendView.ENTER_AMOUNT && (
                 <WalletViewTemplate
+                    isStickyHeader={true}
                     header={
                         <WalletViewHeader
+                            isStickyHeader={true}
                             fullScreenHeader={{
                                 title: "Send Funds",
                                 onBackClick: () => {
@@ -383,7 +385,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                     content={
                         <div
                             className={cn(
-                                "gw-px-4 gw-pt-3 gw-h-full gw-flex gw-flex-col gw-justify-between gw-items-center gw-gap-3"
+                                "gw-px-4 gw-h-full gw-flex gw-flex-col gw-justify-between gw-items-center gw-gap-3"
                             )}
                         >
                             <div className="gw-w-full">
@@ -527,7 +529,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                             variant="tertiary"
                                             size="sm"
                                             disabled={!Number(token?.value || "0")}
-                                            className="gw-rounded-lg gw-py-1 gw-px-2 gw-h-auto gw-w-16"
+                                            className="gw-py-1 gw-px-2 gw-h-auto gw-w-16"
                                             onClick={() => {
                                                 const valueToSet = transferMax ? "" : `${+(token?.value || 0) || ""}`;
                                                 setSendAmount(valueToSet);
@@ -544,7 +546,12 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                             </div>
 
                             {validAmountEntered ? (
-                                <div className="gw-typography-caption gw-mt-3 gw-w-full">
+                                <div
+                                    className={cn(
+                                        "gw-typography-caption gw-mt-2 gw-mx-1 gw-w-full gw-rounded-xl gw-p-2",
+                                        "gw-bg-brand-white/40 gw-backdrop-blur-sm gw-border gw-border-brand-white/20 gw-shadow-liquidSm"
+                                    )}
+                                >
                                     <div className="gw-flex gw-justify-between gw-items-center gw-space-x-1">
                                         <span>Transaction Time</span>
                                         {quoteLoading || !quote ? (
@@ -571,7 +578,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                             {quoteLoading || !quote ? (
                                                 <Skeleton className="gw-w-20 gw-h-4" />
                                             ) : (
-                                                `${quote?.receivable_amount_in_token} ${token?.symbol} (${quote?.receivable_amount_in_currency} ${token?.currency})`
+                                                `${quote?.receivable_amount_in_token} ${token?.symbol} (${quote?.receivable_amount_in_currency})`
                                             )}
                                         </div>
                                     </div>
@@ -583,7 +590,20 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                     }
                     footer={
                         <>
-                            <div className="gw-p-3 gw-rounded-2xl gw-bg-background gw-drop-shadow-buttonLg gw-flex gw-items-center gw-space-x-2 gw-w-full gw-justify-between">
+                            <div className={cn("gw-text-destructive gw-typography-caption gw-text-center gw-min-h-4")}>
+                                {error ? (
+                                    <span className="gw-bg-destructive-foreground/60 gw-backdrop-blur-sm gw-border gw-border-brand-white/20 gw-shadow-liquidSm gw-px-1 gw-rounded-full">
+                                        {error}
+                                    </span>
+                                ) : null}
+                            </div>
+
+                            <div
+                                className={cn(
+                                    "gw-p-3 gw-rounded-full gw-flex gw-items-center gw-space-x-2 gw-w-full gw-mt-2 gw-justify-between",
+                                    "gw-bg-brand-white/40 gw-backdrop-blur-sm gw-border gw-border-brand-white/20 gw-shadow-liquidSm"
+                                )}
+                            >
                                 <div className="gw-flex gw-gap-2 gw-items-center">
                                     <UserAvatar className="gw-size-6 gw-flex-shrink-0" />
                                     <div className="gw-flex gw-flex-col gw-typography-caption">
@@ -609,9 +629,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                     </div>
                                 </div>
                             </div>
-                            <div className="gw-text-destructive gw-typography-caption gw-text-center gw-mt-1 gw-min-h-4">
-                                {error ? error : null}
-                            </div>
+
                             <Button
                                 variant="default"
                                 className="gw-w-full gw-mt-2"
@@ -709,11 +727,12 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                                     }
                                 }}
                             >
-                                Send
+                                Confirm
                                 {isSignaturePending && <Loader2 className="gw-size-4 gw-animate-spin" />}
                             </Button>
                         </>
                     }
+                    footerClassName="gw-sticky gw-bottom-0 gw-z-10"
                     mainFooter={false}
                     footerCols={true}
                 />

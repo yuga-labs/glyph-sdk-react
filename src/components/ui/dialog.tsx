@@ -18,7 +18,7 @@ const DialogOverlay = React.forwardRef<
     <DialogPrimitive.Overlay
         ref={ref}
         className={cn(
-            "gw-fixed gw-inset-0 gw-z-50 gw-bg-black/40 data-[state=open]:gw-animate-in data-[state=closed]:gw-animate-out data-[state=closed]:gw-fade-out-0 data-[state=open]:gw-fade-in-0 gw-rounded-t-3xl md:gw-rounded-3xl",
+            "gw-fixed gw-inset-0 gw-z-50 gw-bg-black/40 data-[state=open]:gw-animate-in data-[state=closed]:gw-animate-out data-[state=closed]:gw-fade-out-0 data-[state=open]:gw-fade-in-0 gw-rounded-t-3xl md:gw-rounded-6xl",
             className
         )}
         {...props}
@@ -37,7 +37,7 @@ const DialogContent = React.forwardRef<
         <DialogPrimitive.Content
             ref={ref}
             className={cn(
-                "gw-fixed gw-left-[50%] gw-top-[50%] gw-z-50 gw-grid gw-w-[calc(100%-1rem)] gw-max-h-[calc(100vh-2rem)] gw-overflow-auto sm:gw-max-w-lg gw-translate-x-[-50%] gw-translate-y-[-50%] gw-gap-4 gw-bg-popover gw-p-4 gw-shadow-buttonLg gw-duration-200 data-[state=open]:gw-animate-in data-[state=closed]:gw-animate-out data-[state=closed]:gw-fade-out-0 data-[state=open]:gw-fade-in-0 data-[state=closed]:gw-zoom-out-95 data-[state=open]:gw-zoom-in-95 data-[state=closed]:gw-slide-out-to-left-1/2 data-[state=closed]:gw-slide-out-to-top-[48%] data-[state=open]:gw-slide-in-from-left-1/2 data-[state=open]:gw-slide-in-from-top-[48%] gw-rounded-2xl",
+                "gw-fixed gw-left-[50%] gw-top-[50%] gw-z-50 gw-grid gw-w-[calc(100%-1rem)] gw-max-h-[calc(100vh-2rem)] gw-overflow-auto sm:gw-max-w-lg gw-translate-x-[-50%] gw-translate-y-[-50%] gw-gap-4 gw-bg-popover/80 gw-backdrop-blur-sm gw-border gw-border-brand-white/20 gw-p-4 gw-shadow-liquid gw-duration-200 data-[state=open]:gw-animate-in data-[state=closed]:gw-animate-out data-[state=closed]:gw-fade-out-0 data-[state=open]:gw-fade-in-0 data-[state=closed]:gw-zoom-out-95 data-[state=open]:gw-zoom-in-95 data-[state=closed]:gw-slide-out-to-left-1/2 data-[state=closed]:gw-slide-out-to-top-[48%] data-[state=open]:gw-slide-in-from-left-1/2 data-[state=open]:gw-slide-in-from-top-[48%] gw-rounded-4xl",
                 className
             )}
             {...props}

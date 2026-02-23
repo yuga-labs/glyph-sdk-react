@@ -26,10 +26,8 @@ export const GlyphWidget = ({ buttonProps, minWidth = 768, alwaysOpen = false }:
     // hide tab when not ready, not authenticated, or no user
     // show if showWalletPermanently is true
     useEffect(() => {
-        if (alwaysOpen)
-            setGlyphView(GlyphViewType.OPEN);
-        else if (!ready || !authenticated) 
-            setGlyphView(GlyphViewType.CLOSED);
+        if (alwaysOpen) setGlyphView(GlyphViewType.OPEN);
+        else if (!ready || !authenticated) setGlyphView(GlyphViewType.CLOSED);
     }, [ready, authenticated, setGlyphView]);
 
     const [gradientType, setGradientType] = useState<INTERNAL_GRADIENT_TYPE>();
@@ -45,18 +43,21 @@ export const GlyphWidget = ({ buttonProps, minWidth = 768, alwaysOpen = false }:
                     {isDesktop ? (
                         <Popover
                             open={alwaysOpen ? true : glyphView !== GlyphViewType.CLOSED}
-                            onOpenChange={alwaysOpen ? () => setGlyphView(GlyphViewType.OPEN) : (v: boolean) => setGlyphView(v ? GlyphViewType.OPEN : GlyphViewType.CLOSED)}
+                            onOpenChange={
+                                alwaysOpen
+                                    ? () => setGlyphView(GlyphViewType.OPEN)
+                                    : (v: boolean) => setGlyphView(v ? GlyphViewType.OPEN : GlyphViewType.CLOSED)
+                            }
                         >
                             <PopoverTrigger>
-                                {alwaysOpen ? null : (
-                                    <GlyphWidgetButton {...(buttonProps || {})} />
-                                )}
+                                {alwaysOpen ? null : <GlyphWidgetButton {...(buttonProps || {})} />}
                             </PopoverTrigger>
 
                             {/* "glyph-widget" class is required, since it applies the font style to the popover, which is mounted outside the parent div of this component */}
                             <PopoverContent sideOffset={10} align="end" className={`glyph-widget gw-wallet-container`}>
                                 <Toaster theme={theme} />
-                                <WidgetGradient gradientType={gradientType} />
+                                <WidgetGradient gradientType={gradientType ?? INTERNAL_GRADIENT_TYPE.PRIMARY} />{" "}
+                                {/* Default to primary gradient */}
                                 <Wallet setGradientType={setGradientType} />
                             </PopoverContent>
                         </Popover>
@@ -64,24 +65,27 @@ export const GlyphWidget = ({ buttonProps, minWidth = 768, alwaysOpen = false }:
                         // Drawer on Mobile
                         <Drawer
                             open={alwaysOpen ? true : glyphView !== GlyphViewType.CLOSED}
-                            onOpenChange={alwaysOpen ? () => setGlyphView(GlyphViewType.OPEN) : (v: boolean) => setGlyphView(v ? GlyphViewType.OPEN : GlyphViewType.CLOSED)}
+                            onOpenChange={
+                                alwaysOpen
+                                    ? () => setGlyphView(GlyphViewType.OPEN)
+                                    : (v: boolean) => setGlyphView(v ? GlyphViewType.OPEN : GlyphViewType.CLOSED)
+                            }
                         >
                             <DrawerTrigger>
-                                {alwaysOpen ? null : (
-                                    <GlyphWidgetButton {...(buttonProps || {})} />
-                                )}
+                                {alwaysOpen ? null : <GlyphWidgetButton {...(buttonProps || {})} />}
                             </DrawerTrigger>
 
                             {/* "glyph-widget" class is required, since it applies the font style to the popover, which is mounted outside the parent div of this component */}
                             <DrawerContent className={`glyph-widget`}>
-                                <WidgetGradient gradientType={gradientType} />
+                                <WidgetGradient gradientType={gradientType ?? INTERNAL_GRADIENT_TYPE.PRIMARY} />{" "}
+                                {/* Default to primary gradient */}
                                 <DrawerHandle />
                                 <DrawerTitle className="gw-sr-only">Glyph Wallet</DrawerTitle>
                                 <DrawerDescription className="gw-sr-only">
                                     Glyph Widget to access all the things in one place related to your account!
                                 </DrawerDescription>
                                 <Toaster theme={theme} />
-                                <div className="gw-wallet-container gw-w-full">
+                                <div className="gw-wallet-container gw-w-full" style={{ maxHeight: "80dvh" }}>
                                     <Wallet setGradientType={setGradientType} />
                                 </div>
                             </DrawerContent>

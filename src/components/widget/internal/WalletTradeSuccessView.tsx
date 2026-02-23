@@ -3,7 +3,7 @@ import { memo, useMemo } from "react";
 import { CaretDownIcon } from "../../../assets/svg/CaretDownIcon";
 import { SuccessIcon } from "../../../assets/svg/SuccessIcon";
 import { useGlyphSwap } from "../../../context/GlyphSwapContext";
-import { chainIdToRelayChain } from "../../../lib/utils";
+import { chainIdToRelayChain, cn } from "../../../lib/utils";
 import { LinkWithIcon } from "../../shared/LinkWithIcon";
 import { WalletViewTemplate } from "../../shared/WalletViewTemplate";
 import { Button } from "../../ui/button";
@@ -43,8 +43,9 @@ const WalletSendFundSuccessView: React.FC<WalletSendFundSuccessViewProps> = ({
 
     return (
         <WalletViewTemplate
+            isStickyHeader={false}
             content={
-                <div className="gw-w-full gw-min-h-full gw-flex gw-flex-col gw-items-center gw-rounded-3xl gw-relative">
+                <div className="gw-w-full gw-min-h-full gw-flex gw-flex-col gw-items-center gw-rounded-6xl gw-relative">
                     <div className="gw-flex gw-justify-end gw-w-full gw-p-4 gw-relative gw-z-10">
                         <div className="gw-size-12">
                             <button
@@ -66,7 +67,12 @@ const WalletSendFundSuccessView: React.FC<WalletSendFundSuccessViewProps> = ({
                                     `You have successfully swapped\n${fromCurrency.symbol} for ${toCurrency.symbol}`}
                             </span>
 
-                            <div className="gw-my-6 gw-rounded-2xl gw-bg-background gw-drop-shadow-buttonLg gw-flex gw-p-4 gw-items-center gw-space-x-3 gw-w-full gw-justify-center">
+                            <div
+                                className={cn(
+                                    "gw-my-6 gw-rounded-2xl gw-flex gw-p-4 gw-items-center gw-space-x-3 gw-w-full gw-justify-center",
+                                    "gw-bg-brand-white/70 gw-backdrop-blur-sm gw-border gw-border-brand-white/20 gw-shadow-liquid"
+                                )}
+                            >
                                 <TokenAndChainIcon
                                     token={{
                                         name: fromCurrency?.name,

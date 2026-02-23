@@ -77,7 +77,10 @@ const SendFundChainAndTokenSelector = ({
                             setOpen(true);
                             // TODO: Logic to open token selector
                         }}
-                        className="gw-rounded-full gw-shadow-buttonMd gw-p-1 gw-pr-2 gw-h-12 gw-w-auto gw-min-w-0 !gw-ring-0 gw-flex gw-items-center gw-space-x-1"
+                        className={cn(
+                            "gw-rounded-full gw-p-1 gw-pr-2 gw-h-12 gw-w-auto gw-min-w-0 !gw-ring-0 gw-flex gw-items-center gw-space-x-1",
+                            "gw-bg-brand-white/40 gw-backdrop-blur-sm gw-border gw-border-brand-white/20 gw-shadow-liquidSm"
+                        )}
                     >
                         {selectedTokenChain && selectedToken ? (
                             <div className="gw-flex gw-items-center gw-gap-1.5">
@@ -133,8 +136,11 @@ const SendFundChainAndTokenSelector = ({
                             <div className="gw-flex gw-gap-2 gw-items-center gw-flex-wrap">
                                 <Button
                                     size={"icon"}
-                                    variant={"outline"}
-                                    className={cn("gw-h-10 gw-p-0.5", currentChainId === "all" && "gw-border-primary")}
+                                    variant={"liquidGlass"}
+                                    className={cn(
+                                        "gw-h-10 gw-p-0.5",
+                                        currentChainId === "all" && "gw-bg-muted/80 gw-ring-primary/50 gw-ring-1"
+                                    )}
                                     shadow
                                     onClick={() => setFetchForAllNetworks(true)}
                                 >
@@ -144,10 +150,11 @@ const SendFundChainAndTokenSelector = ({
                                     <Button
                                         key={`${chain.id}_networks`}
                                         size={"icon"}
-                                        variant={"outline"}
+                                        variant={"liquidGlass"}
                                         className={cn(
                                             "gw-h-10 gw-p-0.5",
-                                            currentChainId === chain.id && "gw-border-primary"
+                                            currentChainId === chain.id &&
+                                                "gw-bg-green-500/20 gw-ring-primary/50 gw-ring-1"
                                         )}
                                         shadow
                                         onClick={async () => {
@@ -181,7 +188,7 @@ const SendFundChainAndTokenSelector = ({
                         {/* Token List */}
                         <div className="gw-flex gw-flex-col gw-gap-2">
                             <div className="gw-typography-body2 gw-text-brand-gray-500">{"Your tokens"}</div>
-                            <div className="gw-grid gw-grid-cols-1 gw-mt-2 gw-min-h-0 gw-overflow-auto">
+                            <div className="gw-grid gw-grid-cols-1 gw-px-1 gw-py-2 gw-min-h-0 gw-overflow-auto">
                                 {hasBalances && balances?.tokens.length ? (
                                     balances?.tokens?.map((token, index) => {
                                         const tokenChain = currentChain ?? chainIdToRelayChain(token?.chainId)!;
@@ -204,9 +211,10 @@ const SendFundChainAndTokenSelector = ({
                                             >
                                                 <div
                                                     className={cn(
-                                                        "gw-flex gw-justify-between gw-items-center gw-w-full gw-p-2 gw-rounded-xl",
+                                                        "gw-flex gw-justify-between gw-items-center gw-w-full gw-p-2 gw-rounded-xl hover:gw-bg-gray-500/15",
                                                         {
-                                                            "gw-bg-muted": isTokenSelected
+                                                            "gw-bg-green-500/15 gw-shadow-liquidSm gw-backdrop-blur-sm gw-border gw-border-brand-white/20":
+                                                                isTokenSelected
                                                         }
                                                     )}
                                                 >

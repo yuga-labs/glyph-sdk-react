@@ -17,8 +17,10 @@ export function WalletProfileView({ onBack }: WalletProfileProps) {
 
     return (
         <WalletViewTemplate
+            isStickyHeader
             header={
                 <WalletViewHeader
+                    isStickyHeader
                     fullScreenHeader={{
                         title: "Profile",
                         onBackClick: onBack
@@ -34,7 +36,7 @@ export function WalletProfileView({ onBack }: WalletProfileProps) {
                             onClick={() => {
                                 window.open(editUrl, "_blank");
                             }}
-                            className="gw-absolute gw-group gw-rounded-full !gw-ring-0 gw-h-8 gw-px-2.5 gw-gap-0 gw-top-2 gw-right-2 gw-z-10 gw-inline-flex gw-items-center"
+                            className="gw-absolute gw-group gw-rounded-full !gw-ring-0 gw-h-8 gw-px-2.5 gw-gap-0 gw-top-2 gw-right-2 gw-z-[1] gw-inline-flex gw-items-center"
                         >
                             <span
                                 className={cn(
@@ -52,7 +54,7 @@ export function WalletProfileView({ onBack }: WalletProfileProps) {
                         />
                     </div>
 
-                    <div className="gw-relative gw-z-10 gw-flex gw-flex-col gw-items-center gw-justify-center -gw-translate-y-1/2 gw-top-4 gw-typography-h6-nr">
+                    <div className="gw-relative gw-z-[1] gw-flex gw-flex-col gw-items-center gw-justify-center -gw-translate-y-1/2 gw-top-4 gw-typography-h6-nr">
                         <UserAvatar className="gw-size-28 gw-border-popover gw-border-4" />
                         <div className="gw-mt-4 gw-font-bold">{user?.name}</div>
                     </div>

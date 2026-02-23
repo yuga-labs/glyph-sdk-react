@@ -11,13 +11,29 @@ export type WalletScreenProps = {
     setView?: (view: SelectedView) => void;
     headerClassName?: string;
     footerClassName?: string;
+    isStickyHeader: boolean;
 };
 
-export function WalletViewTemplate({ mainFooter = true, ...props }: WalletScreenProps) {
+export function WalletViewTemplate({ mainFooter = true, isStickyHeader, ...props }: WalletScreenProps) {
     return (
-        <div className="gw-wallet-view">
+        <div
+            className={cn("gw-wallet-view", "gw-overflow-y-auto")}
+            style={{
+                scrollbarGutter: "stable"
+            }}
+        >
             {/* Header */}
-            {props.header && <div className={cn("gw-wallet-header", props.headerClassName)}>{props.header}</div>}
+            {props.header && (
+                <div
+                    className={cn(
+                        "gw-wallet-header",
+                        isStickyHeader ? "gw-sticky gw-top-0 gw-z-10" : "",
+                        props.headerClassName
+                    )}
+                >
+                    {props.header}
+                </div>
+            )}
 
             {/* Content */}
             <div className="gw-wallet-content">{props.content}</div>
@@ -26,7 +42,7 @@ export function WalletViewTemplate({ mainFooter = true, ...props }: WalletScreen
             {props.footer && (
                 <div
                     className={cn(
-                        `${mainFooter ? "gw-wallet-footer-nav" : "gw-wallet-footer"} ${props.footerCols ? "gw-flex-col gw-flex-nowrap gw-items-center" : "gw-flex-row gw-flex-nowrap"}`,
+                        `${mainFooter ? "gw-wallet-footer-nav gw-sticky gw-z-10 gw-rounded-full gw-m-4 gw-bottom-4 gw-right-4 gw-mt-0" + " " + "gw-bg-brand-white/40 gw-backdrop-blur-sm gw-border gw-border-brand-white/20 gw-shadow-liquid" : "gw-wallet-footer"} ${props.footerCols ? "gw-flex-col gw-flex-nowrap gw-items-center" : "gw-flex-row gw-flex-nowrap"}`,
                         props.footerClassName
                     )}
                 >

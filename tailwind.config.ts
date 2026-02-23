@@ -117,7 +117,14 @@ export default {
                 buttonSm: "0px 2px 3px 0px hsla(0, 0%, 0%, 0.1)",
                 buttonLg: "0px 6px 32px 0px hsla(0, 0%, 0%, 0.1)",
                 buttonMd: "0px 1px 10px 0px rgba(0, 0, 0, 0.12), 0px 1px 1px 0px rgba(0, 0, 0, 0.25)",
-                inputFocus: "0px 1px 2px 0px rgba(0, 0, 0, 0.08), 0px 1px 24px 0px rgba(0, 0, 0, 0.15)"
+                inputFocus: "0px 1px 2px 0px rgba(0, 0, 0, 0.08), 0px 1px 24px 0px rgba(0, 0, 0, 0.15)",
+                dropdown: "0px 2px 4px 0px hsla(129, 4%, 70%, 1)",
+                navbar: "0px 4px 25px 0px hsla(129, 4%, 70%, 1)",
+                liquidSm:
+                    "0px 2px 4px 0px hsla(129, 4%, 70%, 1), 0 0 20px rgba(255, 255, 255, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.6), inset 0 -3px 6px rgba(0, 0, 0, 0.15)",
+                liquidSmButton:
+                    "0px 2px 4px 0px hsla(129, 4%, 70%, 0.4), 0 0 20px rgba(255, 255, 255, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.6), inset 0 -3px 6px rgba(0, 0, 0, 0.15)",
+                liquid: "0 10px 30px rgba(0, 0, 0, 0.15), 0 0 20px rgba(255, 255, 255, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.6), inset 0 -6px 12px rgba(0, 0, 0, 0.15)"
             },
             dropShadow: {
                 buttonLg: ["0px 2px 1px hsla(0, 0%, 0%, 0.1)", "0px 3px 4px hsla(0, 0%, 0%, 0.1)"]
@@ -136,7 +143,9 @@ export default {
                 lg: "var(--gw-radius)",
                 md: "calc(var(--gw-radius) - 2px)",
                 sm: "calc(var(--gw-radius) - 4px)",
-                "4xl": "1.75rem"
+                "4xl": "1.75rem",
+                "5xl": "2rem",
+                "6xl": "2.25rem"
             },
             transitionDelay: {
                 "600": "600ms"
