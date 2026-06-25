@@ -109,7 +109,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
         }
     }, [nativeToken]);
 
-    const [sendAmount, setSendAmount] = useState<string>("10");
+    const [sendAmount, setSendAmount] = useState<string>("");
     const [debouncedSendAmount, setDebouncedSendAmount] = useState<number>(Number(sendAmount));
     const [transferMax, setTransferMax] = useState<boolean>(false);
 
