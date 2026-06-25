@@ -8,7 +8,8 @@ import {
 } from "@use-glyph/sdk-react";
 import { ConnectKitProvider } from "connectkit";
 import { useMemo } from "react";
-import { http, Transport } from "viem";
+import { fallback, http, Transport } from "viem";
+import { mainnet } from "viem/chains";
 import { createConfig, WagmiProvider } from "wagmi";
 import "./App.css";
 import Consumer from "./consumer";
@@ -16,7 +17,9 @@ import Consumer from "./consumer";
 const queryClient = new QueryClient();
 
 function App() {
-    const { chains } = useGlyphConfigureDynamicChains();
+    const { chains } = useGlyphConfigureDynamicChains(undefined, {
+        [mainnet.id]: "https://ethereum-rpc.publicnode.com"
+    });
 
     const wagmiConfig = useMemo(() => {
         if (chains && chains.length > 0) {
@@ -24,7 +27,8 @@ function App() {
                 chains,
                 transports: chains.reduce(
                     (acc, chain) => {
-                        acc[chain.id] = http();
+                        const https = (chain.rpcUrls?.default?.http ?? []).filter(Boolean);
+                        acc[chain.id] = https.length ? fallback(https.map((url) => http(url))) : http();
                         return acc;
                     },
                     {} as Record<number, Transport>

@@ -47,9 +47,10 @@ export const GlyphPrivyProvider = ({
     ssr,
     onLogin,
     onLogout,
+    rpcUrls,
     ...props
 }: GlyphPrivyProviderProps) => {
-    const { chains } = useGlyphConfigureDynamicChains(glyphUrl);
+    const { chains } = useGlyphConfigureDynamicChains(glyphUrl, rpcUrls);
 
     const wagmiConfig = useMemo(() => {
         if (!chains || chains.length === 0) {
@@ -62,9 +63,11 @@ export const GlyphPrivyProvider = ({
             transports: chains.reduce(
                 (acc, chain) => {
                     // this transport selection must match the one in providers.ts
-                    const ws = chain.rpcUrls?.default?.webSocket?.[0];
-                    const ht = chain.rpcUrls?.default?.http?.[0];
-                    const transports = [ws && webSocket(ws), ht && http(ht)].filter((x) => !!x);
+                    // filter(Boolean): configureViemChain produces [undefined] for chains without a ws/http
+                    // url, and webSocket(undefined)/http(undefined) would otherwise be added as broken transports.
+                    const wss = (chain.rpcUrls?.default?.webSocket ?? []).filter(Boolean);
+                    const https = (chain.rpcUrls?.default?.http ?? []).filter(Boolean);
+                    const transports = [...wss.map((url) => webSocket(url)), ...https.map((url) => http(url))];
                     acc[chain.id] = transports.length ? fallback(transports) : http();
                     return acc;
                 },

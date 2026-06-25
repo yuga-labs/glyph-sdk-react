@@ -29,6 +29,12 @@ export interface BaseGlyphProviderOptions extends PropsWithChildren {
     useStagingTenant?: boolean;
     onLogin?: () => void;
     onLogout?: () => void;
+    /**
+     * Optional per-chain RPC override. Maps a chainId to a single RPC URL or an array of URLs
+     * (used as a viem `fallback` transport). Chains without an entry keep the default RPC
+     * returned by the Glyph API. Treat this as static at mount — changing it after mount has no effect.
+     */
+    rpcUrls?: Record<number, string | string[]>;
 }
 
 export interface EIP1193GlyphProviderOptionsWithSignature extends BaseGlyphProviderOptions {

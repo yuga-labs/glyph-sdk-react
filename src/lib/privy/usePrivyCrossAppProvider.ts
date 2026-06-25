@@ -13,6 +13,7 @@ import {
     type EIP1193Provider,
     type EIP1193RequestFn,
     type EIP1474Methods,
+    fallback,
     fromHex,
     hexToNumber,
     http,
@@ -105,13 +106,18 @@ export const usePrivyCrossAppProvider = ({ chains, useStagingTenant }: UsePrivyC
 
     const publicClients = useMemo(() => {
         return Object.fromEntries(
-            chains.map((chain) => [
-                chain.id,
-                createPublicClient({
-                    chain,
-                    transport: http(chain.rpcUrls.default.http[0])
-                })
-            ])
+            chains.map((chain) => {
+                // filter(Boolean) guards against configureViemChain's [undefined] http entries; fall back to
+                // http() (chain default resolution) rather than fallback([]) which would throw.
+                const httpUrls = chain.rpcUrls.default.http.filter(Boolean);
+                return [
+                    chain.id,
+                    createPublicClient({
+                        chain,
+                        transport: httpUrls.length ? fallback(httpUrls.map((url) => http(url))) : http()
+                    })
+                ];
+            })
         );
     }, [chains]);
 

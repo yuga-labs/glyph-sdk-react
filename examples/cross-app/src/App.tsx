@@ -1,6 +1,7 @@
 import { GlyphPrivyProvider } from "@use-glyph/sdk-react";
 import "./App.css";
 import Consumer from "./consumer";
+import { mainnet } from "viem/chains";
 
 function App() {
     return (
@@ -11,10 +12,13 @@ function App() {
                 embeddedWallets: {
                     showWalletUIs: true,
                     extendedCalldataDecoding: true,
-                    ethereum:{
+                    ethereum: {
                         createOnLogin: "off" // 'users-without-wallets' | 'all-users' | 'off'
                     }
                 }
+            }}
+            rpcUrls={{
+                [mainnet.id]: "https://ethereum-rpc.publicnode.com"
             }}
         >
             <Consumer />

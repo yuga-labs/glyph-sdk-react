@@ -1,5 +1,5 @@
 import { Loader2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { debounce } from "throttle-debounce";
 import truncateEthAddress from "truncate-eth-address";
@@ -7,6 +7,7 @@ import {
     createPublicClient,
     encodeFunctionData,
     erc20Abi,
+    fallback,
     formatUnits,
     Hex,
     http,
@@ -65,6 +66,10 @@ export type SendFundQuote = {
 };
 
 const SEND_STATUS_REFRESH_INTERNAL_MS = 10 * 1000; // 10 seconds
+// Stop polling for a quote after this many consecutive RPC failures (e.g. when the RPC is rate-limiting us),
+// otherwise the 5s interval keeps hammering the RPC forever and worsens the rate limiting.
+const MAX_QUOTE_FETCH_RETRIES = 5;
+const QUOTE_BUSY_ERROR = "Network is busy. Please try again.";
 const MAX_BALANCE_ERROR = "Not enough balance";
 const NO_TOKENS_ERROR = "Balance not enough to transfer";
 
@@ -87,7 +92,16 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
     );
     const [token, setToken] = useState<GlyphWidgetTokenBalancesItem | undefined>();
 
-    const publicClient = useMemo(() => createPublicClient({ chain: chain, transport: http() }), [chain]);
+    const publicClient = useMemo(() => {
+        // Use the selected chain's RPC (which carries any consumer-supplied rpcUrls override), falling back
+        // across all configured URLs. filter(Boolean) avoids fallback([])/http(undefined) when a chain has no
+        // configured http url; http() with no chain is a no-op until a chain loads.
+        const httpUrls = chain ? chain.rpcUrls.default.http.filter(Boolean) : [];
+        return createPublicClient({
+            chain,
+            transport: httpUrls.length ? fallback(httpUrls.map((url) => http(url))) : http()
+        });
+    }, [chain]);
 
     useEffect(() => {
         if (!token) {
@@ -95,12 +109,15 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
         }
     }, [nativeToken]);
 
-    const [sendAmount, setSendAmount] = useState<string>("");
+    const [sendAmount, setSendAmount] = useState<string>("10");
     const [debouncedSendAmount, setDebouncedSendAmount] = useState<number>(Number(sendAmount));
     const [transferMax, setTransferMax] = useState<boolean>(false);
 
     const [quote, setQuote] = useState<SendFundQuote | null>(null);
     const [quoteLoading, setQuoteLoading] = useState<boolean>(false);
+    // Counts consecutive failed quote fetches. A ref (not state) so bumping it doesn't retrigger the
+    // quote effect and reset the polling interval. Reset to 0 on every successful fetch and effect re-run.
+    const quoteFetchFailuresRef = useRef<number>(0);
     const [isSignaturePending, setIsSignaturePending] = useState<boolean>(false);
 
     const [isPending, setIsPending] = useState<boolean>(false);
@@ -113,7 +130,7 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
     const [txBlockExplorerName, setTxBlockExplorerName] = useState<string>();
     const [txStatus, setTxStatus] = useState<"SUCCESS" | "FAILED" | "PENDING">("PENDING");
 
-    const logger = createLogger("SendFundView");
+    const logger = useMemo(() => createLogger("SendFundView"), []);
 
     useEffect(() => {
         // Only set if no balance and no other error is set
@@ -128,6 +145,24 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
     }, [token?.value, error, setError, setQuoteLoading]);
 
     useEffect(() => {
+        // Fresh failure budget each time the effect (re)runs, i.e. whenever inputs change.
+        quoteFetchFailuresRef.current = 0;
+        let interval: ReturnType<typeof setInterval> | undefined = undefined;
+
+        // Count a failed quote fetch. Once we hit the retry cap, stop the polling loop and surface a
+        // terminal error instead of hammering the (likely rate-limiting) RPC forever.
+        const registerFailure = (err?: any, fallbackMessage: string = QUOTE_BUSY_ERROR) => {
+            quoteFetchFailuresRef.current += 1;
+            setQuoteLoading(false);
+            if (quoteFetchFailuresRef.current >= MAX_QUOTE_FETCH_RETRIES) {
+                logger.error("Giving up on Send quote after consecutive RPC failures", err);
+                setError(QUOTE_BUSY_ERROR);
+                if (interval) clearInterval(interval);
+            } else {
+                setError(err?.shortMessage || fallbackMessage);
+            }
+        };
+
         const fetchQuote = async () => {
             // If on any other screen or signature is pending, don't fetch quote
             if (view !== SendView.ENTER_AMOUNT || isSignaturePending || maxValueError || !publicClient) return;
@@ -151,7 +186,13 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                     maxFeePerGas = fees.maxFeePerGas;
                     maxPriorityFeePerGas = fees.maxPriorityFeePerGas ?? fees.maxFeePerGas / 2n;
                 } catch {
-                    gasPrice = await publicClient.getGasPrice();
+                    try {
+                        gasPrice = await publicClient.getGasPrice();
+                    } catch (error: any) {
+                        console.debug(error);
+                        registerFailure(error, "Failed to estimate fees");
+                        return;
+                    }
                 }
 
                 let gasUnits;
@@ -182,16 +223,14 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                     }
                 } catch (error: any) {
                     console.debug(error);
-                    setError(error?.shortMessage || "Failed to estimate gas");
-                    setQuoteLoading(false);
+                    registerFailure(error, "Failed to estimate gas");
                     return;
                 }
                 console.debug("Send - reached checkpoint 2");
 
                 const feePerGas = maxFeePerGas ?? gasPrice;
                 if (!feePerGas) {
-                    setError("Failed to estimate fees");
-                    setQuoteLoading(false);
+                    registerFailure(undefined, "Failed to estimate fees");
                     return;
                 }
                 const gasCost = feePerGas * gasUnits;
@@ -246,6 +285,8 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                     gasLimit: gasUnits
                 });
 
+                // Successful fetch — reset the failure budget.
+                quoteFetchFailuresRef.current = 0;
                 setQuoteLoading(false);
             }
         };
@@ -254,13 +295,16 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
         fetchQuote();
 
         // Set up interval
-        const interval = setInterval(fetchQuote, 5000);
+        interval = setInterval(fetchQuote, 5000);
 
         // Cleanup
-        return () => clearInterval(interval);
+        return () => {
+            if (interval) clearInterval(interval);
+        };
     }, [
         debouncedSendAmount,
         isSignaturePending,
+        logger,
         maxValueError,
         nativeToken,
         publicClient,

@@ -9,14 +9,31 @@ interface UseGlyphRequiredChainsResult {
     chains: [Chain, ...Chain[]];
 }
 
+/** Normalize the consumer-supplied override into chainId -> non-empty URL array. */
+const normalizeRpcUrls = (rpcUrls?: Record<number, string | string[]>): Record<number, string[]> => {
+    const normalized: Record<number, string[]> = {};
+    if (!rpcUrls) return normalized;
+    for (const [id, value] of Object.entries(rpcUrls)) {
+        const urls = (Array.isArray(value) ? value : [value]).filter((url): url is string => !!url);
+        if (urls.length) normalized[Number(id)] = urls;
+    }
+    return normalized;
+};
+
 /**
  * Hook to fetch the list of required Glyph chain IDs (viem chain ids) from an API endpoint. SHOULD ONLY BE USED ONCE AT THE TOP LEVEL.
  *
  * @param glyphUrl - (optional) The URL of the Glyph API endpoint if need to override
+ * @param rpcUrls - (optional) Per-chain RPC override (chainId -> URL or URL[]). Treated as static at mount.
  */
-export const useGlyphConfigureDynamicChains = (glyphUrl?: string): UseGlyphRequiredChainsResult => {
+export const useGlyphConfigureDynamicChains = (
+    glyphUrl?: string,
+    rpcUrls?: Record<number, string | string[]>
+): UseGlyphRequiredChainsResult => {
     const [requiredChainIds, setRequiredChainIds] = useState<[number, ...number[]]>();
     const [viemChains, setViemChains] = useState<[Chain, ...Chain[]]>([] as unknown as [Chain, ...Chain[]]);
+    // Serialized key so a freshly-allocated `rpcUrls` object on each render doesn't churn the effect deps.
+    const rpcUrlsKey = JSON.stringify(rpcUrls ?? {});
 
     useEffect(() => {
         const fetchRequiredChains = async () => {
@@ -40,15 +57,44 @@ export const useGlyphConfigureDynamicChains = (glyphUrl?: string): UseGlyphRequi
                 data.supportedChains.length > 0 &&
                 data.chains.length > 0
             ) {
+                const overrides = normalizeRpcUrls(rpcUrls);
+
+                // Inject the override onto the RelayChain objects so the non-React path
+                // (createDefaultPublicClient, which re-derives chains from relayClient.chains via
+                // configureViemChain) also honors it. configureViemChain only carries a single
+                // httpRpcUrl, so that path uses the first URL.
+                const chains = data.chains.map((chain) => {
+                    const urls = overrides[chain.id];
+                    return urls ? { ...chain, httpRpcUrl: urls[0] } : chain;
+                });
+
                 setRequiredChainIds(data.supportedChains as [number, ...number[]]);
                 // It's technically RelayChain not Chain, but we're casting for compatibility - let's see if it works
                 setViemChains(
-                    data.chains.map((chain) => configureViemChain(chain as any).viemChain) as [Chain, ...Chain[]]
+                    chains.map((chain) => {
+                        const viemChain = configureViemChain(chain as any).viemChain;
+                        const urls = overrides[chain.id];
+                        if (!urls) return viemChain;
+                        // configureViemChain returns a shared viem/chains singleton for well-known chains
+                        // (e.g. mainnet) — clone instead of mutating it. Override http with the full URL array
+                        // so transports can fall back across them, and drop the default webSocket so the
+                        // consumer's RPC is authoritative (otherwise a relay ws endpoint would be tried first).
+                        return {
+                            ...viemChain,
+                            rpcUrls: {
+                                ...viemChain.rpcUrls,
+                                default: { ...viemChain.rpcUrls.default, http: urls, webSocket: [] },
+                                ...(viemChain.rpcUrls.public
+                                    ? { public: { ...viemChain.rpcUrls.public, http: urls, webSocket: [] } }
+                                    : {})
+                            }
+                        };
+                    }) as [Chain, ...Chain[]]
                 );
 
                 // Configure relay client dynamically
                 relayClient.configure({
-                    chains: data.chains
+                    chains
                 });
             } else {
                 throw new Error("No supported chains returned from API");
@@ -58,7 +104,10 @@ export const useGlyphConfigureDynamicChains = (glyphUrl?: string): UseGlyphRequi
         if (!requiredChainIds) {
             fetchRequiredChains();
         }
-    }, [glyphUrl, requiredChainIds]);
+        // rpcUrls is intentionally read via its serialized key (rpcUrlsKey) so a new object reference
+        // each render doesn't retrigger the fetch; the override is applied during the one-time fetch.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [glyphUrl, requiredChainIds, rpcUrlsKey]);
 
     return { chainIds: requiredChainIds, chains: viemChains };
 };

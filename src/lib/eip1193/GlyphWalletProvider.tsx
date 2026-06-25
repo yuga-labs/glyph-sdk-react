@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { http, type Transport } from "viem";
+import { fallback, http, type Transport } from "viem";
 import { createConfig, WagmiProvider } from "wagmi";
 import { GlyphProvider } from "../../context/GlyphProvider";
 import { useGlyphConfigureDynamicChains } from "../../hooks/useGlyphConfigureDynamicChains";
@@ -45,7 +45,7 @@ export const GlyphWalletProvider = ({
     ssr,
     ...glyphProviderOptions
 }: GlyphWalletProviderProps) => {
-    const { chains } = useGlyphConfigureDynamicChains(glyphProviderOptions.glyphUrl);
+    const { chains } = useGlyphConfigureDynamicChains(glyphProviderOptions.glyphUrl, glyphProviderOptions.rpcUrls);
 
     const wagmiConfig = useMemo(() => {
         if (chains && chains.length > 0) {
@@ -55,7 +55,9 @@ export const GlyphWalletProvider = ({
                 connectors: [glyphWalletConnector({ useStagingTenant: glyphProviderOptions.useStagingTenant })],
                 transports: chains.reduce(
                     (acc, chain) => {
-                        acc[chain.id] = http();
+                        // filter(Boolean): configureViemChain yields [undefined] for chains without an http url.
+                        const https = (chain.rpcUrls?.default?.http ?? []).filter(Boolean);
+                        acc[chain.id] = https.length ? fallback(https.map((url) => http(url))) : http();
                         return acc;
                     },
                     {} as Record<number, Transport>
