@@ -1,6 +1,6 @@
 import { memo, useMemo } from "react";
 import { CaretDownIcon } from "../../../assets/svg/CaretDownIcon";
-import LoadingCircleIcon from "../../../assets/svg/LoadingCircleIcon.";
+import LoadingCircleIcon from "../../../assets/svg/LoadingCircleIcon";
 import { useGlyphSwap } from "../../../context/GlyphSwapContext";
 import { chainIdToRelayChain } from "../../../lib/utils";
 import { LinkWithIcon } from "../../shared/LinkWithIcon";
