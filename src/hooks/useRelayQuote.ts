@@ -1,9 +1,10 @@
+import { Execute } from "@relayprotocol/relay-sdk";
 import { useQuery } from "@tanstack/react-query";
 import { RelayAPIToken, useGlyphSwap } from "../context/GlyphSwapContext";
-import { RELAY_APP_FEE_BPS, RELAY_APP_FEE_RECIPIENT } from "../lib/constants";
-import { relayClient, SOLANA_RELAY_ID } from "../lib/relay";
+import { SOLANA_RELAY_ID } from "../lib/relay";
 import { assertHasValue, chainIdToRelayChain, isNativeAndWrappedPair } from "../lib/utils";
 import { useGlyph } from "./useGlyph";
+import { useGlyphApi } from "./useGlyphApi";
 
 const QUOTE_REFETCH_INTERVAL = 30_000;
 
@@ -29,6 +30,7 @@ export const checkIfGasIsEnough = (
 
 export const useRelayQuote = (enabled?: boolean) => {
     const swapState = useGlyphSwap();
+    const { glyphApiFetch } = useGlyphApi();
 
     const { fromCurrency, toCurrency, tradeType, amount, topupGas, topupGasAmount } = swapState;
     const { user } = useGlyph();
@@ -67,31 +69,38 @@ export const useRelayQuote = (enabled?: boolean) => {
             assertHasValue(toCurrency);
             assertHasValue(amount);
 
+            if (!glyphApiFetch) throw new Error("Wallet not authenticated properly, please refresh and try again");
+
             const fromWallet = fromCurrency.chainId === SOLANA_RELAY_ID ? solanaWallet : evmWallet;
             const toWallet = toCurrency.chainId === SOLANA_RELAY_ID ? solanaWallet : evmWallet;
 
-            return relayClient.actions.getQuote({
-                tradeType,
-                chainId: fromCurrency.chainId!,
-                currency: fromCurrency.address!,
-                toChainId: toCurrency.chainId!,
-                toCurrency: toCurrency.address!,
-                amount: amount, // amount already in wei
-                user: fromWallet,
-                recipient: toWallet,
-                options: {
+            // Goes through the host app's own server rather than calling Relay's /quote directly --
+            // this call can never safely carry a Relay API key since it runs in this
+            // browser-bundled package, and Relay now rejects unauthenticated /quote requests. The
+            // host app computes appFees itself server-side (same isNativeAndWrappedPair waiver),
+            // so it isn't sent here; nativeAndWrappedPair below is only for this hook's own
+            // appFeesWaived/operation return values, not for what's actually charged.
+            const res = await glyphApiFetch("/api/widget/swap/quote/preview", {
+                method: "POST",
+                body: JSON.stringify({
+                    originChainId: fromCurrency.chainId!,
+                    originCurrency: fromCurrency.address!,
+                    destinationChainId: toCurrency.chainId!,
+                    destinationCurrency: toCurrency.address!,
+                    tradeType,
+                    amount, // amount already in wei
+                    user: fromWallet,
+                    recipient: toWallet,
                     topupGas,
-                    topupGasAmount,
-                    appFees: isNativeAndWrappedPair(fromCurrency, toCurrency)
-                        ? undefined // No app fees for wrapping and unwrapping
-                        : [
-                              {
-                                  recipient: RELAY_APP_FEE_RECIPIENT,
-                                  fee: RELAY_APP_FEE_BPS.toString()
-                              }
-                          ]
-                }
+                    topupGasAmount
+                })
             });
+            if (!res.ok) {
+                const body = await res.json().catch(() => null);
+                throw new Error(body?.error || "Failed to fetch quote");
+            }
+
+            return res.json() as Promise<Execute>;
         },
         enabled: isQuotable,
         refetchInterval: QUOTE_REFETCH_INTERVAL,
