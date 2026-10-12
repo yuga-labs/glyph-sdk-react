@@ -15,23 +15,26 @@ export const SWAP_ERROR_MESSAGES = {
 };
 
 export const reformatSwapError = (error: string) => {
+    if (typeof error !== "string" || !error) {
+        return SWAP_ERROR_MESSAGES.SOMETHING_WENT_WRONG;
+    }
+
     try {
         // raw error sent by relay or blockchain
         if (
             error === SWAP_ERROR_MESSAGES.INSUFFICIENT_GAS ||
-            error?.toLowerCase()?.includes("estimategas") ||
-            (error?.toLowerCase()?.includes?.("gas") && error?.toLowerCase()?.includes?.("exceeds"))
+            error.toLowerCase().includes("estimategas") ||
+            (error.toLowerCase().includes("gas") && error.toLowerCase().includes("exceeds"))
         ) {
             return SWAP_ERROR_MESSAGES.INSUFFICIENT_GAS;
         }
 
         // Sent by relay
-        if (error?.toLowerCase()?.includes("no routes found")) {
+        if (error.toLowerCase().includes("no routes found")) {
             return SWAP_ERROR_MESSAGES.NO_ROUTES_FOUND;
         }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (e) {
-        // ignore error
+    } catch (_e) {
+        // ignore parsing errors, fall through to return original or truncated error
     }
 
     return error.length < 300 ? error : SWAP_ERROR_MESSAGES.SOMETHING_WENT_WRONG;
