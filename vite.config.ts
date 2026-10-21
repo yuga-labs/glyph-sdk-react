@@ -39,7 +39,14 @@ export default ({ mode }: { mode: string }) => {
                 tsconfigPath: "./tsconfig.app.json",
                 outDir: "dist/types",
                 entryRoot: "src",
-                include: "src"
+                include: "src",
+                afterDiagnostic(diagnostics) {
+                    if (diagnostics.some((diagnostic) => diagnostic.category === 1)) {
+                        throw new Error(
+                            "SDK declaration generation failed; fix TypeScript diagnostics before publishing."
+                        );
+                    }
+                }
             })
         ],
         define: {

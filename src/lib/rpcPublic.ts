@@ -1,12 +1,12 @@
 import { configureViemChain } from "@relayprotocol/relay-sdk";
-import { createPublicClient, extractChain, fallback, http } from "viem";
+import { createPublicClient, extractChain, fallback, http, type PublicClient } from "viem";
 import { relayClient } from "./relay";
 import { mainnet } from "viem/chains";
 
 /**
  * Intended primarily for client-side code. Could be used as a fallback on server-side code, but bear in mind we could be rate-limited.
  */
-export function createDefaultPublicClient(chainId: number) {
+export function createDefaultPublicClient(chainId: number): PublicClient {
     const relayChains = relayClient?.chains || [];
 
     const viemChains = relayChains.map((c) => configureViemChain(c as any).viemChain);
