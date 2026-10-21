@@ -57,27 +57,7 @@ export function isEthereumAddress(address?: string): boolean {
     return addressRegex.test(address);
 }
 
-// Intended to prevent console.logs to be stripped out by production builds
-const ROOT_NAMESPACE = "GlyphWidget";
-export const createLogger = (namespace: string) => {
-    const debug = Function.prototype.bind.call(console.debug, console);
-    const log = Function.prototype.bind.call(console.log, console);
-    const name = `${ROOT_NAMESPACE}/${namespace}`;
-    return {
-        debug: (...args: any[]) => {
-            debug(`[${name}]`, ...args);
-        },
-        log: (...args: any[]) => {
-            log(`[${name}]`, ...args);
-        },
-        warn: (...args: any[]) => {
-            console.warn(`[${name}]`, ...args);
-        },
-        error: (...args: any[]) => {
-            console.error(`[${name}]`, ...args);
-        }
-    };
-};
+export { createLogger } from "./logger";
 
 export function tokenToBigIntWei(balance: number | string, decimals: number) {
     return BigInt(parseUnits(balance.toString(), decimals));

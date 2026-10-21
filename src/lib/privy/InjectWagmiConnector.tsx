@@ -44,7 +44,7 @@ export const InjectWagmiConnector = ({
 
                 return connector;
             } catch (err) {
-                logger.error("Failed to setup connector:", err);
+                logger.error("Failed to setup connector");
                 setError(err instanceof Error ? err : new Error("Failed to setup connector"));
                 return null;
             }
@@ -64,7 +64,7 @@ export const InjectWagmiConnector = ({
                         await reconnect({ connectors: [connector] });
                         setIsSetup(true);
                     } catch (err) {
-                        logger.error("Failed to reconnect:", err);
+                        logger.error("Failed to reconnect");
                         setError(err instanceof Error ? err : new Error("Failed to reconnect"));
                     }
                 }
@@ -76,7 +76,7 @@ export const InjectWagmiConnector = ({
 
     // Log errors if they occur
     useEffect(() => {
-        if (error) logger.error("Connector error:", error);
+        if (error) logger.error("Connector error");
     }, [error, logger]);
 
     return <>{children}</>;

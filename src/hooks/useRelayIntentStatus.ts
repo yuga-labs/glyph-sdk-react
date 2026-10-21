@@ -3,7 +3,6 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useConfig } from "wagmi";
 import { SwapView } from "../lib/constants";
-import { getBlockExplorerName, getBlockExplorerURL } from "../lib/utils";
 import { useBalances } from "./useBalances";
 
 type TxDetails = {
@@ -49,32 +48,7 @@ export const useRelayIntentStatus = ({ intentRequestId, setTxStatus, setView, on
                         break;
                     }
 
-                    let inTxDetails: TxDetails | undefined;
-                    let outTxDetails: TxDetails | undefined;
                     try {
-                        inTxDetails = data?.inTxHashes?.[0]
-                            ? {
-                                hash: data?.inTxHashes?.[0],
-                                blockExplorerName: data?.originChainId
-                                    ? getBlockExplorerName(data?.originChainId, config?.chains)
-                                    : undefined,
-                                blockExplorerUrl: data?.originChainId
-                                    ? `${getBlockExplorerURL(data?.originChainId, config.chains)}/tx/${data?.inTxHashes?.[0]}`
-                                    : undefined
-                            }
-                            : undefined;
-                        outTxDetails = data?.txHashes?.[0]
-                            ? {
-                                hash: data?.txHashes?.[0],
-                                blockExplorerName: data?.destinationChainId
-                                    ? getBlockExplorerName(data?.destinationChainId, config?.chains)
-                                    : undefined,
-                                blockExplorerUrl: data?.destinationChainId
-                                    ? `${getBlockExplorerURL(data?.destinationChainId, config.chains)}/tx/${data?.txHashes?.[0]}`
-                                    : undefined
-                            }
-                            : undefined;
-
                         const relayTxDetails: TxDetails = {
                             hash: intentRequestId,
                             blockExplorerName: "Relay Explorer",

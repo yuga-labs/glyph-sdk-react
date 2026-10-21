@@ -140,7 +140,6 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
             if (transferMaxLoading) {
                 // If the last fee buffer is less than the quote gas, recalculate the fee buffer
                 if (lastFeeBuffer < BigInt(quote?.fees?.gas?.amount || "0")) {
-                    console.debug("Incorrect fee buffer, recalculating...");
                     const newFeeBuffer = quoteGasWithBuffer;
                     setLastFeeBuffer(newFeeBuffer);
                     const isNativeToken =
@@ -459,9 +458,6 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
                                                                 setTransferMaxLoading(true);
                                                                 try {
                                                                     if (!fromCurrency) {
-                                                                        console.debug(
-                                                                            "No fromCurrency to set max sell amount"
-                                                                        );
                                                                         return;
                                                                     }
                                                                     const feeGasBuffer = await getFeeBufferAmount(

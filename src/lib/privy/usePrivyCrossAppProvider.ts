@@ -128,10 +128,6 @@ export const usePrivyCrossAppProvider = ({ chains, useStagingTenant }: UsePrivyC
                 signer: undefined
             };
         }
-        logger.debug(
-            "finding cross app account for app id",
-            useStagingTenant ? STAGING_GLYPH_PRIVY_APP_ID : GLYPH_PRIVY_APP_ID
-        );
         const crossAppAccount = user.linkedAccounts.find(
             (account) =>
                 account.type === "cross_app" &&
@@ -192,7 +188,7 @@ export const usePrivyCrossAppProvider = ({ chains, useStagingTenant }: UsePrivyC
     const handleRequest = useCallback(
         async (request: RequestArguments) => {
             const { method, params } = request;
-            logger.debug("handleRequest", { method, params });
+            logger.debug("Handling provider request");
 
             // Get the current chainId from the request or use the stored chainId
             const currentChainId = (params?.chainId || params?.[0]?.chainId || +chainId!) as number;

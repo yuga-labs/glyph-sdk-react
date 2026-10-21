@@ -35,8 +35,6 @@ const EIP1193Strategy: react.FC<BaseGlyphProviderOptionsWithSignature> = ({
     const { signTypedDataAsync } = useSignTypedData(); // signing typed data with the wallet
     const { sendTransactionAsync } = useSendTransaction(); // sending transactions with the wallet
 
-    logger.log({ address, isConnected });
-
     // Fetch authentication token from session storage
     const [token, setToken] = useState<string | null>(() => {
         if (typeof window === "undefined") {
@@ -45,7 +43,7 @@ const EIP1193Strategy: react.FC<BaseGlyphProviderOptionsWithSignature> = ({
         try {
             return localStorage.getItem(TOKEN_KEY);
         } catch (error) {
-            logger.warn("Error reading session token", error);
+            logger.warn("Error reading session token");
             return null;
         }
     });
@@ -60,7 +58,7 @@ const EIP1193Strategy: react.FC<BaseGlyphProviderOptionsWithSignature> = ({
         try {
             return localStorage.getItem(NONCE_KEY);
         } catch (error) {
-            logger.warn("Error reading session nonce", error);
+            logger.warn("Error reading session nonce");
             return null;
         }
     });
@@ -76,7 +74,7 @@ const EIP1193Strategy: react.FC<BaseGlyphProviderOptionsWithSignature> = ({
                 localStorage.setItem(NONCE_KEY, sessNonce!);
             }
         } catch (error) {
-            logger.error("Error saving session token", error);
+            logger.error("Error saving session token");
         }
     }, [sessNonce, token]);
 
@@ -89,7 +87,7 @@ const EIP1193Strategy: react.FC<BaseGlyphProviderOptionsWithSignature> = ({
 
                 return payload;
             } catch (error) {
-                logger.error("Can't fetch message to sign", error);
+                logger.error("Can't fetch message to sign");
                 throw new Error("Failed to fetch the message to sign.");
             }
         },
@@ -105,7 +103,7 @@ const EIP1193Strategy: react.FC<BaseGlyphProviderOptionsWithSignature> = ({
                 }).then((resp) => resp.json());
                 return payload as unknown as GlyphSignatureVerifyResponse;
             } catch (error) {
-                logger.error("Can't verify signature", error);
+                logger.error("Can't verify signature");
                 throw new Error("Signature verification failed.");
             }
         },
@@ -160,13 +158,12 @@ const EIP1193Strategy: react.FC<BaseGlyphProviderOptionsWithSignature> = ({
             setLoading(true);
 
             const userSignature = await signMessageAsync({ account: address, message: message });
-            console.log(sessNonce, message, userSignature);
 
             const token = (await verifySignature(address, userSignature, sessNonce))?.token;
 
             setToken(token);
         } catch (error) {
-            logger.error("Authentication failed", error);
+            logger.error("Authentication failed");
             if (!(error as Error)?.message?.toLowerCase?.().includes?.("user rejected")) {
                 await alert(
                     "Authentication failed - your browser could be blocking the popups. Allow popups or try to manually click sign in."

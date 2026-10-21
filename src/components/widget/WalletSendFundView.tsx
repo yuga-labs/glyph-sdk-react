@@ -189,7 +189,6 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                     try {
                         gasPrice = await publicClient.getGasPrice();
                     } catch (error: any) {
-                        console.debug(error);
                         registerFailure(error, "Failed to estimate fees");
                         return;
                     }
@@ -197,7 +196,6 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
 
                 let gasUnits;
 
-                console.debug("Send  - reached checkpoint 1");
                 try {
                     const valueToSend =
                         (transferMax || debouncedSendAmount === Number(token.value || 0)) && token.valueInWei
@@ -222,11 +220,9 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                         });
                     }
                 } catch (error: any) {
-                    console.debug(error);
                     registerFailure(error, "Failed to estimate gas");
                     return;
                 }
-                console.debug("Send - reached checkpoint 2");
 
                 const feePerGas = maxFeePerGas ?? gasPrice;
                 if (!feePerGas) {
@@ -254,7 +250,6 @@ export function WalletSendFundView({ onBack, onEnd, onShowActivity, setGradientT
                             ? BigInt(token.valueInWei || 0)
                             : tokenToBigIntWei(debouncedSendAmount, token.decimals || 18);
                 }
-                console.debug("Send - reached checkpoint 3");
 
                 const receivableAmountInToken = displayNumberPrecision(
                     +formatUnits(valueToReturn, token.decimals || 18),

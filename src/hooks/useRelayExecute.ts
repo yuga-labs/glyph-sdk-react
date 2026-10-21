@@ -52,7 +52,6 @@ export const useRelayExecute = () => {
                 if (!res.ok) throw { code: PRECHECK_FAILURE_CODE, message: SWAP_ERROR_MESSAGES.NO_FINAL_QUOTE };
 
                 if (quoteChainId && quoteChainId !== chainId) {
-                    console.log("Switching chain from", chainId, "to", quoteChainId);
                     await evmAdapter.switchChain(quoteChainId);
                 }
                 parsedRes = await res.json();
@@ -82,8 +81,7 @@ export const useRelayExecute = () => {
                         .execute({
                             quote: finalQuote,
                             wallet: evmAdapter,
-                            onProgress: (data) => {
-                                console.debug("onProgress", data);
+                            onProgress: () => {
                                 resetTimeout(reject);
                             }
                         })
@@ -94,7 +92,6 @@ export const useRelayExecute = () => {
                         });
                 });
             } catch (error) {
-                console.debug("error while executing", error);
                 await reportSwapFailed(txnId);
                 throw error;
             }
@@ -105,14 +102,6 @@ export const useRelayExecute = () => {
             const resultError = (result as any)?.error ?? (result as any)?.reason ?? (result as any)?.message;
             const failedStatuses = new Set(["error", "failed", "failure", "reverted"]);
             if (failedStatuses.has(String(resultStatus).toLowerCase()) || (result as any)?.ok === false) {
-                console.debug(
-                    "failedStatuses",
-                    failedStatuses,
-                    "resultStatus",
-                    resultStatus,
-                    "resultError",
-                    resultError
-                );
                 await reportSwapFailed(txnId);
                 throw new Error(typeof resultError === "string" ? resultError : "Relay execution failed");
             }

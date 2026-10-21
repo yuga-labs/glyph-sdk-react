@@ -6,6 +6,8 @@ import { GlyphProvider } from "./context/GlyphProvider";
 import { Wallet } from "./components/widget/Wallet";
 import ChainSelector from "./components/shared/ChainSelector";
 
+export { setGlyphDebugLogging } from "./lib/logger";
+
 export { useGlyphConfigureDynamicChains } from "./hooks/useGlyphConfigureDynamicChains";
 export { configureRelayChains } from "./lib/relay";
 export { useBalances } from "./hooks/useBalances";

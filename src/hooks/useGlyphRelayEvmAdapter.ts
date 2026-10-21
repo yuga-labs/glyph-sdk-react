@@ -23,7 +23,6 @@ export const useGlyphRelayEvmAdapter = (config: Config | undefined): AdaptedWall
             address: () => Promise.resolve(user?.evmWallet),
             getChainId: async () => {
                 const chainId = getChainId(config);
-                console.log("getting chain id for relay:", chainId);
                 return chainId;
             },
             handleSignMessageStep: async (stepItem) => {
@@ -78,7 +77,6 @@ export const useGlyphRelayEvmAdapter = (config: Config | undefined): AdaptedWall
                     throw new Error("Couldn't fetch transaction status");
                 }
 
-                console.debug(!!firstPassAtPublicClient, !!publicClient);
 
                 const receipt = await publicClient.waitForTransactionReceipt({
                     hash: txHash as Address,
@@ -95,12 +93,10 @@ export const useGlyphRelayEvmAdapter = (config: Config | undefined): AdaptedWall
                     throw new Error(`Execution reverted`);
                 }
 
-                console.debug(!!receipt.transactionHash);
 
                 return receipt;
             },
             switchChain: async (chainId) => {
-                console.log("switching chain to:", chainId, "for relay");
                 await switchChainAsync({ chainId });
             }
         };

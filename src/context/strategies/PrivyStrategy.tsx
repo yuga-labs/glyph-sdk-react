@@ -45,7 +45,6 @@ const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
         sendTransaction: crossAppSendTransaction
     } = useCrossAppAccounts();
 
-    logger.debug(privyReady, privyAuthenticated, !!privyUser);
 
     useEffect(() => {
         // If Privy is not ready, reset widget state (loading: true)
@@ -69,7 +68,6 @@ const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
         ) as WalletWithMetadata | undefined;
 
         const hasPrivyEvmWallet = privyEvmWallet && isEthereumAddress(privyEvmWallet.address);
-        if (hasPrivyEvmWallet) logger.debug("Privy (main) EVM embedded wallet", privyEvmWallet.address);
 
         logger.debug("finding cross-app accounts...");
         // Cross-app accounts are always EVM addresses
@@ -79,7 +77,6 @@ const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
             (account) =>
                 account.providerApp?.id !== (useStagingTenant ? STAGING_GLYPH_PRIVY_APP_ID : GLYPH_PRIVY_APP_ID)
         );
-        logger.debug("linked accounts - non-Glyph", { accounts: otherAccounts });
         const otherAddresses = otherAccounts.map((account) => account.embeddedWallets[0].address);
         if (otherAddresses.length > 0) {
             address = otherAddresses[0];
@@ -93,7 +90,6 @@ const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
             (account) =>
                 account.providerApp?.id === (useStagingTenant ? STAGING_GLYPH_PRIVY_APP_ID : GLYPH_PRIVY_APP_ID)
         );
-        logger.debug("linked accounts - Glyph", { accounts: glyphAccounts });
         const glyphAddresses = glyphAccounts.map((account) => account.embeddedWallets[0].address);
         if (glyphAddresses.length > 0) {
             address = glyphAddresses[0];
@@ -105,10 +101,10 @@ const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
 
         if (address) {
             setUsesCrossapp(true);
-            logger.log("using cross_app account", address);
+            logger.log("using cross_app account");
         } else if (hasPrivyEvmWallet) {
             address = privyEvmWallet.address;
-            logger.log("using Privy (main) EVM embedded wallet", address);
+            logger.log("using Privy (main) EVM embedded wallet");
         }
 
         setWalletAddress(address ?? null);

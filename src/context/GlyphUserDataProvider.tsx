@@ -115,7 +115,6 @@ export const GlyphUserDataProvider: react.FC<PropsWithChildren> = ({ children })
             const shouldRetry = failureCount < 3;
             if (shouldRetry) {
                 logger.debug(`Retrying balances fetch (attempt ${failureCount + 1})...`);
-                console.log("Failed to fetch balances... retrying...");
             } else {
                 toast.error("Failed to fetch balances");
             }
