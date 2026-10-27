@@ -1,39 +1,39 @@
 {
-  "name": "native-integration",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "docker": "vite --port 3006 --host 0.0.0.0",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview --port 3006 --host 0.0.0.0"
-  },
-  "dependencies": {
-    "@privy-io/react-auth": "3.48.1",
-    "@privy-io/wagmi": "4.0.19",
-    "@tanstack/react-query": "^5.85.5",
-    "@use-glyph/sdk-react": "^2.2.0",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "viem": "2.57.5",
-    "wagmi": "2.19.5"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.34.0",
-    "@types/react": "^19.1.1",
-    "@types/react-dom": "^19.1.1",
-    "@vitejs/plugin-react": "^5.0.2",
-    "autoprefixer": "^10.4.21",
-    "eslint": "^9.34.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.20",
-    "globals": "^16.3.0",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17",
-    "typescript": "~5.9.3",
-    "typescript-eslint": "^8.41.0",
-    "vite": "7.3.7"
-  }
+	"name": "native-integration",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"docker": "vite --port 3006 --host 0.0.0.0",
+		"build": "tsc -b && vite build",
+		"lint": "eslint .",
+		"preview": "vite preview --port 3006 --host 0.0.0.0"
+	},
+	"dependencies": {
+		"@privy-io/react-auth": "3.48.1",
+		"@privy-io/wagmi": "4.0.19",
+		"@tanstack/react-query": "^5.85.5",
+		"@use-glyph/sdk-react": "workspace:*",
+		"react": "^19.1.1",
+		"react-dom": "^19.1.1",
+		"viem": "2.57.5",
+		"wagmi": "2.19.5"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.34.0",
+		"@types/react": "^19.1.1",
+		"@types/react-dom": "^19.1.1",
+		"@vitejs/plugin-react": "^5.0.2",
+		"autoprefixer": "^10.4.21",
+		"eslint": "^9.34.0",
+		"eslint-plugin-react-hooks": "^5.2.0",
+		"eslint-plugin-react-refresh": "^0.4.20",
+		"globals": "^16.3.0",
+		"postcss": "^8.5.6",
+		"tailwindcss": "^3.4.17",
+		"typescript": "~5.9.3",
+		"typescript-eslint": "^8.41.0",
+		"vite": "7.3.7"
+	}
 }

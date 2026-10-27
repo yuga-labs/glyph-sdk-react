@@ -4,7 +4,7 @@ Reviewed on 2026-10-27 (UTC), using Node `24.22.1` and pnpm `9.9.0`.
 This review covers the SDK development workspace and its examples, not every
 consumer installation. It does not approve publication or claim a clean audit.
 
-## Selected changes
+## Earlier compatible resolutions (PR128)
 
 Package declarations, peer ranges, existing overrides, and wallet package versions
 are unchanged. These resolutions remain inside their installed parents' ranges:
@@ -47,7 +47,7 @@ The release Docker image runs Nginx and removes that optional Express entrypoint
 although it still copies dependency files. A development classification is not
 proof that a package is absent from the image or safe in another deployment.
 
-## Audit scope and remaining risk
+## Earlier audit scope and remaining risk (PR128)
 
 Baseline and candidate snapshots use the same pnpm version, complete workspace,
 and commands, before and after the compatible resolutions above. Counts are
@@ -63,7 +63,7 @@ The production-only audit includes all examples' runtime dependencies. It exclud
 root development dependencies such as Express, even though that package can be
 used by the optional example server. It is not an audit of an npm consumer's graph.
 
-Two high-severity advisory families remain:
+At the PR128 baseline, two high-severity advisory families remained:
 
 - [bigint-buffer](https://github.com/advisories/GHSA-3gc7-fjrx-p6mg) `1.1.5`,
   affected `<=1.1.5`, has no published fix. The Dynamic example reaches it through
@@ -96,9 +96,13 @@ This is artifact evidence, not a proof that dependency paths are unreachable.
 
 React, viem, wagmi, Privy, RainbowKit, and other declared peers remain external.
 Consumers resolve those dependencies and their transitive parsers themselves.
-Workspace overrides and this pnpm lock do not propagate to npm consumers or the
-public source mirror. The registry's existing published SDK `2.1.12` also differs
-from this candidate `2.2.0`; this patch does not retroactively fix that package.
+Npm consumers do not inherit workspace overrides or this private pnpm lock.
+The public source workspace instead carries its own explicitly reviewed 14-override
+policy and committed public-layout lock, projected from the tested private graph.
+That projection must be regenerated and qualified after dependency changes; it is
+not a fresh release-time resolution or an npm consumer policy. Published packages
+and workspace graphs can differ. These lock changes do not retroactively change
+any published package or an existing consumer installation.
 Public publication remains subject to explicit advisory disposition and release review.
 
 ## Verification
@@ -118,3 +122,66 @@ These checks do not replace authenticated browser flows or qualify real signing.
 Re-run the scoped audits against your own installation before release.
 Passing workspace checks does not establish that an npm consumer has the same
 dependency resolutions or remove the remaining advisory risks above.
+
+## Compatible leaf follow-up (2.2.1 workspace)
+
+Reviewed on 2026-10-27 using pnpm `9.9.0`. Root and library versions stay `2.2.1`.
+Package declarations, overrides, wallet protocol versions, and runtime source are unchanged.
+This follow-up replaces only these declared-compatible resolutions:
+
+| Actual consumer path | Resolution | Existing parent range |
+| --- | --- | --- |
+| SDK/examples → wagmi `2.19.5` → connectors `6.2.0` → Porto `0.2.35` | Zod `4.3.5` → `4.6.7` | Porto `^4.1.5`; abitype `1.2.3` peer `^3.22.0 || ^4.0.0` |
+| SDK/examples → Privy `3.48.1` → pino-pretty `10.3.1` | fast-copy `3.0.2` → `3.1.0` | `^3.0.0` |
+| Workspace/examples → Vite React plugin `5.1.2` | Babel core `7.28.6` → `7.29.6` | `^7.28.5` |
+
+Babel core requires the following same-major closure: code-frame/types/traverse
+`7.29.0`, helpers `7.29.2`, parser `7.29.3`, and generator `7.29.6`.
+These are the lowest versions required by the new manifests. Existing compatible
+Babel helpers, plugins, and non-Babel dependencies retain their versions.
+
+The lock replaces nine package records. All surviving package records are unchanged.
+Importer declarations and snapshot structures are identical after normalizing only
+these nine versions. Zod's compatible peer-context references change throughout
+the lock; Zod `3.22.4`, `3.25.76`, and Dynamic's exact `4.0.5` remain unchanged.
+Registry integrity and every changed parent range were checked. No global Zod
+replacement, forced peer, or new override is used.
+
+### Fixed paths and limits
+
+- [Zod GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5):
+  the selected Porto/abitype Zod 4 path now exceeds the `4.6.6` patched floor.
+  A constrained oversized collection fails before parsing its elements. This
+  does not add size limits to unconstrained schemas or fix the retained Zod copies.
+- [fast-copy GHSA-jggr-w7fw-pc2j](https://github.com/planttheidea/fast-copy/security/advisories/GHSA-jggr-w7fw-pc2j):
+  the pino-pretty path now uses the fixed major-3 release. Excessive depth raises
+  the catchable `MaxDepthExceededError` instead of traversing without a bound.
+- [Babel GHSA-4x5r-pxfx-6jf8](https://github.com/babel/babel/security/advisories/GHSA-4x5r-pxfx-6jf8):
+  Vite React's compiler now uses patched core `7.29.6`. The advisory requires
+  attacker-controlled compiled input, access to the compiled output, and knowledge
+  of a source-map path. Builds here compile repository source; the test uses only
+  synthetic temporary maps and executes no supplied program.
+
+The current full-workspace `pnpm audit --json` reports 4 high, 10 moderate,
+2 low, and no critical findings. This is a dated registry observation, not a
+clean-audit claim or a comparison against the earlier PR128 counts.
+Upstream-constrained Zod 3 and exact Dynamic Zod `4.0.5` remain unresolved.
+The Dynamic exact MetaMask SDK `0.33.0` and Jayson major-1 stream-json constraint
+remain unchanged. The affected MetaMask advisory's malicious debug `4.4.2` is
+absent from the lock, but the SDK is not marked patched or ignored.
+Other remaining advisories still require separate compatible fixes or upstream
+migration. No audit suppression is added.
+
+### Regression evidence and publication boundary
+
+Actual consumer-relative regressions fail on the old versions and pass on the
+new graph: bounded Zod collection parsing, typed fast-copy depth rejection, and
+Babel rejection of an outside-package source map. Ordinary Porto token schema
+parsing/output/rejection, cyclic/date/array copying, pino-pretty formatting, and
+local source-map/JSX handling are also tested. The existing security entry point
+runs these cases; no release/export workflow is changed.
+
+Workspace lock resolutions do not propagate into npm consumers or regenerate the
+public source lock automatically. Refresh and qualify that public projection
+separately, and audit each consumer's installed graph. Wallet peers remain external.
+This follow-up neither qualifies signing nor authorizes publishing.

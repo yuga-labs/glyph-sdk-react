@@ -11,11 +11,14 @@ node_modules
 dist
 dist-ssr
 *.local
-*.tgz
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store
-
-.npmrc
-
-# env files
-examples/**/*.env*
-.env.local
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
