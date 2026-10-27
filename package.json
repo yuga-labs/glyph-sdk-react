@@ -1,6 +1,6 @@
 {
   "name": "@use-glyph/sdk-react",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "type": "module",
   "license": "GLYPH-1.0",
   "sideEffects": false,
@@ -111,6 +111,8 @@
   },
   "pnpm": {
     "overrides": {
+      "@dynamic-labs/wallet-book@4.52.5>zod": "4.6.7",
+      "@dynamic-labs-sdk/client@0.1.2>zod": "4.6.7",
       "@walletconnect/ethereum-provider": "2.26.0",
       "@walletconnect/universal-provider": "2.26.0",
       "@hpke/core": ">=1.7.5",

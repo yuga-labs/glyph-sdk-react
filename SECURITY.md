@@ -97,8 +97,7 @@ This is artifact evidence, not a proof that dependency paths are unreachable.
 React, viem, wagmi, Privy, RainbowKit, and other declared peers remain external.
 Consumers resolve those dependencies and their transitive parsers themselves.
 Npm consumers do not inherit workspace overrides or this private pnpm lock.
-The public source workspace instead carries its own explicitly reviewed 14-override
-policy and committed public-layout lock, projected from the tested private graph.
+The public source workspace instead carries its own explicitly reviewed policy with 16 overrides and a committed public-layout lock, projected from the tested private graph.
 That projection must be regenerated and qualified after dependency changes; it is
 not a fresh release-time resolution or an npm consumer policy. Published packages
 and workspace graphs can differ. These lock changes do not retroactively change
@@ -185,3 +184,155 @@ Workspace lock resolutions do not propagate into npm consumers or regenerate the
 public source lock automatically. Refresh and qualify that public projection
 separately, and audit each consumer's installed graph. Wallet peers remain external.
 This follow-up neither qualifies signing nor authorizes publishing.
+
+## Remaining high-severity findings: 2026-10-27 baseline and disposition
+
+At the start of this review, the GitHub API reported four open high-severity alerts: Zod
+[GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5)
+and bigint-buffer
+[GHSA-3gc7-fjrx-p6mg](https://github.com/advisories/GHSA-3gc7-fjrx-p6mg),
+each reported against both the private workspace lock and the committed public
+projection. These are two advisory families duplicated across two lockfiles.
+They remain unresolved; this disposition adds no exception or suppression.
+
+### Baseline consumers and upstream-release limits
+
+| Installed path | Remaining copy | Primary upstream evidence |
+| --- | --- | --- |
+| SDK development matrix → Privy `3.48.1` → WalletConnect Ethereum provider `2.26.0` → Reown appkit/wallet `1.8.19` | Zod `3.22.4` | [Latest Reown wallet `1.8.24`](https://registry.npmjs.org/@reown%2fappkit-wallet/latest) still pins `3.22.4`. |
+| SDK development matrix → Privy `3.48.1` → api-base `1.11.0` | Zod `3.25.76` | [Latest api-base `1.12.0`](https://registry.npmjs.org/@privy-io%2fapi-base/latest) requires `^3.25.76`. [Latest Coinbase CDP `1.60.0`](https://registry.npmjs.org/@coinbase%2fcdp-sdk/latest), another installed parent path, also requires Zod 3. |
+| Dynamic example → Dynamic Ethereum/wallet-book `4.52.5`; client `0.1.2` is another parent | Zod `4.0.5` | Even [latest wallet-book `5.13.0`](https://registry.npmjs.org/@dynamic-labs%2fwallet-book/latest) and [client `1.47.0`](https://registry.npmjs.org/@dynamic-labs-sdk%2fclient/latest) still pin exactly `4.0.5`. A wallet major would not remove that pin. |
+| Dynamic example → Ethereum/WaaS `4.52.5` → Solana Core `4.52.5` → SPL Token `0.4.12` → buffer-layout-utils `0.2.0` | bigint-buffer `1.1.5` | [Latest buffer-layout-utils `0.3.0`](https://registry.npmjs.org/@solana%2fbuffer-layout-utils/latest) still requires `^1.1.5`. [Latest bigint-buffer](https://registry.npmjs.org/bigint-buffer/latest) remains `1.1.5`; the advisory lists no patched release. |
+
+The [Zod advisory](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5)
+lists `<4.6.6` as affected; the current published fixed version is
+[`4.6.7`](https://registry.npmjs.org/zod/4.6.7). Zod 3 still ends at `3.25.76`.
+The previously qualified Porto/abitype v4 path already uses `4.6.7`.
+The retained Zod 3 contracts require separate v3-compatible remediation.
+The Dynamic pins require explicit qualification for a scoped same-major override;
+the follow-up below supplies that qualification. No global Zod 4 replacement or
+wallet major is applied.
+
+A bounded probe loaded each affected Zod copy from its real installed consumer,
+through both CommonJS and ESM. For `z.array(z.string()).max(1)`, 512 invalid
+elements caused 512 element reads and 513 issues in every retained version,
+through both `safeParse` and `safeParseAsync`. An ordinary one-element string
+array still parsed successfully. This confirms the constrained-collection behavior
+without an unbounded memory-exhaustion test. It does not establish that a specific
+first-party request reaches one of these schemas.
+
+### Backport assessment and API preservation
+
+The primary upstream fix is
+[Zod commit a0ebf970](https://github.com/colinhacks/zod/commit/a0ebf970f2d752e5f58527cd2942ff48be4f46bd),
+which implements [PR6652](https://github.com/colinhacks/zod/pull/6652).
+It moves leading array/set/map upper-bound checks before element parsing in v4,
+preserving checks that can rewrite a value. Unbounded collections remain unchanged.
+The separate `abortEarly` proposal is not the published fix.
+
+An application-specific hash-verified Zod3 backport was evaluated as a precedent.
+Its script supports only
+`3.25.76`, and its original CJS/ESM file hashes match this installation.
+However, it also removes embedded v4 and source-condition exports. The baseline SDK graph
+contains Reown's different `3.22.4` and Dynamic's `4.0.5`; its `3.25.76` package
+still exposes working `zod/v4` entrypoints. Its version guard rejects `3.22.4`,
+and its export restriction removes public APIs preserved here. It also assumes
+npm's nested installation layout. The script is not applied.
+A v3-only patch would also leave exported embedded-v4 code and Dynamic's separate
+v4 copy outside its mitigation scope.
+
+A defensible backport therefore needs a separately reviewed, version-specific
+patch set that preserves every retained export and both module formats. It must
+verify original npm/file hashes, cover the applicable embedded-v4/source paths,
+retain valid parse outputs and custom errors, and demonstrate early bounded
+rejection for synchronous and asynchronous parsing. The public projection must
+carry the same patch files and explicit install policy, with frozen-install
+verification of every copy. The current export projection has no patched-dependency
+mapping; an install-only private patch would not provide that contract.
+No partial patch is presented as remediation for the entire advisory.
+
+For bigint-buffer, the repository has an
+[open bounds-check PR67](https://github.com/no2chem/bigint-buffer/pull/67),
+but it is unmerged and unreleased. That change addresses native `fromBigInt`
+stack-width handling, while the advisory names `toBigIntLE`. The candidate needs
+native safety review and regression coverage before it can support a complete
+advisory-remediation claim. No unreviewed C patch or replacement serialization
+implementation is introduced here.
+
+### Published artifact, browser, and native evidence
+
+The published SDK `2.2.1` tarball was checked against the registry's SHA512
+integrity. Its five JavaScript source maps contain 600 source references and zero
+actual Zod or bigint-buffer source modules. A fresh SDK library build produced
+the same module counts. Counts use actual module paths, excluding package names
+that appear only inside peer-context directory labels.
+
+Declared Privy, wagmi, viem and other peers remain external, and the npm package
+contains no workspace override policy. Consumers resolve their own peer graphs.
+The public source workspace has its explicit reviewed policy and lock projection;
+that policy is not inherited by npm consumers. Artifact evidence does not close
+workspace findings or establish the safety of those external installations.
+
+Bigint-buffer's manifest maps its Node entry to a JavaScript browser entry.
+The browser entry's four conversion functions preserved a known eight-byte
+little-endian round trip. In a separate, environment-isolated Node `24.22.1`
+process on macOS ARM64, the actual native addon loaded and the same ordinary
+round trip passed. Oversized native widths were not executed. Browser mapping
+therefore does not establish native absence or remediate the package advisory.
+
+The next acceptable bigint-buffer candidate needs reviewed upstream provenance,
+browser/native output compatibility and native sanitizer coverage for aligned,
+unaligned, empty and oversized widths on supported architectures. Until then,
+keep this finding visible. Published-consumer fixes require independently qualified
+parent updates or an explicitly adopted patch policy; a new SDK version alone
+cannot patch external peers. No peer range, package export, publication or audit-suppression policy changes
+accompany this disposition. The scoped source-workspace change
+below updates only the two qualified Dynamic resolutions.
+
+
+## Qualified scoped Dynamic Zod4 refresh
+
+Two exact parent selectors override the installed Dynamic parents' `4.0.5` pins
+with the already locked, registry-integrity-verified Zod `4.6.7`:
+
+- `@dynamic-labs/wallet-book@4.52.5>zod`
+- `@dynamic-labs-sdk/client@0.1.2>zod`
+
+This is an explicit source-workspace exception to those exact pins, supported by
+consumer qualification, rather than a claim that their manifests declare a range.
+The 14 original overrides retain their values; the two selectors bring the private
+and public source policies to 16. No global Zod override, Zod3 substitution, wallet
+package update or application/signing edit is introduced. Root and library
+versions advance together to `2.2.2` through this PR for a new immutable release;
+the existing `2.2.1` tags remain unchanged.
+
+The reviewed lock update changes only those two dependency edges and removes the
+orphaned `zod@4.0.5` package/snapshot. It adds no package record and changes no
+surviving package record, importer, Zod3 edge or peer-context key. A normal solver
+attempt also rewrote unrelated peer contexts and metadata; that result was rejected.
+The minimal retained graph passes pnpm9.9.0 frozen/strict installation. The public
+lock is regenerated from the same reviewed graph and carries the same two selectors.
+
+Actual Dynamic consumers use `zod/mini`. Forty-six bounded fixtures exercise the
+published wallet/group/book schema modules and the client's actual state/session
+schemas, observing constructor output without replacing validation. Valid inputs,
+invalid code/path results, defaults, extension/mobile transforms, unknown-field
+stripping and prototype canaries match the original4.0.5 results separately for
+synchronous and asynchronous parsing. Wallet schema CommonJS/ESM outputs agree;
+no network request, signing operation or provider method is invoked.
+
+A separate red/green probe imports the actual mini implementations: with512 invalid
+elements and an upper bound of1,4.0.5 reads512 elements and creates513 issues;
+4.6.7 reads zero elements and creates one `too_big` issue, both sync and async.
+Ordinary accepted output remains unchanged. The committed regressions also check
+physical consumer resolution and preserve Reown/Privy's real Zod3 APIs. Public
+installed-graph parity includes these two Zod4 parents and the retained Zod3 parents.
+Unbounded collections gain no new input limit from this change.
+
+This removes the standalone Dynamic4.0.5 path from the committed source-workspace
+graphs. Zod3, its embedded-v4 surface and bigint-buffer remain unresolved; the
+advisory families and their alerts are not marked globally fixed or suppressed.
+The existing npm2.2.1 package and live public mirror are unchanged by this private
+source change. Npm consumers inherit neither these overrides nor this lock.
+The next parent-owned export/release must qualify the public projection and its
+browser/artifact gates; no new tag or publication is authorized here.
