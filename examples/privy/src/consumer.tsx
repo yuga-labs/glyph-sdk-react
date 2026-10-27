@@ -1,43 +1,73 @@
 import { GlyphView, GlyphWidget, useGlyph, useGlyphTokenGate, useGlyphView } from "@use-glyph/sdk-react";
-import React, { useState } from "react";
+import { usePrivy } from "@privy-io/react-auth";
+import React, { useRef, useState } from "react";
 import { useChainId, useConfig, useSignMessage, useSwitchChain } from "wagmi";
 import GlyphIcon from "./assets/GlyphIcon";
 import GlyphWordmark from "./assets/GlyphWordmark";
 import { LinkIcon } from "./assets/LinkIcon";
 import PrivyIcon from "./assets/PrivyIcon";
+import CreateEvmWallet from "./CreateEvmWallet";
+
+type DemoActionResult = { type: "success" | "error"; message: string };
+
+async function runDemoAction(
+    action: () => Promise<string>,
+    report: (result: DemoActionResult | null) => void,
+    failureMessage: string,
+    version: { current: number }
+) {
+    const current = ++version.current;
+    report(null);
+    try {
+        const message = await action();
+        if (version.current === current) report({ type: "success", message });
+    } catch {
+        if (version.current === current) report({ type: "error", message: failureMessage });
+    }
+}
 
 const Consumer: React.FC = () => {
     const { authenticated, ready, logout, login, signMessage } = useGlyph();
+    const { ready: privyReady, authenticated: privyAuthenticated, user: privyUser } = usePrivy();
     const { signMessageAsync } = useSignMessage();
     const { checkTokenGate, isTokenGateLoading } = useGlyphTokenGate();
     const { setGlyphView } = useGlyphView();
     const [loading, setLoading] = useState(false);
+    const [actionResult, setActionResult] = useState<DemoActionResult | null>(null);
+    const actionVersion = useRef(0);
     const chainId = useChainId();
     const wagmiConfig = useConfig(); //   Can also use useChains hook to get the chains
     const { switchChainAsync } = useSwitchChain();
     const [contractAddress, setContractAddress] = useState<string>("");
 
+    const runAction = (action: () => Promise<string>, failureMessage: string) =>
+        runDemoAction(action, setActionResult, failureMessage, actionVersion);
+
+    const handleSign = (sign: typeof signMessage) =>
+        runAction(async () => {
+            const signature = await sign({ message: "Hello world" });
+            if (!signature) throw new Error("No signature returned");
+            return "Message signed";
+        }, "Signing canceled or failed");
+
     const handleSwitchChain = async (chainId: number) => {
         setLoading(true);
         try {
-            await switchChainAsync({
-                chainId: chainId
-            });
-        } catch (error) {
-            console.log(error);
-            alert("Failed to switch chain");
+            await runAction(async () => {
+                await switchChainAsync({ chainId });
+                return "Chain switched";
+            }, "Failed to switch chain");
         } finally {
             setLoading(false);
         }
     };
 
-    const handleTokenGate = async () => {
-        const tokenOwnership = await checkTokenGate({
-            contractAddress: contractAddress
-        });
-        if (tokenOwnership.error) return alert(`Tokengate error: ${tokenOwnership.error}`);
-        alert(tokenOwnership.result ? "Token owned" : "Token not owned");
-    };
+    const handleTokenGate = () =>
+        runAction(async () => {
+            const tokenOwnership = await checkTokenGate({ contractAddress });
+            if (tokenOwnership.error) throw new Error("Token ownership check failed");
+            return tokenOwnership.result ? "Token owned" : "Token not owned";
+        }, "Failed to check token ownership");
 
     return (
         <>
@@ -63,7 +93,11 @@ const Consumer: React.FC = () => {
                             </div>
 
                             <div className="mt-12 mb-5">
-                                {!ready || !authenticated ? (
+                                {!privyReady || !ready ? (
+                                    <p role="status" className="text-center">
+                                        Loading Privy…
+                                    </p>
+                                ) : !privyAuthenticated ? (
                                     <div className="flex flex-col items-center justify-center gap-4">
                                         <p className="opacity-50 max-w-80">Login or signup with your Privy account</p>
                                         <button
@@ -73,48 +107,37 @@ const Consumer: React.FC = () => {
                                             Login with Privy
                                         </button>
                                     </div>
+                                ) : !authenticated ? (
+                                    <div className="flex flex-col items-center gap-4">
+                                        <CreateEvmWallet key={privyUser?.id} />
+                                        <button
+                                            className="h-12 px-4 text-black bg-white rounded-full sm:min-w-44"
+                                            onClick={logout}
+                                        >
+                                            Logout
+                                        </button>
+                                    </div>
                                 ) : (
                                     <>
+                                        {actionResult && (
+                                            <p
+                                                role={actionResult.type === "error" ? "alert" : "status"}
+                                                aria-atomic="true"
+                                                className="mb-4 text-center"
+                                            >
+                                                {actionResult.message}
+                                            </p>
+                                        )}
                                         <div className="grid w-full grid-cols-2 gap-4 mx-auto text-xs md:grid-cols-3 xl:grid-cols-4 sm:w-fit sm:text-sm">
                                             <button
                                                 className="h-12 px-4 transition-colors border rounded-full sm:min-w-44"
-                                                onClick={async () => {
-                                                    try {
-                                                        const signature = await signMessage({
-                                                            message: "Hello world"
-                                                        });
-                                                        if (signature) {
-                                                            console.log("signature", signature);
-                                                            alert("Message signed");
-                                                        } else {
-                                                            throw new Error("Something went wrong!");
-                                                        }
-                                                    } catch (e) {
-                                                        console.log(e);
-                                                        alert("User declined");
-                                                    }
-                                                }}
+                                                onClick={() => handleSign(signMessage)}
                                             >
                                                 Sign with Glyph
                                             </button>
                                             <button
                                                 className="h-12 px-4 transition-colors border rounded-full sm:min-w-44"
-                                                onClick={async () => {
-                                                    try {
-                                                        const signature = await signMessageAsync({
-                                                            message: "Hello world"
-                                                        });
-                                                        if (signature) {
-                                                            console.log("signature", signature);
-                                                            alert("Message signed");
-                                                        } else {
-                                                            throw new Error("Something went wrong!");
-                                                        }
-                                                    } catch (e) {
-                                                        console.log(e);
-                                                        alert("User declined");
-                                                    }
-                                                }}
+                                                onClick={() => handleSign(signMessageAsync)}
                                             >
                                                 Sign with Wagmi
                                             </button>

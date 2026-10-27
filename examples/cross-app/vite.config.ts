@@ -38,6 +38,7 @@ export default defineConfig(({ command }) => {
 			}
 			: {}),
 		resolve: {
+			dedupe: ["react", "react-dom", "@tanstack/react-query", "wagmi", "@privy-io/react-auth", "@privy-io/wagmi"],
 			alias: {
 				"@use-glyph/sdk-react/*": "../../lib/*",
 			},

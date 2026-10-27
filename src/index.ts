@@ -32,7 +32,7 @@ export { useGlyphView } from "./hooks/useGlyphView";
 
 export { glyphConnectorDetails } from "./lib/constants";
 export { GlyphViewType as GlyphView, StrategyType, WalletClientType } from "./types";
-export type { GlyphWidgetUser } from "./types";
+export type { GlyphWidgetUser, GlyphAuthError, GlyphAuthErrorReason } from "./types";
 export { GlyphProvider, GlyphWidget, LoginButton, LogoutButton, SignUpButton, Wallet, ChainSelector };
 
 // EIP1193 Exports

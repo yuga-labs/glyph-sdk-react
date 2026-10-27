@@ -25,6 +25,9 @@ export const EmptyGlyphContext: GlyphContextType = {
     login: () => {
         console.error("Glyph context not ready");
     },
+    signIn: async () => false,
+    needsSignature: false,
+    authError: null,
     logout: () => {
         console.error("Glyph context not ready");
     },
@@ -42,7 +45,7 @@ export const EmptyGlyphContext: GlyphContextType = {
     },
     apiFetch: (): Promise<Response> => {
         return Promise.reject(new Error("Glyph context not ready"));
-    },
+    }
 };
 
 export const GlyphContext = createContext<GlyphContextType | null>(null);

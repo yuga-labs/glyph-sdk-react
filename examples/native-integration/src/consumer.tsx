@@ -111,7 +111,6 @@ const Consumer: React.FC = () => {
                                                         message: "Hello world"
                                                     });
                                                     if (signature) {
-                                                        console.log("signature", signature);
                                                         alert("Message signed");
                                                     } else {
                                                         throw new Error("Something went wrong!");

@@ -18,7 +18,12 @@ type UseRelayIntentStatusParams = {
     onError?: () => Promise<void>;
 };
 
-export const useRelayIntentStatus = ({ intentRequestId, setTxStatus, setView, onError }: UseRelayIntentStatusParams) => {
+export const useRelayIntentStatus = ({
+    intentRequestId,
+    setTxStatus,
+    setView,
+    onError
+}: UseRelayIntentStatusParams) => {
     const config = useConfig();
 
     const [txDetails, setTxDetails] = useState<TxDetails>();
@@ -95,8 +100,8 @@ export const useRelayIntentStatus = ({ intentRequestId, setTxStatus, setView, on
                         typeof error === "string"
                             ? error
                             : typeof error === "object"
-                                ? (error as any)?.message || "Couldn't fetch the status of the swap"
-                                : "Couldn't fetch the status of the swap"
+                              ? (error as any)?.message || "Couldn't fetch the status of the swap"
+                              : "Couldn't fetch the status of the swap"
                     );
                     return;
                 }

@@ -1,18 +1,10 @@
-import {
-    SignTypedDataParams,
-    UnsignedTransactionRequest,
-    useCrossAppAccounts,
-    usePrivy,
-    WalletWithMetadata
-} from "@privy-io/react-auth";
-import react, { memo, useCallback, useEffect, useState } from "react";
+import { SignTypedDataParams, UnsignedTransactionRequest, useCrossAppAccounts, usePrivy } from "@privy-io/react-auth";
+import react, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useChainId } from "wagmi";
 import { GLYPH_PRIVY_APP_ID, STAGING_GLYPH_PRIVY_APP_ID, WIDGET_API_BASE_URL } from "../../lib/constants";
-import { createLogger, isEthereumAddress } from "../../lib/utils";
 import { BaseGlyphProviderOptions } from "../../types";
 import { createApiFetch, GlyphApiFetch, GlyphContext } from "../GlyphContext";
-
-const logger = createLogger("PrivyStrategy");
+import { selectPrivyWallet } from "./privyWallet";
 
 const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
     children,
@@ -21,12 +13,7 @@ const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
     onLogout,
     useStagingTenant
 }) => {
-    const [loading, setLoading] = useState<boolean>(true);
-    const [apiFetch, setApiFetch] = useState<GlyphApiFetch | null>(null);
-    const [walletAddress, setWalletAddress] = useState<string | null>(null);
-    const [usesCrossapp, setUsesCrossapp] = useState<boolean>(false);
     const chainId = useChainId();
-
     const {
         ready: privyReady,
         authenticated: privyAuthenticated,
@@ -38,106 +25,68 @@ const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
         signTypedData: privySignTypedData,
         sendTransaction: privySendTransaction
     } = usePrivy();
-
     const {
         signMessage: crossAppSignMessage,
         signTypedData: crossAppSignTypedData,
         sendTransaction: crossAppSendTransaction
     } = useCrossAppAccounts();
 
-
+    // Ready means resolution has settled, not that this identity has an EVM wallet.
+    // Derive capabilities during render so account changes never expose old state.
+    const wallet =
+        privyReady && privyAuthenticated && privyUser?.id
+            ? selectPrivyWallet(privyUser, useStagingTenant ? STAGING_GLYPH_PRIVY_APP_ID : GLYPH_PRIVY_APP_ID)
+            : null;
+    const walletAddress = wallet?.address ?? null;
+    const usesCrossapp = wallet?.usesCrossapp ?? false;
+    const providerAppId = wallet?.providerAppId ?? null;
+    const userId = privyUser?.id;
+    const scope = useMemo(
+        () => ({
+            active: true,
+            privyReady,
+            privyAuthenticated,
+            userId,
+            walletAddress,
+            usesCrossapp,
+            providerAppId,
+            glyphUrl,
+            useStagingTenant
+        }),
+        [privyReady, privyAuthenticated, userId, walletAddress, usesCrossapp, providerAppId, glyphUrl, useStagingTenant]
+    );
+    const currentScope = useRef(scope);
+    currentScope.current = scope;
+    const [, rerender] = useState(0);
     useEffect(() => {
-        // If Privy is not ready, reset widget state (loading: true)
-        if (!privyReady) {
-            setApiFetch(null);
-            setLoading(true);
-            return;
-        }
-
-        // If user is not authenticated, reset widget state (loading: false)
-        if (!privyAuthenticated || !privyUser) {
-            setApiFetch(null);
-            setLoading(false);
-            return;
-        }
-
-        let address: string | undefined;
-
-        const privyEvmWallet = privyUser!.linkedAccounts?.find(
-            (w) => w.type === "wallet" && w.chainType === "ethereum" && w.walletClientType === "privy"
-        ) as WalletWithMetadata | undefined;
-
-        const hasPrivyEvmWallet = privyEvmWallet && isEthereumAddress(privyEvmWallet.address);
-
-        logger.debug("finding cross-app accounts...");
-        // Cross-app accounts are always EVM addresses
-        const crossAppAccounts = privyUser!.linkedAccounts?.filter?.((account) => account.type === "cross_app") || [];
-
-        const otherAccounts = crossAppAccounts.filter(
-            (account) =>
-                account.providerApp?.id !== (useStagingTenant ? STAGING_GLYPH_PRIVY_APP_ID : GLYPH_PRIVY_APP_ID)
-        );
-        const otherAddresses = otherAccounts.map((account) => account.embeddedWallets[0].address);
-        if (otherAddresses.length > 0) {
-            address = otherAddresses[0];
-            logger.log("using cross_app (non-Glyph) account");
-            if (otherAddresses.length > 1) {
-                logger.warn("too many cross_app accounts");
-            }
-        }
-
-        const glyphAccounts = crossAppAccounts.filter(
-            (account) =>
-                account.providerApp?.id === (useStagingTenant ? STAGING_GLYPH_PRIVY_APP_ID : GLYPH_PRIVY_APP_ID)
-        );
-        const glyphAddresses = glyphAccounts.map((account) => account.embeddedWallets[0].address);
-        if (glyphAddresses.length > 0) {
-            address = glyphAddresses[0];
-            logger.log("using cross_app (Glyph) account");
-            if (glyphAddresses.length > 1) {
-                logger.warn("too many cross_app accounts");
-            }
-        }
-
-        if (address) {
-            setUsesCrossapp(true);
-            logger.log("using cross_app account");
-        } else if (hasPrivyEvmWallet) {
-            address = privyEvmWallet.address;
-            logger.log("using Privy (main) EVM embedded wallet");
-        }
-
-        setWalletAddress(address ?? null);
-
-        // Fetch user data from Glyph API
-        const fetchUserData = async () => {
-            // If no address is found, stop here
-            if (!address) {
-                logger.error("user has no wallet");
-                return;
-            }
-
-            const glyphApiFetch = createApiFetch(
-                glyphUrl || WIDGET_API_BASE_URL,
-                async () => (await getPrivyAccessToken())!,
-                { "x-evm-address": address }
-            );
-            setApiFetch(() => glyphApiFetch);
-            setLoading(false);
+        scope.active = true;
+        return () => {
+            scope.active = false;
         };
+    }, [scope]);
 
-        fetchUserData();
-    }, [
-        glyphUrl,
-        privyAuthenticated,
-        privyReady,
-        privyUser,
-        useStagingTenant,
-        usesCrossapp,
-        walletAddress,
-        getPrivyAccessToken,
-        privyLogout
-    ]);
+    const assertWalletScope = useCallback(() => {
+        if (!walletAddress || !scope.active || currentScope.current !== scope) {
+            throw new Error("Glyph wallet session is unavailable or changed");
+        }
+    }, [scope, walletAddress]);
+
+    const apiFetch = useMemo<GlyphApiFetch | null>(() => {
+        if (!walletAddress || !scope.active) return null;
+        return async (path, options) => {
+            assertWalletScope();
+            const token = await getPrivyAccessToken();
+            assertWalletScope();
+            if (!token) throw new Error("Privy access token is unavailable");
+            // Check scope after token resolution, before creating address-bound headers.
+            const response = await createApiFetch(glyphUrl || WIDGET_API_BASE_URL, undefined, {
+                Authorization: `Bearer ${token}`,
+                "x-evm-address": walletAddress
+            })(path, options);
+            assertWalletScope();
+            return response;
+        };
+    }, [walletAddress, scope, assertWalletScope, getPrivyAccessToken, glyphUrl]);
 
     const authenticate = useCallback(async () => {
         await privyLogin();
@@ -145,55 +94,75 @@ const PrivyStrategy: react.FC<BaseGlyphProviderOptions> = ({
     }, [onLogin, privyLogin]);
 
     const logout = useCallback(async () => {
-        privyLogout();
+        if (currentScope.current !== scope) throw new Error("Glyph wallet session changed");
+        // Revoke saved callbacks immediately, even while Privy logout is pending.
+        scope.active = false;
+        rerender((value) => value + 1);
+        await privyLogout();
         onLogout?.();
-    }, [onLogout, privyLogout]);
+    }, [scope, onLogout, privyLogout]);
 
     const signMessage = useCallback(
         async ({ message }: { message: string }) => {
-            if (!walletAddress) throw new Error("No wallet address found");
-
-            return usesCrossapp
-                ? crossAppSignMessage(message, { address: walletAddress })
-                : (await privySignMessage({ message })).signature;
+            assertWalletScope();
+            const signature = usesCrossapp
+                ? await crossAppSignMessage(message, { address: walletAddress! })
+                : (await privySignMessage({ message }, { address: walletAddress! })).signature;
+            assertWalletScope();
+            return signature;
         },
-        [walletAddress, usesCrossapp, crossAppSignMessage, privySignMessage]
+        [walletAddress, usesCrossapp, assertWalletScope, crossAppSignMessage, privySignMessage]
     );
 
     const signTypedData = useCallback(
         async ({ data }: { data: SignTypedDataParams }) => {
-            if (!walletAddress) throw new Error("No wallet address found");
-            return usesCrossapp
-                ? crossAppSignTypedData(data, { address: walletAddress })
-                : (await privySignTypedData(data)).signature;
+            assertWalletScope();
+            const signature = usesCrossapp
+                ? await crossAppSignTypedData(data, { address: walletAddress! })
+                : (await privySignTypedData(data, { address: walletAddress! })).signature;
+            assertWalletScope();
+            return signature;
         },
-        [walletAddress, usesCrossapp, crossAppSignTypedData, privySignTypedData]
+        [walletAddress, usesCrossapp, assertWalletScope, crossAppSignTypedData, privySignTypedData]
     );
 
     const sendTransaction = useCallback(
         async ({ transaction }: { transaction: UnsignedTransactionRequest }) => {
-            if (!walletAddress) throw new Error("No wallet address found");
+            assertWalletScope();
             const tx = { ...transaction, chainId: transaction.chainId || chainId };
-
-            return usesCrossapp
-                ? crossAppSendTransaction(tx, { address: walletAddress })
-                : (await privySendTransaction(tx, { address: walletAddress })).hash;
+            const hash = usesCrossapp
+                ? await crossAppSendTransaction(tx, { address: walletAddress! })
+                : (await privySendTransaction(tx, { address: walletAddress! })).hash;
+            assertWalletScope();
+            return hash;
         },
-        [chainId, usesCrossapp, walletAddress, crossAppSendTransaction, privySendTransaction]
+        [chainId, usesCrossapp, walletAddress, assertWalletScope, crossAppSendTransaction, privySendTransaction]
     );
+
+    const signIn = useCallback(async () => {
+        try {
+            await authenticate();
+            return true;
+        } catch {
+            return false;
+        }
+    }, [authenticate]);
 
     return (
         <GlyphContext.Provider
             value={{
-                ready: privyReady && !loading,
-                authenticated: privyReady && privyAuthenticated,
-                glyphUrl: glyphUrl as string, // Pass as string to avoid type error (we are passing fallback value in useGlyph hook at a common place)
+                ready: privyReady,
+                authenticated: !!walletAddress && scope.active,
+                glyphUrl: glyphUrl as string,
                 login: authenticate,
+                signIn,
+                needsSignature: false,
+                authError: null,
                 logout,
                 signMessage,
                 signTypedData,
                 sendTransaction,
-                apiFetch: apiFetch!
+                apiFetch: scope.active ? apiFetch : null
             }}
         >
             {children}

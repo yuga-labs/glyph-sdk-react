@@ -4,7 +4,7 @@ import { useChainId } from "wagmi";
 import { GlyphContext } from "../context/GlyphContext";
 import { GlyphUserDataContext } from "../context/GlyphUserDataContext";
 import { DASHBOARD_BASE_URL } from "../lib/constants";
-import { GlyphWidgetBalances, GlyphWidgetUser } from "../types";
+import { GlyphAuthError, GlyphWidgetBalances, GlyphWidgetUser } from "../types";
 
 export interface GlyphInterface {
     /**
@@ -31,6 +31,10 @@ export interface GlyphInterface {
     sendTransaction: (params: { transaction: UnsignedTransactionRequest }) => Promise<string>;
 
     login: () => void;
+    /** Retry wallet authentication from a fresh click. False means deferred or failed. */
+    signIn: () => Promise<boolean>;
+    needsSignature: boolean;
+    authError: GlyphAuthError | null;
 
     logout: () => void;
 
@@ -78,8 +82,20 @@ export const useGlyph = (): GlyphHook => {
     const userCtx = useContext(GlyphUserDataContext);
     if (!userCtx) throw new Error("useGlyph must be used within GlyphUserDataProvider");
 
-    const { ready, authenticated, login, logout, signMessage, signTypedData, sendTransaction, glyphUrl, hideWidget } =
-        context;
+    const {
+        ready,
+        authenticated,
+        login,
+        signIn,
+        needsSignature,
+        authError,
+        logout,
+        signMessage,
+        signTypedData,
+        sendTransaction,
+        glyphUrl,
+        hideWidget
+    } = context;
     const {
         user,
         refreshUser,
@@ -113,6 +129,9 @@ export const useGlyph = (): GlyphHook => {
         isBalancesLoading,
         refreshBalances,
         login,
+        signIn,
+        needsSignature,
+        authError,
         logout,
         signMessage,
         signTypedData,

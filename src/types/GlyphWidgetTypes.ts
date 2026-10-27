@@ -24,11 +24,16 @@ export const GlyphViewType = {
 } as const;
 export type GlyphViewType = (typeof GlyphViewType)[keyof typeof GlyphViewType];
 
+export type GlyphAuthErrorReason = "popup_blocked" | "rejected" | "verify_failed" | "network";
+/** Static, credential-free failure information. No raw provider causes are exposed. */
+export type GlyphAuthError = { reason: GlyphAuthErrorReason; message: string; retryAt?: number };
+
 export interface BaseGlyphProviderOptions extends PropsWithChildren {
     glyphUrl?: string;
     useStagingTenant?: boolean;
     onLogin?: () => void;
     onLogout?: () => void;
+    onAuthError?: (error: GlyphAuthError) => void;
     /**
      * Optional per-chain RPC override. Maps a chainId to a single RPC URL or an array of URLs
      * (used as a viem `fallback` transport). Chains without an entry keep the default RPC
@@ -124,7 +129,8 @@ export type GlyphWidgetProps = {
 
 export type GlyphWidgetUser = {
     hasProfile: boolean;
-    id: string;
+    /** Legacy field; the current widget user API does not return an id. */
+    id?: string;
     name: string;
     picture: string;
     evmWallet: string;

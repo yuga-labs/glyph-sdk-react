@@ -68,7 +68,7 @@ const Consumer: React.FC = () => {
 
                             <div className="max-w-lg mx-auto mt-10 text-lg text-center sm:text-2xl">
                                 This demo app simulates a third-party app with Glyph as an EIP1193 provider via
-                                ConnectKit.
+                                Dynamic.
                             </div>
 
                             <div className="mt-12 mb-5">
@@ -89,7 +89,6 @@ const Consumer: React.FC = () => {
                                                         message: "Hello world"
                                                     });
                                                     if (signature) {
-                                                        console.log("signature", signature);
                                                         alert("Message signed");
                                                     } else {
                                                         throw new Error("Something went wrong!");

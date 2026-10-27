@@ -34,7 +34,6 @@ export function SignMessageBtn({
 				try {
 					const signature = await signFn({ message });
 					if (signature && typeof signature === "string") {
-						console.log("signature", signature);
 						const recoveredAddress = await recoverAddress(
 							message,
 							signature as Hex

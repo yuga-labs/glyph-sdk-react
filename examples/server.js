@@ -29,7 +29,7 @@ app.get("/health", (req, res) => {
 app.use("/", express.static(path.join(__dirname, "/")));
 
 // Fallback route - send to 404 page
-app.get("*", (req, res) => {
+app.get(/.*/, (req, res) => {
 	res.status(404).send("404 Not Found");
 });
 
