@@ -19,7 +19,7 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
     const { user, fetchForAllNetworks } = useGlyph();
     const chainId = useChainId();
     const currentBlockExplorerUrl = fetchForAllNetworks ? null : chainIdToRelayChain(chainId)?.explorerUrl;
-    const { transactionGroups, fetchTransactions, loadMore, hasMore, isLoading } = useActivity();
+    const { transactionGroups, fetchTransactions, loadMore, hasMore, isLoading, refreshKey } = useActivity();
 
     const observerTarget = useRef<HTMLDivElement>(null);
     const sentinelRef = useRef<HTMLDivElement>(null);
@@ -28,10 +28,12 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
 
     const totalTransactions = transactionGroups.reduce((count, group) => count + group.transactions.length, 0);
 
-    // initial data load or on chain change, call onOpen cb if provided
+    const fetchCurrent = useRef(fetchTransactions);
+    fetchCurrent.current = fetchTransactions;
+    // Reload once per account/API/filter/chain lifetime, not each pagination update.
     useEffect(() => {
-        fetchTransactions(true);
-    }, [chainId, fetchForAllNetworks]);
+        void fetchCurrent.current(true);
+    }, [refreshKey]);
 
     // open first item if required
     useEffect(() => {

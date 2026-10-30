@@ -1,6 +1,7 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useGlyphApi } from "./useGlyphApi";
+import { useGlyphReadScope } from "./useGlyphReadScope";
+import { fetchScopedGlyphData } from "../context/glyphDataQuery";
 import { useChainId } from "wagmi";
 import { useGlyph } from "./useGlyph";
 import { relayClient } from "../lib/relay";
@@ -48,9 +49,6 @@ export type ActivityGroup = {
     transactions: ActivityItem[];
 };
 
-// The abort controller is at module level right now... but if we want to use it in multiple places, we need to move it to the hook.
-let abortController: AbortController | null = null;
-
 export function useActivity(
     pageSize = 10,
     filter?: {
@@ -58,16 +56,39 @@ export function useActivity(
     }
 ) {
     const chains = relayClient?.chains || [];
-    const { fetchForAllNetworks } = useGlyph();
-    const { glyphApiFetch } = useGlyphApi();
+    const { fetchForAllNetworks, user } = useGlyph();
+    const { scope, isCurrent } = useGlyphReadScope(user?.evmWallet);
+    const abortController = useRef<AbortController | null>(null);
     const chainId = useChainId();
     const [offset, setOffset] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [transactionGroups, setTransactionGroups] = useState<ActivityGroup[]>([]);
 
+    const types = filter?.types?.join(",") ?? "";
+    const chainIds = fetchForAllNetworks ? chains.map((c) => c.id).join(",") : String(chainId);
+    const requestKey = `${scope.key}:${chainIds}:${pageSize}:${types}`;
+    const currentKey = useRef(requestKey);
+    currentKey.current = requestKey;
+    const [dataKey, setDataKey] = useState(requestKey);
+    useEffect(() => {
+        setOffset(0);
+        setHasMore(true);
+        setIsLoading(false);
+        setTransactionGroups([]);
+        setDataKey(requestKey);
+        return () => {
+            abortController.current?.abort();
+        };
+    }, [requestKey]);
+
     const fetchTransactions = useCallback(
         async (reset = false): Promise<ActivityGroup[] | null> => {
+            if (!isCurrent() || currentKey.current !== requestKey) return null;
+            abortController.current?.abort();
+            const controller = new AbortController();
+            abortController.current = controller;
+            const active = () => isCurrent() && currentKey.current === requestKey && !controller.signal.aborted;
             try {
                 setIsLoading(true);
 
@@ -75,19 +96,16 @@ export function useActivity(
                 const currentOffset = reset ? 0 : offset;
                 if (reset) setTransactionGroups([]);
 
-                if (!glyphApiFetch) return null;
-
-                abortController?.abort?.(); // Cancel last api call
-                abortController = new AbortController();
-                const signal = abortController.signal;
-
-                const res = await glyphApiFetch(
-                    `/api/widget/activity?chainId=${fetchForAllNetworks ? chains.map((c) => c.id).join(",") : chainId}&offset=${currentOffset}&size=${pageSize}&type=${filter?.types?.join(",") ?? ""}`,
-                    { signal }
+                const { value: data } = await fetchScopedGlyphData<{
+                    groups?: ActivityGroup[];
+                    transactions?: ActivityItem[];
+                }>(
+                    scope.apiFetch,
+                    `/api/widget/activity?chainId=${chainIds}&offset=${currentOffset}&size=${pageSize}&type=${types}`,
+                    controller.signal,
+                    active,
+                    scope.key
                 );
-                if (!res.ok) throw new Error("Failed to fetch transactions");
-
-                const data = await res.json();
                 let newGroups: ActivityGroup[] = [];
 
                 // grouped transactions
@@ -114,20 +132,22 @@ export function useActivity(
                 // check if we have more to load
                 const totalNewTransactions = newGroups.reduce((count, group) => count + group.transactions.length, 0);
                 setHasMore(totalNewTransactions === pageSize);
-                setIsLoading(false);
-
+                setDataKey(requestKey);
                 return newGroups;
             } catch (e: any) {
                 // handle and don't retry if aborted
                 if (e?.name?.includes?.("AbortError")) {
                     return null;
                 }
-                setIsLoading(false);
-                toast.error("Failed to fetch transactions");
+                if (active()) toast.error("Failed to fetch transactions");
                 return null;
+            } finally {
+                if (isCurrent() && currentKey.current === requestKey && abortController.current === controller) {
+                    setIsLoading(false);
+                }
             }
         },
-        [glyphApiFetch, chainId, pageSize, offset, transactionGroups, fetchForAllNetworks]
+        [scope, isCurrent, requestKey, chainIds, types, pageSize, offset, transactionGroups]
     );
 
     const loadMore = async (): Promise<boolean> => {
@@ -174,7 +194,8 @@ export function useActivity(
     };
 
     return {
-        transactionGroups,
+        refreshKey: requestKey,
+        transactionGroups: dataKey === requestKey && isCurrent() ? transactionGroups : [],
         fetchTransactions,
         loadMore,
         reset,

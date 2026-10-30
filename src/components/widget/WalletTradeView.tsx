@@ -929,6 +929,7 @@ export function WalletTradeView({ onBack, onEnd, onShowActivity, setGradientType
 
             {view === SwapView.WAIT && (
                 <WalletTradePendingView
+                    statusError={swapError || undefined}
                     onBack={onBack}
                     txDetails={{ ...txDetails, estimatedTime: quote?.details?.timeEstimate }}
                     sellAmount={Number(sellAmount)}

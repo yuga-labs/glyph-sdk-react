@@ -20,6 +20,7 @@ interface WalletTradePendingViewProps {
     sellAmount: number;
     buyAmount: number;
     isTxApproved: boolean;
+    statusError?: string;
 }
 
 const WalletTradePendingView: React.FC<WalletTradePendingViewProps> = ({
@@ -27,7 +28,8 @@ const WalletTradePendingView: React.FC<WalletTradePendingViewProps> = ({
     txDetails,
     sellAmount,
     buyAmount,
-    isTxApproved
+    isTxApproved,
+    statusError
 }) => {
     const { fromCurrency, toCurrency } = useGlyphSwap();
 
@@ -59,6 +61,11 @@ const WalletTradePendingView: React.FC<WalletTradePendingViewProps> = ({
             footerClassName="!gw-pt-2"
             content={
                 <div className="gw-p-4 gw-pt-0 gw-h-full">
+                    {statusError && (
+                        <p role="status" className="gw-mb-4 gw-typography-caption">
+                            {statusError}
+                        </p>
+                    )}
                     <h6>{!isGlyphDashboard && !isTxApproved ? "Waiting For Approval" : "Finalizing Transaction"}</h6>
                     <div className="gw-mt-4 gw-typography-caption gw-flex gw-justify-between gw-items-center">
                         <span>Estimated wait time:</span>
