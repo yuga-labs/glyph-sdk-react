@@ -1,3 +1,4 @@
+import { decodeGlyphBalances } from "../lib/balancesImageTransport";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import react, { PropsWithChildren, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -108,10 +109,11 @@ export const GlyphUserDataProvider: react.FC<PropsWithChildren> = ({ children })
         queryFn: ({ signal }) =>
             fetchScopedGlyphData<GlyphWidgetBalances>(
                 session.apiFetch,
-                `/api/widget/balances?chainId=${balanceScope.chain}`,
+                `/api/widget/balances?chainId=${balanceScope.chain}&nftImageEncoding=references-v1`,
                 signal,
                 isCurrentBalanceScope,
-                balanceScope.key
+                balanceScope.key,
+                decodeGlyphBalances
             ),
         enabled: isCurrentBalanceScope(),
         gcTime: 0,

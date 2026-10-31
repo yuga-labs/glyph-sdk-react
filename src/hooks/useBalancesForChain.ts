@@ -1,3 +1,4 @@
+import { decodeGlyphBalances } from "../lib/balancesImageTransport";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { fetchScopedGlyphData, shouldRetryGlyphData } from "../context/glyphDataQuery";
@@ -25,10 +26,11 @@ export function useBalancesForChain(chainId?: number | "all") {
         queryFn: ({ signal }) =>
             fetchScopedGlyphData<GlyphWidgetBalances>(
                 scope.apiFetch,
-                `/api/widget/balances?chainId=${chainId}`,
+                `/api/widget/balances?chainId=${chainId}&nftImageEncoding=references-v1`,
                 signal,
                 isCurrent,
-                scope.key
+                scope.key,
+                decodeGlyphBalances
             ),
         retry: (count, error) => isCurrent() && shouldRetryGlyphData(error, count, 3),
         retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 30000)

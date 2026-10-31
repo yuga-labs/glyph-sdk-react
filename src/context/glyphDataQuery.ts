@@ -1,3 +1,4 @@
+import { GlyphBalancesDecodeError } from "../lib/balancesImageTransport";
 import type { GlyphApiFetch } from "./GlyphContext";
 
 export type ScopedGlyphData<T> = { scope: string; value: T };
@@ -14,7 +15,8 @@ export async function fetchScopedGlyphData<T>(
     path: string,
     signal: AbortSignal,
     isCurrent: () => boolean,
-    scope: string
+    scope: string,
+    decode?: (value: unknown) => T
 ): Promise<ScopedGlyphData<T>> {
     const assertCurrent = () => {
         if (!apiFetch || signal.aborted || !isCurrent()) {
@@ -26,13 +28,15 @@ export async function fetchScopedGlyphData<T>(
     assertCurrent();
     // Never treat a JSON error body as data or echo provider details to logs/UI.
     if (!response.ok) throw new GlyphDataRequestError(response.status);
-    const value = (await response.json()) as T;
+    const parsed: unknown = await response.json();
+    assertCurrent();
+    const value = decode ? decode(parsed) : (parsed as T);
     assertCurrent();
     return { scope, value };
 }
 
 export function shouldRetryGlyphData(error: Error, failureCount: number, limit: number) {
-    if (error.name === "AbortError") return false;
+    if (error.name === "AbortError" || error instanceof GlyphBalancesDecodeError) return false;
     if (error instanceof GlyphDataRequestError && error.status >= 400 && error.status < 500) return false;
     return failureCount < limit;
 }

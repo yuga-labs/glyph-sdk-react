@@ -69,3 +69,13 @@ Privy retains its existing login and wallet-selection behavior. Its `signIn()`
 returns `true` when the login call completes, which does not guarantee an EVM wallet
 or Glyph authentication. Check `authenticated` for wallet/API readiness. Privy
 reports `needsSignature: false` and `authError: null`.
+
+### Lossless balance image transport
+
+Managed balance reads request `nftImageEncoding=references-v1`. Supporting Glyph
+servers send repeated large NFT image strings once; the SDK restores the existing
+balance/NFT object shape before React Query stores or exposes it. Older servers
+return their normal arrays and work without an extra fallback request. Public
+hooks, amounts, partial-state fields, images and ownership flags keep their shape.
+Malformed dictionaries fail with a static error and are not automatically retried;
+authentication failures and session/cancellation checks retain their existing behavior.
