@@ -5,7 +5,7 @@ import {
     usePrivy,
     type User
 } from "@privy-io/react-auth";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
     type Address,
     type Chain,
@@ -59,7 +59,7 @@ export const usePrivyCrossAppProvider = ({ chains, useStagingTenant }: UsePrivyC
         }
     }, [chains, chainId]);
 
-    const passthroughMethods = {
+    const passthroughMethods = useMemo(() => ({
         web3_clientVersion: true,
         web3_sha3: true,
         net_listening: true,
@@ -101,8 +101,8 @@ export const usePrivyCrossAppProvider = ({ chains, useStagingTenant }: UsePrivyC
         eth_sendRawTransaction: true,
         eth_uninstallFilter: true,
         zks_estimateFee: true
-    };
-    const passthrough = (method: EIP1474MethodNames) => !!passthroughMethods[method];
+    }), []);
+    const passthrough = useCallback((method: EIP1474MethodNames) => !!passthroughMethods[method], [passthroughMethods]);
 
     const publicClients = useMemo(() => {
         return Object.fromEntries(
@@ -121,7 +121,7 @@ export const usePrivyCrossAppProvider = ({ chains, useStagingTenant }: UsePrivyC
         );
     }, [chains]);
 
-    const getAddressesFromUser = (user: User | null): PrivyUserWallets => {
+    const getAddressesFromUser = useCallback((user: User | null): PrivyUserWallets => {
         if (!user) {
             return {
                 smartAccount: undefined,
@@ -141,12 +141,12 @@ export const usePrivyCrossAppProvider = ({ chains, useStagingTenant }: UsePrivyC
             smartAccount: smartAccount ? (smartAccount as Address) : undefined,
             signer: signer ? (signer as Address) : undefined
         };
-    };
+    }, [useStagingTenant]);
 
     const getAccounts = useCallback(
         async (promptLogin: boolean) => {
             if (!privyReady) {
-                return [];
+                return { accounts: [], user: null };
             }
             let contextUser = user;
             if (promptLogin) {
@@ -164,15 +164,31 @@ export const usePrivyCrossAppProvider = ({ chains, useStagingTenant }: UsePrivyC
             if (signer) {
                 // returning smartaccount makes wagmi's signMessage not to work
                 //return [smartAccount, signer];
-                return [signer];
+                return { accounts: [signer], user: contextUser };
             } else {
-                return [];
+                return { accounts: [], user: contextUser };
             }
         },
-        [user, authenticated, privyReady, loginWithCrossAppAccount, linkCrossAppAccount]
+        [user, authenticated, privyReady, loginWithCrossAppAccount, linkCrossAppAccount, useStagingTenant, getAddressesFromUser]
     );
 
-    const eventListeners = useMemo(() => new Map<string, ((...args: any[]) => void)[]>(), []);
+    const ready = Boolean(
+        privyReady && authenticated && user && user.linkedAccounts.some(
+            (account) => account.type === "cross_app" &&
+                account.providerApp.id === (useStagingTenant ? STAGING_GLYPH_PRIVY_APP_ID : GLYPH_PRIVY_APP_ID)
+        )
+    );
+    const { signer, smartAccount } = getAddressesFromUser(user);
+    const sessionKey = JSON.stringify([ready, privyReady, user?.id, signer, smartAccount, useStagingTenant]);
+    const interactiveLogin = privyReady && !user;
+    const identity = JSON.stringify([user?.id, signer, smartAccount, useStagingTenant]);
+    type Session = { active: boolean; generation: number; key: string; identity: string; successor: Session | null;
+        request: ((request: RequestArguments) => Promise<any>) | null; interactiveLogin: boolean;
+        listeners: Map<string, ((...args: any[]) => void)[]> };
+    const session = useMemo<Session>(() => ({ active: false, generation: 0, key: sessionKey, identity, successor: null,
+        request: null, interactiveLogin, listeners: new Map() }), [sessionKey, interactiveLogin, identity]);
+    const latestSession = useRef<Session | null>(null);
+    const eventListeners = session.listeners;
 
     const handleChainChanged = useCallback(
         (newChainId: string) => {
@@ -203,7 +219,7 @@ export const usePrivyCrossAppProvider = ({ chains, useStagingTenant }: UsePrivyC
                     return await getAccounts(true);
                 }
                 case "eth_accounts": {
-                    return await getAccounts(false);
+                    return (await getAccounts(false)).accounts;
                 }
                 case "wallet_addEthereumChain":
                 case "wallet_switchEthereumChain": {
@@ -267,36 +283,54 @@ export const usePrivyCrossAppProvider = ({ chains, useStagingTenant }: UsePrivyC
                     throw new Error(`Unsupported request: ${method}`);
             }
         },
-        [passthrough, publicClients, getAccounts, signMessage, chainId, handleChainChanged]
+        [passthrough, publicClients, getAccounts, signMessage, signTypedData, sendTransaction, chainId, handleChainChanged, chains]
     );
 
-    const provider: EIP1193Provider = useMemo(() => {
-        return {
-            on: (event, listener) => {
-                eventListeners.set(event, [...(eventListeners.get(event) ?? []), listener]);
-            },
-            removeListener: (event, listener) => {
-                eventListeners.set(
-                    event,
-                    (eventListeners.get(event) ?? []).filter((l) => l !== listener)
-                );
-            },
-            request: handleRequest as EIP1193RequestFn<EIP1474Methods>
+    // A provider belongs to one authenticated account and tenant. Retired providers
+    // must not acquire the next session's signing functions through a mutable ref.
+    useLayoutEffect(() => {
+        if (latestSession.current && latestSession.current !== session) latestSession.current.successor = session;
+        latestSession.current = session;
+        session.active = true;
+        const generation = ++session.generation;
+        return () => {
+            session.active = false;
+            queueMicrotask(() => {
+                if (session.generation === generation && !session.active) eventListeners.clear();
+            });
         };
-    }, [handleRequest, eventListeners]);
+    }, [session, eventListeners]);
+    useLayoutEffect(() => {
+        session.request = handleRequest;
+    }, [session, handleRequest]);
 
-    const ready = useMemo(() => {
-        return (
-            privyReady &&
-            user &&
-            authenticated &&
-            user.linkedAccounts.some(
-                (account) =>
-                    account.type === "cross_app" &&
-                    account.providerApp.id === (useStagingTenant ? STAGING_GLYPH_PRIVY_APP_ID : GLYPH_PRIVY_APP_ID)
-            )
-        );
-    }, [privyReady, user, authenticated]);
+    const provider: EIP1193Provider = useMemo(() => ({
+        on: (event, listener) => {
+            eventListeners.set(event, [...(eventListeners.get(event) ?? []), listener]);
+        },
+        removeListener: (event, listener) => {
+            eventListeners.set(event, (eventListeners.get(event) ?? []).filter((l) => l !== listener));
+        },
+        request: (async (request) => {
+            if (!session.active || !session.request) throw new Error("Privy session is no longer active");
+            const result = await session.request(request);
+            if (request.method === "eth_requestAccounts") {
+                const resultUser = result.user as User | null;
+                const addresses = getAddressesFromUser(resultUser);
+                const resultIdentity = JSON.stringify([resultUser?.id, addresses.signer, addresses.smartAccount, useStagingTenant]);
+                const successor = session.successor;
+                if (!session.active && !(session.interactiveLogin && successor && successor === latestSession.current &&
+                    successor.active && successor.identity === resultIdentity)) {
+                    throw new Error("Privy session is no longer active");
+                }
+                return result.accounts;
+            }
+            if (!session.active && request.method !== "eth_sendTransaction") {
+                throw new Error("Privy session is no longer active");
+            }
+            return result;
+        }) as EIP1193RequestFn<EIP1474Methods>
+    }), [session, eventListeners, getAddressesFromUser, useStagingTenant]);
 
     return {
         ready,
