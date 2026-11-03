@@ -63,7 +63,7 @@ export const GlyphProvider = ({
     const ContextStrategy = useMemo(() => strategyComponents[currentStrategy], [currentStrategy, strategyComponents]);
 
     return (
-        <ContextStrategy glyphUrl={glyphUrl?.trim?.()} {...props}>
+        <ContextStrategy glyphUrl={glyphUrl?.trim?.()} useStagingTenant={useStagingTenant} {...props}>
             <GlyphUserDataProvider>
                 <GlyphSwapProvider>
                     <GlyphViewProvider>

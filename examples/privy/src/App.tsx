@@ -1,3 +1,4 @@
+import { demoConfig } from "../../runtime-config";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { createConfig, WagmiProvider } from "@privy-io/wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -15,8 +16,18 @@ import Consumer from "./consumer";
 const queryClient = new QueryClient();
 
 // You can directly use GlyphPrivyProvider directly, but if you want to have full control use this example. Additionally, if you want to use Glyph as a sign in method, you can import GLYPH_APP_LOGIN_METHOD from the lib and use it in the loginMethodsAndOrder array in Privy config.
+const runtime = demoConfig(import.meta.env.DEV ? {
+    APP_ENV: import.meta.env.VITE_APP_ENV,
+    VITE_DASHBOARD_BASE_URL: import.meta.env.VITE_DASHBOARD_BASE_URL,
+    VITE_WIDGET_API_BASE_URL: import.meta.env.VITE_WIDGET_API_BASE_URL,
+    VITE_PROVIDER_PRIVY_APP_ID: import.meta.env.VITE_PROVIDER_PRIVY_APP_ID,
+    VITE_DEMO_PRIVY_APP_ID: import.meta.env.VITE_DEMO_PRIVY_APP_ID,
+    VITE_DEMO_PRIVY_CLIENT_ID: import.meta.env.VITE_DEMO_PRIVY_CLIENT_ID,
+    VITE_DYNAMIC_ENVIRONMENT_ID: import.meta.env.VITE_DYNAMIC_ENVIRONMENT_ID
+} : undefined);
+
 function App() {
-  const { chains } = useGlyphConfigureDynamicChains(undefined, {
+  const { chains } = useGlyphConfigureDynamicChains(runtime.glyphUrl, {
     [mainnet.id]: "https://ethereum-rpc.publicnode.com",
   });
 
@@ -43,8 +54,8 @@ function App() {
 
   return (
     <PrivyProvider
-      appId={import.meta.env.VITE_DEMO_PRIVY_APP_ID} // or process.env.VITE_DEMO_PRIVY_APP_ID (if using next.js)
-      clientId={import.meta.env.VITE_DEMO_PRIVY_CLIENT_ID} // or process.env.VITE_DEMO_PRIVY_CLIENT_ID (if using next.js)
+      appId={runtime.VITE_DEMO_PRIVY_APP_ID} // or process.env.VITE_DEMO_PRIVY_APP_ID (if using next.js)
+      clientId={runtime.VITE_DEMO_PRIVY_CLIENT_ID} // or process.env.VITE_DEMO_PRIVY_CLIENT_ID (if using next.js)
       config={{
         loginMethodsAndOrder: {
           primary: ["google", "twitter"],
@@ -62,7 +73,7 @@ function App() {
     >
       <QueryClientProvider client={queryClient}>
         <WagmiProvider config={wagmiConfig}>
-          <GlyphProvider strategy={StrategyType.PRIVY}>
+          <GlyphProvider glyphUrl={runtime.glyphUrl} useStagingTenant={runtime.useStagingTenant} strategy={StrategyType.PRIVY}>
             <Consumer />
           </GlyphProvider>
         </WagmiProvider>

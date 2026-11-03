@@ -1,3 +1,4 @@
+import { demoConfig } from "../../runtime-config";
 import { connectorsForWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -5,6 +6,7 @@ import {
     glyphConnectorDetails,
     GlyphProvider,
     glyphWalletRK,
+    glyphWalletRKStaging,
     StrategyType,
     useGlyphConfigureDynamicChains,
     WalletClientType
@@ -18,11 +20,21 @@ import Consumer from "./consumer";
 
 const queryClient = new QueryClient();
 
+const runtime = demoConfig(import.meta.env.DEV ? {
+    APP_ENV: import.meta.env.VITE_APP_ENV,
+    VITE_DASHBOARD_BASE_URL: import.meta.env.VITE_DASHBOARD_BASE_URL,
+    VITE_WIDGET_API_BASE_URL: import.meta.env.VITE_WIDGET_API_BASE_URL,
+    VITE_PROVIDER_PRIVY_APP_ID: import.meta.env.VITE_PROVIDER_PRIVY_APP_ID,
+    VITE_DEMO_PRIVY_APP_ID: import.meta.env.VITE_DEMO_PRIVY_APP_ID,
+    VITE_DEMO_PRIVY_CLIENT_ID: import.meta.env.VITE_DEMO_PRIVY_CLIENT_ID,
+    VITE_DYNAMIC_ENVIRONMENT_ID: import.meta.env.VITE_DYNAMIC_ENVIRONMENT_ID
+} : undefined);
+
 const connectors = connectorsForWallets(
     [
         {
             groupName: glyphConnectorDetails.name,
-            wallets: [glyphWalletRK]
+            wallets: [runtime.useStagingTenant ? glyphWalletRKStaging : glyphWalletRK]
         }
     ],
     {
@@ -32,7 +44,7 @@ const connectors = connectorsForWallets(
 );
 
 function App() {
-    const { chains } = useGlyphConfigureDynamicChains(undefined, {
+    const { chains } = useGlyphConfigureDynamicChains(runtime.glyphUrl, {
         [mainnet.id]: "https://ethereum-rpc.publicnode.com"
     });
 
@@ -63,6 +75,8 @@ function App() {
             <QueryClientProvider client={queryClient}>
                 <RainbowKitProvider>
                     <GlyphProvider
+                        glyphUrl={runtime.glyphUrl}
+                        useStagingTenant={runtime.useStagingTenant}
                         strategy={StrategyType.EIP1193}
                         walletClientType={WalletClientType.RAINBOWKIT}
                         askForSignature={true}

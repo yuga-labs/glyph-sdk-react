@@ -1,3 +1,4 @@
+import { runtimeConfigPlugin } from "../runtime-config-vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, ViteDevServer } from "vite";
 
@@ -21,7 +22,7 @@ export default defineConfig(({ command }) => {
 
 	return {
 		base: "/rainbowkit",
-		plugins: [react(), pluginWatchNodeModules(["@use-glyph/sdk-react"])],
+		plugins: [runtimeConfigPlugin(), react(), pluginWatchNodeModules(["@use-glyph/sdk-react"])],
 		// Dev server config only used in development
 		...(isDev
 			? {
