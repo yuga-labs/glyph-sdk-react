@@ -11,7 +11,9 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerHandle, DrawerTitle, Dr
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Toaster } from "./ui/sonner";
 import { Wallet } from "./widget/Wallet";
-import { WidgetGradient } from "./widget/internal/WidgetGradient";
+import { RecoverableLazy } from "./RecoverableLazy";
+const loadGradient = () =>
+    import("./widget/internal/WidgetGradient").then(({ WidgetGradient }) => ({ default: WidgetGradient }));
 
 export const GlyphWidget = ({ buttonProps, minWidth = 768, alwaysOpen = false }: GlyphWidgetProps) => {
     const theme = "light";
@@ -56,7 +58,10 @@ export const GlyphWidget = ({ buttonProps, minWidth = 768, alwaysOpen = false }:
                             {/* "glyph-widget" class is required, since it applies the font style to the popover, which is mounted outside the parent div of this component */}
                             <PopoverContent sideOffset={10} align="end" className={`glyph-widget gw-wallet-container`}>
                                 <Toaster theme={theme} />
-                                <WidgetGradient gradientType={gradientType ?? INTERNAL_GRADIENT_TYPE.PRIMARY} />{" "}
+                                <RecoverableLazy
+                                    loader={loadGradient}
+                                    componentProps={{ gradientType: gradientType ?? INTERNAL_GRADIENT_TYPE.PRIMARY }}
+                                />{" "}
                                 {/* Default to primary gradient */}
                                 <Wallet setGradientType={setGradientType} />
                             </PopoverContent>
@@ -77,7 +82,10 @@ export const GlyphWidget = ({ buttonProps, minWidth = 768, alwaysOpen = false }:
 
                             {/* "glyph-widget" class is required, since it applies the font style to the popover, which is mounted outside the parent div of this component */}
                             <DrawerContent className={`glyph-widget`}>
-                                <WidgetGradient gradientType={gradientType ?? INTERNAL_GRADIENT_TYPE.PRIMARY} />{" "}
+                                <RecoverableLazy
+                                    loader={loadGradient}
+                                    componentProps={{ gradientType: gradientType ?? INTERNAL_GRADIENT_TYPE.PRIMARY }}
+                                />{" "}
                                 {/* Default to primary gradient */}
                                 <DrawerHandle />
                                 <DrawerTitle className="gw-sr-only">Glyph Wallet</DrawerTitle>

@@ -1,8 +1,43 @@
 import react from "@vitejs/plugin-react";
-import { resolve } from "path";
+import { basename, resolve } from "path";
+import { readFileSync } from "fs";
+import { createHash } from "crypto";
+import type { Plugin } from "vite";
 import { defineConfig, loadEnv } from "vite";
 import dts from "vite-plugin-dts";
 import { peerDependencies } from "./package.json";
+
+// Vite library mode inlines assets regardless of assetsInlineLimit. Emit the
+// widget images and fonts so consumers can cache them independently.
+function emittedWidgetAssets(): Plugin {
+    return {
+        name: "glyph-emitted-widget-assets",
+        enforce: "pre",
+        load(id) {
+            if (!id.includes("/src/assets/images/") || !id.endsWith(".png")) return;
+            const reference = this.emitFile({ type: "asset", name: basename(id), source: readFileSync(id) });
+            return `export default import.meta.ROLLUP_FILE_URL_${reference};`;
+        },
+        generateBundle: {
+            order: "post",
+            handler(_options, bundle) {
+                for (const asset of Object.values(bundle)) {
+                    if (asset.type !== "asset" || !asset.fileName.endsWith(".css")) continue;
+                    asset.source = String(asset.source).replace(
+                        /url\(data:font\/woff2;base64,([^)]*)\)/g,
+                        (_match, encoded: string) => {
+                            const source = Buffer.from(encoded, "base64");
+                            const hash = createHash("sha256").update(source).digest("hex").slice(0, 12);
+                            const fileName = `assets/font-${hash}.woff2`;
+                            this.emitFile({ type: "asset", fileName, source });
+                            return `url(./font-${hash}.woff2)`;
+                        }
+                    );
+                }
+            }
+        }
+    };
+}
 
 export default ({ mode }: { mode: string }) => {
     // Load app-level env vars to node-level env vars
@@ -26,6 +61,7 @@ export default ({ mode }: { mode: string }) => {
 
     return defineConfig({
         plugins: [
+            emittedWidgetAssets(),
             react({
                 // Ensure compatibility with both React 18 and 19
                 jsxImportSource: "react",
@@ -70,7 +106,10 @@ export default ({ mode }: { mode: string }) => {
                     "react/jsx-runtime",
                     "react/jsx-dev-runtime"
                 ],
-                output: {
+                output: ["es", "umd"].map((format) => ({
+                    format,
+                    name: "GlyphWidget",
+                    inlineDynamicImports: format === "umd",
                     globals: (id) => {
                         // Only peer deps that are actually imported; subpaths mapped via fallback below
                         const baseGlobals: Record<string, string> = {
@@ -98,7 +137,7 @@ export default ({ mode }: { mode: string }) => {
                     assetFileNames: "assets/[name].[ext]",
                     chunkFileNames: "[name].js",
                     entryFileNames: "glyph-widget.[format].js"
-                }
+                }))
             },
             assetsInlineLimit: 0 // Ensure all assets are emitted as files rather than inlined
         }
