@@ -336,3 +336,77 @@ The existing npm2.2.1 package and live public mirror are unchanged by this priva
 source change. Npm consumers inherit neither these overrides nor this lock.
 The next parent-owned export/release must qualify the public projection and its
 browser/artifact gates; no new tag or publication is authorized here.
+
+## Compatible leaf fixes: follow-redirects and four dev-path advisories (2026-11-03)
+
+Reviewed on 2026-11-03 (UTC), using Node `24.22.1` and pnpm `9.9.0`. Root and
+library versions advance to `2.2.8` to publish the qualified public source
+workspace. Dependency declarations, peer ranges, existing overrides, and
+wallet package versions are unchanged. Five affected resolutions receive
+compatible leaf updates; remaining advisory findings stay visible. Each lock change is a direct version-string edit to the existing
+record (no solver run): `pnpm update` for any one of these packages, even
+alone, rewrote hundreds of unrelated resolutions across the workspace and was
+rejected.
+
+| Actual consumer path | Resolution | Existing parent range |
+| --- | --- | --- |
+| SDK runtime → `@relayprotocol/relay-sdk` `3.2.0` → axios `1.20.0`; examples → `@wagmi/connectors` `6.2.0` → `@base-org/account` `2.4.0` / `@reown/appkit-utils` `1.8.19` → `@coinbase/cdp-sdk` `1.43.0` → axios `1.20.0` | follow-redirects `1.16.1` → `1.16.2` | axios `^1.16.0` |
+| Root (dev) → express `5.2.1` | qs `6.14.1` → `6.16.1`, consolidated onto the version body-parser `2.4.0` already resolved | express `^6.14.0` |
+| Root/examples (dev) → `@eslint/eslintrc` `3.3.3` | ajv `6.12.6` → `6.15.0` | `^6.12.4` |
+| Root/examples (dev) → tailwindcss `3.4.19` / postcss-nested `6.2.0` | postcss-selector-parser `6.1.2` → `6.1.5` | `^6.1.2` / `^6.1.1` |
+| Root/examples (dev) → eslint `9.39.2` | `@humanfs/node` `0.16.7` → `0.16.8`, which raises `@humanfs/core` `0.19.1` → `0.19.2` and adds the new `@humanfs/types` `0.15.0` leaf it now requires | `^0.16.6` |
+
+The lock replaces five package records, adds one new package (`@humanfs/types`),
+and removes two now-unreachable records (`qs@6.14.1` and its sole dependency
+edge, `side-channel@1.1.0` and the `side-channel-list@1.0.0` edge it alone
+held). All other surviving package records, importer declarations, and
+wallet peer contexts are unchanged. A frozen, strict-peer install accepts the
+result without a resolution step ("Lockfile is up to date").
+
+### Advisory and applicability
+
+| Advisory | Affected installed version | Patched floor and exposure condition |
+| --- | --- | --- |
+| [follow-redirects cross-realm sensitiveHeaders](https://github.com/advisories/GHSA-mrwp-f3q8-3g9p) | `1.16.1`; affected `>=1.16.0 <=1.16.1` | `1.16.2`; a `sensitiveHeaders` array built in another JS realm (e.g. `node:vm`) fails the old `instanceof Array` check and is silently discarded, so a declared custom credential header can follow a cross-origin redirect. |
+| [qs arrayLimit bypass in comma parsing](https://github.com/advisories/GHSA-w7fw-mjwx-w883) | `6.14.1`; affected `>=6.7.0 <=6.14.1` | `6.14.2`; comma-form arrays can bypass the configured `arrayLimit`. |
+| [qs DoS via attacker-controlled isBuffer](https://github.com/advisories/GHSA-4mjr-xmp4-gh2g) | `6.14.1`; affected `>=2.2.5 <6.16.0` | `6.16.0`; a crafted input can trigger excessive `isBuffer` work. |
+| [qs stringify TypeError on null/undefined comma entries](https://github.com/advisories/GHSA-q8mj-m7cp-5q26) | `6.14.1`; affected `>=6.11.1 <=6.15.1` | `6.15.2`; `qs.stringify` with `encodeValuesOnly` can crash uncaught on `null`/`undefined` array entries. |
+| [qs stringify TypeError on non-callable toString](https://github.com/advisories/GHSA-6pq8-jhm2-2vcw) | `6.14.1`; affected `>=6.7.0 <=6.16.0` | `6.16.1`; `arrayFormat: 'comma'` can crash uncaught on an element with a non-callable own `toString`. |
+| [ajv `$data` ReDoS](https://github.com/advisories/GHSA-2g4f-4pwh-qvx6) | `6.12.6`; affected `<6.14.0` (major-6 line) | `6.14.0`; a crafted `$data` schema can cause catastrophic regex backtracking. |
+| [postcss-selector-parser nested extglob/globstar recursion DoS](https://github.com/advisories/GHSA-w9m9-85wc-3x92) | `6.1.2`; affected `>=6.1.0 <6.1.3` | `6.1.3`. |
+| [postcss-selector-parser quadratic flat-selector parsing](https://github.com/advisories/GHSA-rj75-hqrm-r3gf) | `6.1.2`; affected `<6.1.5` (major-6 line) | `6.1.5`; CPU exhaustion on an adversarial selector string. |
+| [`@humanfs/node` recursive-copy symlink escape](https://github.com/advisories/GHSA-p498-v437-472g) | `0.16.7`; affected `<0.16.8` | `0.16.8`; a recursive copy follows a symlinked file and copies data from outside the source tree. |
+
+follow-redirects has a production dependency edge through Relay SDK → Axios,
+as well as the examples' Coinbase/Base wallet connectors. The other four
+packages are development tooling. This dependency-graph evidence does not
+establish that the browser bundles execute Node's redirect adapter or that
+Glyph exposed an exploitable custom-header configuration. Built source maps
+must distinguish actual modules from package names in peer-context paths.
+
+### Regression evidence
+
+`scripts/security-runtime.test.mjs` adds a case that resolves the actual
+installed Axios instances from `@relayprotocol/relay-sdk@3.2.0` and
+`@coinbase/cdp-sdk@1.43.0`, loads their actual nested follow-redirects module, and
+reproduces the advisory's own proof of concept: a `node:vm`-realm
+`sensitiveHeaders` array carrying `X-API-Key`, sent across a real loopback
+HTTP redirect to a different port. Reverting the installed module's filter
+to the old `instanceof Array` check reproduces the leak (the header reaches
+the second origin); the patched `Array.isArray` check strips it. Full
+`test:web3` (50), `test:security` (110, including both consumer paths),
+`test:routing`, `typecheck`, library build, and all six example builds
+passed locally against the updated lock, as did a separate frozen install
+and SDK-plus-examples build against the regenerated public lock below.
+
+### Publication boundary
+
+Version `2.2.8` carries the regenerated, qualified public-source workspace
+and example locks. Existing npm installations do not inherit either workspace
+lock or its overrides. Consumers must check their own Axios/follow-redirects
+resolutions; an SDK version bump alone does not rewrite an existing nested
+consumer lock. Peer ranges, wallet protocol packages, and the public API stay
+unchanged. No advisory is suppressed. Zod3, bigint-buffer, stream-json,
+minimatch, glob, deepmerge, and the Dynamic MetaMask pin remain separately
+dispositioned above. Hosted checks and staged release qualification remain
+required before publication.
