@@ -12,7 +12,7 @@ export const GlyphWidgetButton = ({
     showBalance = true,
     showUsername = true
 }: GlyphWidgetButtonProps) => {
-    const { user, balances, hasBalances, fetchForAllNetworks } = useGlyph();
+    const { user, balances, hasBalances, isBalancesError, fetchForAllNetworks } = useGlyph();
 
     // We can safely fetch the native balance here without chainId check because we only show this when a single chain is selected
     const nativeBalance = balances?.tokens?.find?.((balance) => balance.native);
@@ -31,7 +31,11 @@ export const GlyphWidgetButton = ({
                         <WalletIcon className="gw-size-6" />
                     </div>
                     {!fetchForAllNetworks &&
-                        (!hasBalances || nativeBalance?.value === undefined ? (
+                        (isBalancesError ? (
+                            <span className={cn(allValuesVisible && "max-sm:gw-hidden", "gw-px-1 gw-pr-2.5")}>
+                                Unavailable
+                            </span>
+                        ) : !hasBalances || nativeBalance?.value === undefined ? (
                             <div
                                 className={cn(
                                     allValuesVisible && "max-sm:gw-hidden",
@@ -51,7 +55,11 @@ export const GlyphWidgetButton = ({
                             </div>
                         ))}
                     {fetchForAllNetworks &&
-                        (!hasBalances || allBalances?.total === undefined ? (
+                        (isBalancesError ? (
+                            <span className={cn(allValuesVisible && "max-sm:gw-hidden", "gw-px-1 gw-pr-2.5")}>
+                                Unavailable
+                            </span>
+                        ) : !hasBalances || allBalances?.total === undefined ? (
                             <div
                                 className={cn(
                                     allValuesVisible && "max-sm:gw-hidden",

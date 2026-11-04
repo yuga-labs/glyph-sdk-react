@@ -10,10 +10,16 @@ import { LoginButton } from "./LoginButton";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHandle, DrawerTitle, DrawerTrigger } from "./ui/drawer";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Toaster } from "./ui/sonner";
-import { Wallet } from "./widget/Wallet";
+import { preloadWallet, Wallet } from "./widget/Wallet";
 import { RecoverableLazy } from "./RecoverableLazy";
+import { WidgetDataError } from "./WidgetDataState";
 const loadGradient = () =>
     import("./widget/internal/WidgetGradient").then(({ WidgetGradient }) => ({ default: WidgetGradient }));
+
+const preloadWidget = () => {
+    preloadWallet();
+    void loadGradient().catch(() => {});
+};
 
 export const GlyphWidget = ({ buttonProps, minWidth = 768, alwaysOpen = false }: GlyphWidgetProps) => {
     const theme = "light";
@@ -23,7 +29,7 @@ export const GlyphWidget = ({ buttonProps, minWidth = 768, alwaysOpen = false }:
     if (!viewCtx) throw new Error("GlyphWidget must be used within a GlyphViewProvider");
 
     const { glyphView, setGlyphView } = viewCtx;
-    const { ready, authenticated, user, hideWidget } = useGlyph();
+    const { ready, authenticated, user, hideWidget, isUserLoading, isUserError, refreshUser } = useGlyph();
 
     // hide tab when not ready, not authenticated, or no user
     // show if showWalletPermanently is true
@@ -39,7 +45,21 @@ export const GlyphWidget = ({ buttonProps, minWidth = 768, alwaysOpen = false }:
     ) : (
         <div className={`glyph-widget gw-widget-container ${theme === "light" ? "light" : "dark"}`}>
             {/* Active session */}
-            {ready && authenticated && user ? (
+            {ready && authenticated && isUserError ? (
+                <WidgetDataError compact message="Glyph data is unavailable." onRetry={() => refreshUser(true)} />
+            ) : ready && authenticated && isUserLoading ? (
+                <div
+                    className="gw-inline-flex gw-h-12 gw-w-52 gw-items-center gw-justify-center gw-gap-2 gw-rounded-full gw-bg-secondary/90 gw-text-secondary-foreground"
+                    role="status"
+                    aria-live="polite"
+                >
+                    <span>Loading Glyph</span>
+                    <span
+                        className="gw-size-4 gw-rounded-full gw-border-2 gw-border-current gw-border-t-transparent motion-safe:gw-animate-spin motion-reduce:gw-animate-none"
+                        aria-hidden="true"
+                    />
+                </div>
+            ) : ready && authenticated && user ? (
                 <>
                     {/* Popover on Desktop */}
                     {isDesktop ? (
@@ -51,7 +71,7 @@ export const GlyphWidget = ({ buttonProps, minWidth = 768, alwaysOpen = false }:
                                     : (v: boolean) => setGlyphView(v ? GlyphViewType.OPEN : GlyphViewType.CLOSED)
                             }
                         >
-                            <PopoverTrigger>
+                            <PopoverTrigger onPointerEnter={preloadWidget} onFocus={preloadWidget}>
                                 {alwaysOpen ? null : <GlyphWidgetButton {...(buttonProps || {})} />}
                             </PopoverTrigger>
 
@@ -61,6 +81,7 @@ export const GlyphWidget = ({ buttonProps, minWidth = 768, alwaysOpen = false }:
                                 <RecoverableLazy
                                     loader={loadGradient}
                                     componentProps={{ gradientType: gradientType ?? INTERNAL_GRADIENT_TYPE.PRIMARY }}
+                                    fallback={null}
                                 />{" "}
                                 {/* Default to primary gradient */}
                                 <Wallet setGradientType={setGradientType} />
@@ -76,7 +97,7 @@ export const GlyphWidget = ({ buttonProps, minWidth = 768, alwaysOpen = false }:
                                     : (v: boolean) => setGlyphView(v ? GlyphViewType.OPEN : GlyphViewType.CLOSED)
                             }
                         >
-                            <DrawerTrigger>
+                            <DrawerTrigger onPointerEnter={preloadWidget} onFocus={preloadWidget}>
                                 {alwaysOpen ? null : <GlyphWidgetButton {...(buttonProps || {})} />}
                             </DrawerTrigger>
 
@@ -85,6 +106,7 @@ export const GlyphWidget = ({ buttonProps, minWidth = 768, alwaysOpen = false }:
                                 <RecoverableLazy
                                     loader={loadGradient}
                                     componentProps={{ gradientType: gradientType ?? INTERNAL_GRADIENT_TYPE.PRIMARY }}
+                                    fallback={null}
                                 />{" "}
                                 {/* Default to primary gradient */}
                                 <DrawerHandle />

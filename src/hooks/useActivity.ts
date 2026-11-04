@@ -63,6 +63,7 @@ export function useActivity(
     const [offset, setOffset] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [isError, setIsError] = useState(false);
     const [transactionGroups, setTransactionGroups] = useState<ActivityGroup[]>([]);
 
     const types = filter?.types?.join(",") ?? "";
@@ -75,6 +76,7 @@ export function useActivity(
         setOffset(0);
         setHasMore(true);
         setIsLoading(false);
+        setIsError(false);
         setTransactionGroups([]);
         setDataKey(requestKey);
         return () => {
@@ -91,6 +93,7 @@ export function useActivity(
             const active = () => isCurrent() && currentKey.current === requestKey && !controller.signal.aborted;
             try {
                 setIsLoading(true);
+                setIsError(false);
 
                 // start from beginning if reset
                 const currentOffset = reset ? 0 : offset;
@@ -133,6 +136,7 @@ export function useActivity(
                 const totalNewTransactions = newGroups.reduce((count, group) => count + group.transactions.length, 0);
                 setHasMore(totalNewTransactions === pageSize);
                 setDataKey(requestKey);
+                setIsError(false);
                 return newGroups;
             } catch (e: any) {
                 // handle and don't retry if aborted
@@ -140,6 +144,7 @@ export function useActivity(
                     return null;
                 }
                 if (active()) toast.error("Failed to fetch transactions");
+                if (active()) setIsError(true);
                 return null;
             } finally {
                 if (isCurrent() && currentKey.current === requestKey && abortController.current === controller) {
@@ -200,6 +205,7 @@ export function useActivity(
         loadMore,
         reset,
         hasMore,
-        isLoading
+        isLoading,
+        isError
     };
 }

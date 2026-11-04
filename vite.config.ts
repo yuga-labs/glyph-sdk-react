@@ -72,6 +72,8 @@ export default ({ mode }: { mode: string }) => {
                 }
             }),
             dts({
+                // React type paths isolate this build; published imports stay package-relative.
+                pathsToAliases: false,
                 tsconfigPath: "./tsconfig.app.json",
                 outDir: "dist/types",
                 entryRoot: "src",

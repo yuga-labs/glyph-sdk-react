@@ -50,6 +50,9 @@ export interface GlyphHook extends GlyphInterface {
      */
     user: GlyphWidgetUser | null;
 
+    isUserLoading: boolean;
+    isUserError: boolean;
+
     refreshUser: (force?: boolean) => Promise<void>;
 
     /**
@@ -68,6 +71,8 @@ export interface GlyphHook extends GlyphInterface {
     hasBalances: boolean;
 
     isBalancesLoading: boolean;
+
+    isBalancesError: boolean;
 
     refreshBalances: (force?: boolean, cbs?: Record<string, (diffAmount: number) => void>) => Promise<void>;
 
@@ -98,10 +103,13 @@ export const useGlyph = (): GlyphHook => {
     } = context;
     const {
         user,
+        isUserLoading,
+        isUserError,
         refreshUser,
         balances,
         hasBalances,
         isBalancesLoading,
+        isBalancesError,
         refreshBalances,
         setFetchForAllNetworks,
         fetchForAllNetworks
@@ -123,10 +131,13 @@ export const useGlyph = (): GlyphHook => {
         ready,
         authenticated,
         user,
+        isUserLoading,
+        isUserError,
         refreshUser,
         balances,
         hasBalances,
         isBalancesLoading,
+        isBalancesError,
         refreshBalances,
         login,
         signIn,

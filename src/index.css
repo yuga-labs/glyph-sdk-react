@@ -284,3 +284,10 @@
         max-height: var(--radix-popover-content-available-height);
     }
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .glyph-widget .gw-animate-pulse,
+    .glyph-widget .gw-animate-spin {
+        animation: none !important;
+    }
+}

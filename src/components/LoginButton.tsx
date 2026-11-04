@@ -12,7 +12,10 @@ export const LoginButton = () => {
                 <span className="gw-p-2 gw-rounded-full">
                     <GlyphIcon className="!gw-size-5" />
                 </span>
-                <Loader2 className="gw-size-4 gw-animate-spin" />
+                <Loader2
+                    className="gw-size-4 motion-safe:gw-animate-spin motion-reduce:gw-animate-none"
+                    aria-hidden="true"
+                />
             </span>
         </Button>
     ) : (

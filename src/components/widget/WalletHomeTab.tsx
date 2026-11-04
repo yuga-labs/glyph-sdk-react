@@ -2,6 +2,7 @@ import { ArrowUpDown, SendIcon } from "lucide-react";
 import { PlusSign } from "../../assets/svg/PlusSign";
 import { QRIcon } from "../../assets/svg/QRIcon";
 import { useGlyph } from "../../hooks/useGlyph";
+import { WidgetDataError } from "../WidgetDataState";
 import { WalletView } from "../../lib/constants";
 import { formatCurrency } from "../../lib/intl";
 import { cn, formatTokenCount } from "../../lib/utils";
@@ -15,7 +16,7 @@ export type WalletHomeTabProps = {
 };
 
 export function WalletHomeTab({ setWalletView }: WalletHomeTabProps) {
-    const { user, balances, hasBalances, fetchForAllNetworks } = useGlyph();
+    const { user, balances, hasBalances, isBalancesError, refreshBalances, fetchForAllNetworks } = useGlyph();
 
     // We can safely fetch the native balance here without chainId check because we only show this when a single chain is selected
     const nativeBalance = balances?.tokens?.find?.((balance) => balance.native);
@@ -36,7 +37,9 @@ export function WalletHomeTab({ setWalletView }: WalletHomeTabProps) {
                     <>
                         <span>My Balance</span>
                         <div className="gw-flex gw-font-medium gw-items-center gw-gap-1">
-                            {!hasBalances || nativeBalance?.value === undefined ? (
+                            {isBalancesError ? (
+                                <span className="gw-typography-body2 gw-text-brand-gray-600">Unavailable</span>
+                            ) : !hasBalances || nativeBalance?.value === undefined ? (
                                 <Skeleton className="gw-w-20 gw-h-6" />
                             ) : (
                                 <>
@@ -67,7 +70,9 @@ export function WalletHomeTab({ setWalletView }: WalletHomeTabProps) {
 
             <div className="gw-flex gw-justify-center gw-items-center gw-flex-col">
                 <span className="gw-typography-h2-nr">
-                    {!hasBalances || allBalances?.tokens === undefined ? (
+                    {isBalancesError ? (
+                        <span className="gw-typography-body2 gw-text-brand-gray-600">Unavailable</span>
+                    ) : !hasBalances || allBalances?.tokens === undefined ? (
                         <Skeleton className="gw-w-20 gw-h-[3.75rem]" />
                     ) : (
                         <>
@@ -86,6 +91,13 @@ export function WalletHomeTab({ setWalletView }: WalletHomeTabProps) {
                 <span className="gw-typography-subtitle1 !gw-font-normal gw-text-brand-gray-600 gw-mt-2">
                     Portfolio Value
                 </span>
+                {isBalancesError && (
+                    <WidgetDataError
+                        compact
+                        message="Balances are unavailable."
+                        onRetry={() => refreshBalances(true)}
+                    />
+                )}
             </div>
 
             {/* Actions */}

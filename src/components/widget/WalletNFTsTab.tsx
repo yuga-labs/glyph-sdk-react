@@ -6,6 +6,7 @@ import { NFTImgFail } from "../../assets/svg/NFTImgFail";
 import { useGlyph } from "../../hooks/useGlyph";
 import { cn } from "../../lib/utils";
 import { buttonVariants } from "../ui/button";
+import { WidgetDataError } from "../WidgetDataState";
 
 type NFTImageProps = React.SVGProps<SVGSVGElement> & {
     alt: string;
@@ -35,7 +36,7 @@ const NFTImg = ({ url, alt, title, className, ...props }: NFTImageProps) => {
 };
 
 export function WalletNFTsTab() {
-    const { glyphUrl, balances, hasBalances } = useGlyph();
+    const { glyphUrl, balances, hasBalances, isBalancesError, refreshBalances } = useGlyph();
     const [expandedItemId, setExpandedItemId] = useState<string>("");
     const nfts = balances?.nfts || [];
     // const totalValue = balances?.wallet_value?.nfts;
@@ -56,7 +57,9 @@ export function WalletNFTsTab() {
                 ) : null} */}
             </div>
 
-            {hasBalances && nfts?.length ? (
+            {isBalancesError ? (
+                <WidgetDataError message="Balances are unavailable." onRetry={() => refreshBalances(true)} />
+            ) : hasBalances && nfts?.length ? (
                 <div className="gw-flex gw-flex-col gw-flex-1 gw-min-h-0">
                     {/* Scrollable accordion area */}
                     <div className="gw-flex-1 gw-min-h-0 gw-overflow-auto">

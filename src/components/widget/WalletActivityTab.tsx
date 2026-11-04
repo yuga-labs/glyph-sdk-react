@@ -10,6 +10,7 @@ import { LinkWithIcon } from "../shared/LinkWithIcon";
 import { ActivityRowSkeleton } from "../shared/skeletons/ActivityRowSkeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import TooltipElement from "../ui/tooltip-element";
+import { WidgetDataError } from "../WidgetDataState";
 
 export type WalletActivityTabProps = {
     expandFirst?: boolean;
@@ -19,7 +20,7 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
     const { user, fetchForAllNetworks } = useGlyph();
     const chainId = useChainId();
     const currentBlockExplorerUrl = fetchForAllNetworks ? null : chainIdToRelayChain(chainId)?.explorerUrl;
-    const { transactionGroups, fetchTransactions, loadMore, hasMore, isLoading, refreshKey } = useActivity();
+    const { transactionGroups, fetchTransactions, loadMore, hasMore, isLoading, isError, refreshKey } = useActivity();
 
     const observerTarget = useRef<HTMLDivElement>(null);
     const sentinelRef = useRef<HTMLDivElement>(null);
@@ -130,7 +131,9 @@ export function WalletActivityTab({ expandFirst = false }: WalletActivityTabProp
             </div>
 
             <div className="gw-grid gw-grid-cols-1 gw-overflow-auto gw-pr-4 gw-min-h-0">
-                {isLoading && totalTransactions === 0 ? (
+                {isError && totalTransactions === 0 ? (
+                    <WidgetDataError message="Activity is unavailable." onRetry={() => fetchTransactions(true)} />
+                ) : isLoading && totalTransactions === 0 ? (
                     // initial loading state
                     new Array(3).fill(null).map((_, index) => {
                         return (

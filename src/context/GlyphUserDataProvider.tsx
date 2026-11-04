@@ -171,9 +171,12 @@ export const GlyphUserDataProvider: react.FC<PropsWithChildren> = ({ children })
         <GlyphUserDataContext.Provider
             value={{
                 user,
+                isUserLoading: isCurrentSession() && userQuery.isPending,
+                isUserError: isCurrentSession() && userQuery.isError,
                 balances,
                 hasBalances: !!balances,
                 isBalancesLoading: isCurrentBalanceScope() && balancesQuery.isFetching,
+                isBalancesError: isCurrentBalanceScope() && balancesQuery.isError,
                 refreshUser,
                 refreshBalances,
                 setFetchForAllNetworks,

@@ -1,5 +1,5 @@
 import { Component, createElement, lazy, Suspense } from "react";
-import type { ComponentType, LazyExoticComponent } from "react";
+import type { ComponentType, LazyExoticComponent, ReactNode } from "react";
 
 class WidgetLoadError extends Error {
     constructor() {
@@ -8,7 +8,7 @@ class WidgetLoadError extends Error {
 }
 
 type Loader<P extends object> = () => Promise<{ default: ComponentType<P> }>;
-type Props<P extends object> = { loader: Loader<P>; componentProps: P };
+type Props<P extends object> = { loader: Loader<P>; componentProps: P; fallback?: ReactNode };
 type State<P extends object> = { failed: boolean; content: LazyExoticComponent<ComponentType<P>> };
 
 export class RecoverableLazy<P extends object> extends Component<Props<P>, State<P>> {
@@ -46,7 +46,7 @@ export class RecoverableLazy<P extends object> extends Component<Props<P>, State
             );
         }
         return (
-            <Suspense fallback={null}>
+            <Suspense fallback={this.props.fallback ?? null}>
                 {createElement(
                     this.state.content as ComponentType<P>,
                     this.props.componentProps as P & React.Attributes

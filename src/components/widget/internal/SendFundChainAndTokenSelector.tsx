@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Skeleton } from "../../ui/skeleton";
 import TooltipElement from "../../ui/tooltip-element";
 import { TokenAndChainIcon } from "./TokenAndChainIcon";
+import { WidgetDataError } from "../../WidgetDataState";
 
 const SendFundChainAndTokenSelector = ({
     onTokenSelect,
@@ -26,7 +27,8 @@ const SendFundChainAndTokenSelector = ({
     const chainId = useChainId();
     const { switchChainAsync } = useSwitchChain();
 
-    const { balances, hasBalances, fetchForAllNetworks, setFetchForAllNetworks } = useBalances();
+    const { balances, hasBalances, isBalancesError, refreshBalances, fetchForAllNetworks, setFetchForAllNetworks } =
+        useBalances();
     const currentChainId = fetchForAllNetworks ? "all" : chainId;
 
     const selectedTokenChain = useMemo(() => {
@@ -189,7 +191,13 @@ const SendFundChainAndTokenSelector = ({
                         <div className="gw-flex gw-flex-col gw-gap-2">
                             <div className="gw-typography-body2 gw-text-brand-gray-500">{"Your tokens"}</div>
                             <div className="gw-grid gw-grid-cols-1 gw-px-1 gw-py-2 gw-min-h-0 gw-overflow-auto">
-                                {hasBalances && balances?.tokens.length ? (
+                                {isBalancesError ? (
+                                    <WidgetDataError
+                                        compact
+                                        message="Balances are unavailable."
+                                        onRetry={() => refreshBalances(true)}
+                                    />
+                                ) : hasBalances && balances?.tokens.length ? (
                                     balances?.tokens?.map((token, index) => {
                                         const tokenChain = currentChain ?? chainIdToRelayChain(token?.chainId)!;
 

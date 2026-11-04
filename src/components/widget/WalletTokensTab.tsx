@@ -3,9 +3,10 @@ import { useBalances } from "../../hooks/useBalances";
 import { formatCurrency } from "../../lib/intl";
 import { chainIdToRelayChain, formatTokenCount } from "../../lib/utils";
 import { TokenAndChainIcon } from "./internal/TokenAndChainIcon";
+import { WidgetDataError } from "../WidgetDataState";
 
 export function WalletTokensTab() {
-    const { balances, hasBalances, fetchForAllNetworks } = useBalances();
+    const { balances, hasBalances, isBalancesError, refreshBalances, fetchForAllNetworks } = useBalances();
 
     const tokens = balances?.tokens || [];
     const totalValue = balances?.wallet_value?.tokens;
@@ -18,16 +19,22 @@ export function WalletTokensTab() {
                 <div className="gw-typography-body1">
                     <span className="amount gw-font-medium gw-text-brand-gray-600">
                         {/* If tokens are present and any of the token has valueInWei > 0, show <0.01 */}
-                        {formatCurrency(
-                            totalValue,
-                            tokens[0]?.currency,
-                            tokens?.some((t) => BigInt(t.valueInWei) !== 0n)
-                        )}
+                        {isBalancesError
+                            ? "Unavailable"
+                            : !hasBalances || totalValue === undefined
+                              ? "—"
+                              : formatCurrency(
+                                    totalValue,
+                                    tokens[0]?.currency,
+                                    tokens?.some((t) => BigInt(t.valueInWei) !== 0n)
+                                )}
                     </span>
                 </div>
             </div>
 
-            {hasBalances && tokens?.length ? (
+            {isBalancesError ? (
+                <WidgetDataError message="Balances are unavailable." onRetry={() => refreshBalances(true)} />
+            ) : hasBalances && tokens?.length ? (
                 <div className="gw-grid gw-grid-cols-1 gw-mt-2 gw-max-h-100 gw-min-h-0 gw-overflow-auto gw-pr-4">
                     {tokens.map((t, index) => {
                         if (t?.hide) return null;
