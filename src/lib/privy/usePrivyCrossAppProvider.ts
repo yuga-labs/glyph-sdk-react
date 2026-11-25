@@ -18,6 +18,7 @@ import {
     hexToNumber,
     http,
     isHex,
+    toHex,
     type RpcSchema
 } from "viem";
 import { GLYPH_PRIVY_APP_ID, STAGING_GLYPH_PRIVY_APP_ID } from "../constants";
@@ -52,9 +53,12 @@ export const usePrivyCrossAppProvider = ({ chains, useStagingTenant }: UsePrivyC
 
     const [chainId, setChainId] = useState<string | null>(null);
 
+    const currentChain = useRef(chains[0]?.id);
+
     // Initialize chain ID with the first chain if available
     useEffect(() => {
         if (chains.length > 0 && !chainId) {
+            currentChain.current = chains[0].id;
             setChainId(chains[0].id.toString());
         }
     }, [chains, chainId]);
@@ -68,7 +72,6 @@ export const usePrivyCrossAppProvider = ({ chains, useStagingTenant }: UsePrivyC
         eth_blobBaseFee: true,
         eth_blockNumber: true,
         eth_call: true,
-        eth_chainId: true,
         eth_coinbase: true,
         eth_estimateGas: true,
         eth_feeHistory: true,
@@ -192,6 +195,7 @@ export const usePrivyCrossAppProvider = ({ chains, useStagingTenant }: UsePrivyC
 
     const handleChainChanged = useCallback(
         (newChainId: string) => {
+            currentChain.current = Number(newChainId);
             if (newChainId !== chainId) {
                 setChainId(newChainId);
                 const listeners = eventListeners.get("chainChanged") || [];
@@ -207,7 +211,7 @@ export const usePrivyCrossAppProvider = ({ chains, useStagingTenant }: UsePrivyC
             logger.debug("Handling provider request");
 
             // Get the current chainId from the request or use the stored chainId
-            const currentChainId = (params?.chainId || params?.[0]?.chainId || +chainId!) as number;
+            const currentChainId = (params?.chainId || params?.[0]?.chainId || currentChain.current) as number;
 
             if (passthrough(method as EIP1474MethodNames)) {
                 const publicClient = publicClients[currentChainId];
@@ -215,6 +219,8 @@ export const usePrivyCrossAppProvider = ({ chains, useStagingTenant }: UsePrivyC
             }
 
             switch (method) {
+                case "eth_chainId":
+                    return toHex(currentChain.current ?? chains[0].id);
                 case "eth_requestAccounts": {
                     return await getAccounts(true);
                 }

@@ -6,16 +6,19 @@ Dashboard ⚙️: [https://useglyph.io/](https://useglyph.io/)
 
 Documentation 📝: [https://docs.useglyph.io/](https://docs.useglyph.io/)
 
-## Wallet compatibility (2.2.0)
+## Wallet compatibility (2.3.1)
 
-Tested with wagmi `2.19.5`, viem `2.57.5`, RainbowKit `2.2.11`,
-Privy React `3.48.1`, Privy wagmi `4.0.19`, and Relay SDK `3.2.0`.
+The development matrix uses wagmi `2.19.5`, viem `2.57.8`, RainbowKit `2.2.11`,
+Privy React `3.51.3`, Privy wagmi `4.0.20`, and Relay SDK `3.2.0`.
 Keep the app's Relay version aligned when passing `RelayChain` values to Glyph.
-Privy uses nested viem `2.56.5`; do not force a global viem override.
+Privy's internal adapters accept viem `^2.57.8`; do not force a global viem override.
+The earlier Privy range below `3.49.0` remains supported. Versions `3.49.0` through
+`3.51.2` remain excluded. Explicitly non-signable wallets are not selected as signers;
+legacy accounts without the capability field retain their existing behavior.
 
 React 18 and 19 are supported. ConnectKit `1.9.2` requires React 18.
 Dynamic's Glyph connector `4.5.0` requires cross-app-connect `0.2.3`;
-other tested adapters use cross-app-connect `0.7.3`.
+other development adapters use cross-app-connect `0.7.6`.
 Do not force those separate adapter generations onto one version.
 
 See the integration-specific installation commands in the documentation.

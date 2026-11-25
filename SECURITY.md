@@ -410,3 +410,31 @@ unchanged. No advisory is suppressed. Zod3, bigint-buffer, stream-json,
 minimatch, glob, deepmerge, and the Dynamic MetaMask pin remain separately
 dispositioned above. Hosted checks and staged release qualification remain
 required before publication.
+
+## Privy 3.51 compatibility (2.3.1)
+
+The development matrix advances Privy React to `3.51.3`, Privy wagmi to
+`4.0.20`, cross-app-connect to `0.7.6`, and viem to `2.57.8`. The adapter
+and internal Ethereum/JS SDK peers now accept `^2.57.8`. No global viem
+override is added. Dynamic retains its separate cross-app-connect `0.2.3`
+context. Its viem `^2.22.23` peer accepts `2.57.8`; aligning the example's
+viem avoids incompatible Chain declarations across workspace imports. The public Privy peer range preserves the earlier
+range below `3.49.0` and adds only `>=3.51.3 <3.52.0`.
+
+Wallet selection rejects an explicit `userCanSign: false` while preserving
+legacy accounts without that field. Losing signability invalidates saved
+signing, transaction, and API capabilities before passive effects run;
+pending token reads cannot send a request under the obsolete wallet.
+
+Privy API-base `2.0.0` and API-types `0.24.0` no longer declare Zod dependencies.
+Coinbase and Reown still resolve Zod 3, and bigint-buffer remains advisory-listed.
+This update does not claim a clean audit or install overrides in consumers.
+Security tests retain the actual remaining Zod 3 consumer contracts instead of
+resolving an unrelated hoisted Zod through API-base.
+
+Primary references: [Privy React changes](https://docs.privy.io/changelogs/react-auth),
+[wagmi adapter metadata](https://registry.npmjs.org/@privy-io/wagmi/4.0.20),
+[cross-app metadata](https://registry.npmjs.org/@privy-io/cross-app-connect/0.7.6),
+and [API-base metadata](https://registry.npmjs.org/@privy-io/api-base/2.0.0).
+Authenticated staging checks and standalone public-workspace builds remain
+required before publication.

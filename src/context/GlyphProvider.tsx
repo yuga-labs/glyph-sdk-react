@@ -29,12 +29,13 @@ export const GlyphProvider = ({
             const relayChainIds = new Set(relayClient.chains.map((c: any) => c.id));
             const wagmiChainIds = new Set(wagmiConfig.chains.map((c) => c.id));
 
-            const eqSet = (a: Set<any>, b: Set<any>) => {
-                return a.size === b.size && [...a].every((value) => b.has(value));
-            };
-
-            // This check doesn't enforce chains that are enabled from Glyph backend, but checks whether all the chains defined for wagmi, are also defined for relay and vice versa so we can be sure that all the enabled chains are consistently available for swap and other transactions.
-            if (!eqSet(relayChainIds, wagmiChainIds)) {
+            // Relay networks must remain available for swaps. Only additional
+            // explicitly configured testnets may bypass the equality check.
+            const missingRelayChain = [...relayChainIds].some((id) => !wagmiChainIds.has(id));
+            const extraChain = wagmiConfig.chains.some(
+                (chain) => !relayChainIds.has(chain.id) && chain.testnet !== true
+            );
+            if (missingRelayChain || extraChain) {
                 throw new Error(
                     "Chain mismatch detected. Please use `useGlyphConfigureDynamicChains` from `@use-glyph/sdk-react` to configure chains dynamically."
                 );

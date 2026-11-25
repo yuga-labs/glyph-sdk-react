@@ -49,6 +49,7 @@ export const useGlyphConfigureDynamicChains = (
             const data = (await res.json()) as {
                 chains: RelayChain[];
                 supportedChains: number[];
+                unsupportedChains?: Chain[];
             };
 
             if (
@@ -69,11 +70,22 @@ export const useGlyphConfigureDynamicChains = (
                 });
 
                 setRequiredChainIds(data.supportedChains as [number, ...number[]]);
-                // It's technically RelayChain not Chain, but we're casting for compatibility - let's see if it works
+                // unsupportedChains is wallet metadata, never evidence of Relay support.
+                // Older APIs omit it; retain their Relay-derived wallet configuration.
+                const walletChains = new Map<number, Chain>(
+                    chains.map((chain) => [
+                        chain.id,
+                        { ...configureViemChain(chain as any).viemChain, iconUrl: chain.iconUrl }
+                    ])
+                );
+                for (const chain of data.unsupportedChains ?? []) {
+                    if (data.supportedChains.includes(chain.id) && !walletChains.has(chain.id)) {
+                        walletChains.set(chain.id, chain);
+                    }
+                }
                 setViemChains(
-                    chains.map((chain) => {
-                        const viemChain = configureViemChain(chain as any).viemChain;
-                        const urls = overrides[chain.id];
+                    [...walletChains.values()].map((viemChain) => {
+                        const urls = overrides[viemChain.id];
                         if (!urls) return viemChain;
                         // configureViemChain returns a shared viem/chains singleton for well-known chains
                         // (e.g. mainnet) — clone instead of mutating it. Override http with the full URL array
